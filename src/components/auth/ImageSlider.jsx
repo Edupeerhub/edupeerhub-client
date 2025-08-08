@@ -53,7 +53,7 @@ export default function ImageSlider() {
         {images.map((_, index) => (
           <span
             key={index}
-            className={`h-3 w-3 rounded-full cursor-pointer ${
+            className={`h-2 w-2 rounded-full cursor-pointer ${
               current === index ? "bg-blue-800" : "bg-blue-400"
             }`}
             onClick={() => setCurrent(index)}
