@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@600&family=Manrope&family=Nunito&family=Open+Sans&family=Poppins:wght@500;600;700&family=Roboto:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-poppins: Poppins, "sans-serif";
+  --font-roboto: Roboto, "sans-serif";
+  --font-inter: Inter, "sans-serif";
+  --font-nunito: Nunito, "sans-serif";
+  --font-opensans: Open Sans, "sans-serif";
+  --font-manrope: Manrope, "sans-serif"
+}
+
+@theme {
+  --color-primary: #4CA1F0;
+  --color-secondary: #A1E3AF;
+  --color-accent: #2C3A47;
+  --color-neutral: #F5F9FC;
+  --color-background: #F5F9FC;
+}
+
