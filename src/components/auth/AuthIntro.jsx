@@ -1,4 +1,4 @@
-import logo from "../../assets/Logo Big.svg";
+import logo from "../../assets/images/edupeerhub-logo1.svg";
 import { Link } from "react-router-dom";
 
 const AuthIntro = ({ heading, subText, linkText, linkTo }) => (

@@ -1,12 +1,11 @@
-import authImage from "../assets/auth-illustration.svg"; // example image
-import Input from "../components/ui/Input";
+import ImageSlider from "../components/auth/ImageSlider";
 
 const AuthLayout = ({ children }) => {
   return (
     <div className="flex min-h-screen">
-      {/* Left: Fixed Image */}
+      {/* Left: Image slide */}
       <div className="w-1/2 bg-[#CDE1FF] hidden md:flex items-center justify-center">
-        <img src={authImage} alt="Auth Visual" className="max-w-full h-auto" />
+        <ImageSlider />
       </div>
 
       {/* Right: Dynamic Page Content */}

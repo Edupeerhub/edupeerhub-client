@@ -33,7 +33,7 @@ const LoginPage = () => {
         <Button
         // onClick={handleSubmit}
         >
-          Login
+          Log in
         </Button>
       </form>
     </AuthLayout>
