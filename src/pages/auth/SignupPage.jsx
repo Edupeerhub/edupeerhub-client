@@ -8,7 +8,7 @@ const SignupPage = () => {
   return (
     <AuthLayout>
       <AuthIntro
-        heading="Welcome To EdupeerHub"
+        heading="Welcome To Edupeerhub"
         subText="Already have an account?"
         linkText="Log In"
         linkTo="/login"
