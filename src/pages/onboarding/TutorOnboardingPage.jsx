@@ -34,6 +34,11 @@ const TutorOnboardingPage = () => {
     alert("Data sent! Check console.");
   };
 
+  const handleChange = () => {
+    console.log("Final JSON Data:", formData);
+    alert("Data sent! Check console.");
+  };
+
   return (
     <AuthLayout>
       <div
