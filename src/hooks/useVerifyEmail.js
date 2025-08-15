@@ -5,11 +5,9 @@ import {
   handleToastError,
   handleToastSuccess,
 } from "../utils/toastDisplayHandler";
-import { useNavigate } from "react-router";
 
 const useVerifyEmail = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
@@ -21,7 +19,6 @@ const useVerifyEmail = () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Email verified successfully! Welcome aboard!");
       setRetryAfter(null);
-      navigate("/");
     },
     onError: (error) => {
       const responseData = error.response?.data;

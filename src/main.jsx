@@ -1,15 +1,15 @@
-
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css"; // Tailwind styles
 
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")).render(
-  
-  <React.StrictMode>
-    <BrowserRouter>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
       <App />
-    </BrowserRouter>
-  </React.StrictMode>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
