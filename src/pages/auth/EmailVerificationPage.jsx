@@ -1,8 +1,10 @@
 // import { useMutation } from "@tanstack/react-query";
 import logo from "../../assets/images/edupeerhub-logo1.svg";
+import checkmark from "../../assets/images/auth/checkmark-green.svg";
 import { useEffect, useRef, useState } from "react";
 import AuthLayout from "../../layouts/AuthLayout";
 import Button from "../../components/ui/Button";
+import { Link } from "react-router-dom";
 // import useVerifyEmail from "../../hooks/useVerifyEmail";
 // import { useCooldown } from "../../hooks/useCooldown";
 // import { resendVerificationEmail } from "../../lib/api";
@@ -20,6 +22,7 @@ const EmailVerificationPage = () => {
 
   const [feedback, setFeedback] = useState(null);
   const [resendRetryAfter, setResendRetryAfter] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleChange = (index, value) => {
     const newCode = [...verificationCode];
@@ -101,12 +104,14 @@ const EmailVerificationPage = () => {
     // clearErrors();
     // setRetryAfter(null);
     const code = verificationCode.join("");
+
     alert(`Verification code submitted: ${code}`);
     // verifyEmailMutation({ code });
+    setIsSuccess(true);
   };
 
   const handleResendCode = async () => {
-    if (resendIsActive) return;
+    // if (resendIsActive) return;
 
     setFeedback(null);
     setResendRetryAfter(null);
@@ -122,51 +127,54 @@ const EmailVerificationPage = () => {
 
   return (
     <AuthLayout>
-      <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-5">
-        {/* <div className="mb-6 flex items-center justify-center gap-2 ">
+      {!isSuccess ? (
+        <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-5">
+          {/* <div className="mb-6 flex items-center justify-center gap-2 ">
           <span className="text-3xl font-bold text-primary">Edupeerhub </span>
           </div> */}
-        <div className="mb-6 flex flex-col items-center justify-center gap-2 ">
-          <img src={logo} alt="Edupeerhub" />
-          <h2 className="text-2xl font-semibold text-center mb-3 text-primary">
-            Verify Your Email
-          </h2>
-          <p className="text-m opacity-70 ">
-            Enter the 6-digit code sent to your email address.
-          </p>
-        </div>
-        <div className="w-full">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex justify-between">
-              {verificationCode.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={digit}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "");
-                    handleChange(index, val);
-                  }}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-12 h-12 text-center text-2xl font-semibold text-black border-2 border-gray-600 rounded-lg focus:border-blue-700 focus:outline-none"
-                />
-              ))}
-            </div>
+          <div className="mb-6 flex flex-col items-center justify-center gap-2 ">
+            <img src={logo} alt="Edupeerhub" />
+            <h2 className="text-2xl font-semibold text-center mb-3 text-black">
+              Verify Your Email
+            </h2>
+            <p className="text-m opacity-70 ">
+              Enter the 6-digit code sent to your email address.
+            </p>
+          </div>
+          <div className="w-full">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="flex justify-between">
+                {verificationCode.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={digit}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      handleChange(index, val);
+                    }}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className="w-12 h-12 text-center text-2xl font-semibold text-black border-2 border-gray-600 rounded-lg focus:border-blue-700 focus:outline-none"
+                  />
+                ))}
+              </div>
 
-            {/*Error alert*/}
+              {/*Error alert*/}
 
-            {/* {fieldErrors && (
+              {/* {fieldErrors && (
               <p className="text-red-500 font-semibold mt-2">
                 {fieldErrors.code}
               </p>
             )} */}
 
-            <Button onClick={handleSubmit}>Verify Email</Button>
+              <Button onClick={handleSubmit} type="submit">
+                Verify Email
+              </Button>
 
-            {/*
+              {/*
             <button
               className="btn btn-primary w-full"
               // disabled={isPending || verifyIsActive}
@@ -184,15 +192,15 @@ const EmailVerificationPage = () => {
               )} 
             </button>
               */}
-          </form>
-        </div>
-        <div>
-          <p className="text-sm text-center mt-4">
-            Didn't receive the code?{" "}
-            <button className="font-semibold text-primary hover:underline">
-              Resend Code
-            </button>
-            {/* <button
+            </form>
+          </div>
+          <div>
+            <p className="text-sm text-center mt-4">
+              Didn't receive the code?{" "}
+              <button className="font-semibold text-primary hover:underline">
+                Resend Code
+              </button>
+              {/* <button
               // onClick={handleResendCode}
               disabled={resendVerificationMutation.isPending || resendIsActive}
               className={`font-semibold ${
@@ -207,8 +215,8 @@ const EmailVerificationPage = () => {
                 ? `Resend in ${resendFormatTime}`
                 : "Resend Code"}
             </button> */}
-          </p>
-          {/* {feedback && (
+            </p>
+            {/* {feedback && (
             <p
               className={`mt-2 text-sm text-center ${
                 resendVerificationMutation.isError
@@ -219,8 +227,23 @@ const EmailVerificationPage = () => {
               {feedback}
             </p>
           )} */}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center p-5 space-y-2">
+          <img src={checkmark} alt="Edupeerhub" className="mb-4" />
+          <p className="text-center">Your email address has been verified </p>
+          <h2 className="text-4xl font-bold text-black-300 text-center mb-4">
+            Let’s set up your account
+          </h2>
+          <Link
+            to={"/role-selection"}
+            className="btn btn-outline w-full px-4 py-2 rounded-full font-medium bg-blue-500 text-white hover:bg-blue-600 text-center"
+          >
+            Continue
+          </Link>
+        </div>
+      )}
     </AuthLayout>
   );
 };

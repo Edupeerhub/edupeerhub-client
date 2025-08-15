@@ -8,6 +8,7 @@ import LoginPage from "./pages/auth/LoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerificationPage from "./pages/auth/EmailVerificationPage";
+import RoleSelectionPage from "./pages/onboarding/RoleSelectionPage";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <Route path="/verify-email" element={<EmailVerificationPage />} />
 
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/role-selection" element={<RoleSelectionPage />} />
       <Route path="/student-onboarding" element={<StudentOnboardingPage />} />
       <Route path="/tutor-onboarding" element={<TutorOnboardingPage />} />
     </Routes>
