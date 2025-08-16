@@ -11,26 +11,101 @@ import RoleSelectionPage from "./pages/onboarding/RoleSelectionPage";
 import StudentDashboardPage from "./pages/dashboard/StudentDashboardPage";
 import TutorDashboardPage from "./pages/dashboard/TutorDashboardPage";
 import { Toaster } from "react-hot-toast";
+import PublicOnlyRoute from "./components/routes/PublicRoute";
+import { AuthProvider } from "./context/AuthContext";
+import EmailVerificationRoute from "./components/routes/EmailVerificationRoute";
+import AdminRoute from "./components/routes/AdminRoute";
+import OnboardingRoute from "./components/routes/OnboardingRoute";
 
 export default function App() {
   return (
-    <>
+    <AuthProvider>
       <Routes>
+        {/* Public landing page */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-        <Route path="/verify-email" element={<EmailVerificationPage />} />
+        {/* ----------------------- */}
+        {/* Public-only routes: accessible only if NOT logged in */}
+        {/* Includes signup, login, forgot/reset password */}
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPasswordPage />}
+          />
+        </Route>
 
-        <Route path="/student-dashboard" element={<StudentDashboardPage />} />
-        <Route path="/tutor-dashboard" element={<TutorDashboardPage />} />
-        <Route path="/role-selection" element={<RoleSelectionPage />} />
-        <Route path="/student-onboarding" element={<StudentOnboardingPage />} />
-        <Route path="/tutor-onboarding" element={<TutorOnboardingPage />} />
+        {/* ----------------------- */}
+        {/* Email verification route: accessible only if logged in and NOT verified */}
+        <Route
+          path="/verify-email"
+          element={
+            <EmailVerificationRoute>
+              <EmailVerificationPage />
+            </EmailVerificationRoute>
+          }
+        />
+
+        {/* ----------------------- */}
+        {/* Onboarding routes: accessible only if logged in, verified, but NOT onboarded */}
+        <Route element={<OnboardingRoute />}>
+          <Route path="/role-selection" element={<RoleSelectionPage />} />
+          <Route
+            path="/student/onboarding"
+            element={<StudentOnboardingPage />}
+          />
+          <Route path="/tutor/onboarding" element={<TutorOnboardingPage />} />
+        </Route>
+
+        {/* ----------------------- */}
+        {/* Student protected routes: require login, verified, onboarded, role = student */}
+        <Route
+          path="/student"
+          // element={
+          //   <StudentRoute>
+          //     <StudentLayout />
+          //   </StudentRoute>
+          // }
+        >
+          <Route path="dashboard" element={<StudentDashboardPage />} />
+          {/* <Route path="profile" element={<StudentProfilePage />} /> */}
+          {/* <Route path="settings" element={<StudentSettingsPage />} /> */}
+        </Route>
+
+        {/* ----------------------- */}
+        {/* Tutor protected routes: require login, verified, onboarded, role = tutor */}
+        <Route
+          path="/tutor"
+          // element={
+          //   <TutorRoute >
+          //     <TutorLayout />
+          //   </TutorRoute>
+          // }
+        >
+          <Route path="dashboard" element={<TutorDashboardPage />} />
+          {/* <Route path="profile" element={<TutorProfilePage />} /> */}
+          {/* <Route path="settings" element={<TutorSettingsPage />} /> */}
+        </Route>
+
+        {/* ----------------------- */}
+        {/* Admin protected routes: require login, verified, onboarded, role = admin */}
+        {/* Currently commented out until ready */}
+        {/* <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="users" element={<ManageUsersPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
+        </Route> */}
       </Routes>
       <Toaster />
-    </>
+    </AuthProvider>
   );
 }

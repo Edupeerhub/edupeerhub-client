@@ -126,9 +126,9 @@ const EmailVerificationPage = () => {
     <AuthLayout>
       {!isSuccess ? (
         <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-5">
-          <div className="mb-6 flex flex-col items-center justify-center gap-2 ">
+          <div className="mb-4 flex flex-col items-center justify-center gap-2 ">
             <img src={logo} alt="Edupeerhub" />
-            <h2 className="text-2xl font-semibold text-center mb-3 text-black">
+            <h2 className="text-2xl font-semibold text-center mb-1 text-black">
               Verify Your Email
             </h2>
             {generalError && <ErrorAlert message={generalError} />}
@@ -137,7 +137,7 @@ const EmailVerificationPage = () => {
             </p>
           </div>
           <div className="w-full">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div className="flex justify-between">
                 {verificationCode.map((digit, index) => (
                   <input
@@ -204,7 +204,7 @@ const EmailVerificationPage = () => {
             </p>
             {feedback && (
               <p
-                className={`mt-2 text-sm text-center ${
+                className={`mt-1 text-sm text-center ${
                   resendVerificationMutation.isError
                     ? "text-red-500"
                     : "text-green-500"
