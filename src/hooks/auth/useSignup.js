@@ -1,20 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login } from "../lib/api/auth";
+import { signup } from "../../lib/api/auth/authApi";
 import { useState } from "react";
-import toast from "react-hot-toast";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
 
-const useLogin = () => {
+const useSignUp = () => {
   const queryClient = useQueryClient();
-
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [retryAfter, setRetryAfter] = useState(null);
 
-  const { mutate, isPending, error } = useMutation({
-    mutationFn: login,
+  const { mutate, isPending } = useMutation({
+    mutationFn: signup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
-      toast.success("Login successful! Welcome back!");
+      handleToastSuccess("Signup successful! Welcome aboard!");
       setRetryAfter(null);
     },
     onError: (error) => {
@@ -24,9 +26,9 @@ const useLogin = () => {
         setRetryAfter(responseData.retryAfter);
         setGeneralError(
           responseData?.message ||
-            "Too many login attempts. Please wait before trying again."
+            "Too many signup attempts. Please wait before trying again."
         );
-        toast.error(error);
+        handleToastError(error);
         return;
       }
 
@@ -37,12 +39,12 @@ const useLogin = () => {
           errors[err.field] = err.issue;
         });
         setFieldErrors(errors);
-        toast.error(error);
+        handleToastError(error);
       } else {
         // General error
         const msg = responseData?.message || "An error occurred.";
         setGeneralError(msg);
-        toast.error(error);
+        handleToastError(error);
       }
     },
   });
@@ -53,9 +55,8 @@ const useLogin = () => {
   };
 
   return {
-    error,
     isPending,
-    loginMutation: mutate,
+    signupMutation: mutate,
     fieldErrors,
     generalError,
     clearErrors,
@@ -64,4 +65,4 @@ const useLogin = () => {
   };
 };
 
-export default useLogin;
+export default useSignUp;

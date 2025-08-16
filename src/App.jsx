@@ -10,23 +10,27 @@ import EmailVerificationPage from "./pages/auth/EmailVerificationPage";
 import RoleSelectionPage from "./pages/onboarding/RoleSelectionPage";
 import StudentDashboardPage from "./pages/dashboard/StudentDashboardPage";
 import TutorDashboardPage from "./pages/dashboard/TutorDashboardPage";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password/" element={<ResetPasswordPage />} />
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/" element={<ResetPasswordPage />} />
 
-      <Route path="/verify-email" element={<EmailVerificationPage />} />
+        <Route path="/verify-email" element={<EmailVerificationPage />} />
 
-      <Route path="/student-dashboard" element={<StudentDashboardPage />} />
-      <Route path="/tutor-dashboard" element={<TutorDashboardPage />} />
-      <Route path="/role-selection" element={<RoleSelectionPage />} />
-      <Route path="/student-onboarding" element={<StudentOnboardingPage />} />
-      <Route path="/tutor-onboarding" element={<TutorOnboardingPage />} />
-    </Routes>
+        <Route path="/student-dashboard" element={<StudentDashboardPage />} />
+        <Route path="/tutor-dashboard" element={<TutorDashboardPage />} />
+        <Route path="/role-selection" element={<RoleSelectionPage />} />
+        <Route path="/student-onboarding" element={<StudentOnboardingPage />} />
+        <Route path="/tutor-onboarding" element={<TutorOnboardingPage />} />
+      </Routes>
+      <Toaster />
+    </>
   );
 }

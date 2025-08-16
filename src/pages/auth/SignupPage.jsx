@@ -4,7 +4,7 @@ import Button from "../../components/ui/Button";
 import AuthIntro from "../../components/auth/AuthIntro";
 import Input from "../../components/ui/Input";
 import PasswordStrengthMeter from "../../components/auth/PasswordStrengthMeter";
-import useSignUp from "../../hooks/useSignup";
+import useSignUp from "../../hooks/auth/useSignup";
 import ErrorAlert from "../../components/common/ErrorAlert";
 
 const SignupPage = () => {
@@ -51,7 +51,7 @@ const SignupPage = () => {
       />
       <ErrorAlert message={generalError} />
 
-      <form onSubmit={handleSignup} className="space-y-4">
+      <form onSubmit={handleSignup} className="space-y-2">
         <Input
           label="First Name"
           name="firstName"

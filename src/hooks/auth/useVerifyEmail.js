@@ -1,31 +1,36 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { signup } from "../lib/api/auth";
+import { verifyEmail } from "../../lib/api/auth/authApi";
 import { useState } from "react";
-import toast from "react-hot-toast";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
 
-const useSignUp = () => {
+const useVerifyEmail = () => {
   const queryClient = useQueryClient();
+
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [retryAfter, setRetryAfter] = useState(null);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: signup,
+  const { mutate, isPending, error, isSuccess } = useMutation({
+    mutationFn: verifyEmail,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
-      toast.success("Signup successful! Welcome aboard!");
+      handleToastSuccess("Email verified successfully! Welcome aboard!");
       setRetryAfter(null);
     },
     onError: (error) => {
       const responseData = error.response?.data;
 
+      // rate limiting error handling
       if (error.response?.status === 429 && responseData?.retryAfter) {
         setRetryAfter(responseData.retryAfter);
         setGeneralError(
           responseData?.message ||
-            "Too many signup attempts. Please wait before trying again."
+            "Too many attempts. Please wait before trying again."
         );
-        toast.error(error);
+        handleToastError(error);
         return;
       }
 
@@ -36,12 +41,12 @@ const useSignUp = () => {
           errors[err.field] = err.issue;
         });
         setFieldErrors(errors);
-        toast.error(error);
+        handleToastError(error);
       } else {
         // General error
         const msg = responseData?.message || "An error occurred.";
         setGeneralError(msg);
-        toast.error(error);
+        handleToastError(error);
       }
     },
   });
@@ -52,8 +57,10 @@ const useSignUp = () => {
   };
 
   return {
+    error,
     isPending,
-    signupMutation: mutate,
+    isSuccess,
+    verifyEmailMutation: mutate,
     fieldErrors,
     generalError,
     clearErrors,
@@ -62,4 +69,4 @@ const useSignUp = () => {
   };
 };
 
-export default useSignUp;
+export default useVerifyEmail;

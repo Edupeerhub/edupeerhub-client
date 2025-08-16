@@ -3,7 +3,7 @@ import AuthIntro from "../../components/auth/AuthIntro";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import AuthLayout from "../../layouts/AuthLayout";
-import useLogin from "../../hooks/useLogin";
+import useLogin from "../../hooks/auth/useLogin";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { Link } from "react-router-dom";
 
@@ -20,7 +20,6 @@ const LoginPage = () => {
 
   const {
     isPending,
-    error,
     loginMutation,
     fieldErrors,
     generalError,

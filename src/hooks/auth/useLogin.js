@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { verifyEmail } from "../lib/api";
+import { login } from "../../lib/api/auth/authApi";
 import { useState } from "react";
 import {
   handleToastError,
   handleToastSuccess,
-} from "../utils/toastDisplayHandler";
+} from "../../utils/toastDisplayHandler";
 
-const useVerifyEmail = () => {
+const useLogin = () => {
   const queryClient = useQueryClient();
 
   const [fieldErrors, setFieldErrors] = useState({});
@@ -14,21 +14,20 @@ const useVerifyEmail = () => {
   const [retryAfter, setRetryAfter] = useState(null);
 
   const { mutate, isPending, error } = useMutation({
-    mutationFn: verifyEmail,
+    mutationFn: login,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
-      handleToastSuccess("Email verified successfully! Welcome aboard!");
+      handleToastSuccess("Login successful! Welcome back!");
       setRetryAfter(null);
     },
     onError: (error) => {
       const responseData = error.response?.data;
 
-      // rate limiting error handling
       if (error.response?.status === 429 && responseData?.retryAfter) {
         setRetryAfter(responseData.retryAfter);
         setGeneralError(
           responseData?.message ||
-            "Too many attempts. Please wait before trying again."
+            "Too many login attempts. Please wait before trying again."
         );
         handleToastError(error);
         return;
@@ -59,7 +58,7 @@ const useVerifyEmail = () => {
   return {
     error,
     isPending,
-    verifyEmailMutation: mutate,
+    loginMutation: mutate,
     fieldErrors,
     generalError,
     clearErrors,
@@ -68,4 +67,4 @@ const useVerifyEmail = () => {
   };
 };
 
-export default useVerifyEmail;
+export default useLogin;

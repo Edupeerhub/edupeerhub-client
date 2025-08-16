@@ -11,21 +11,24 @@ const PasswordCriteria = ({ password }) => {
 
   return (
     <div className="mt-1 space-y-0.5">
-      {criteria.map((item) => (
-        <div
-          key={item.label}
-          className="flex items-center text-[10px] leading-tight"
-        >
-          {item.met ? (
-            <Check className="size-3 text-green-500 mr-1" />
-          ) : (
-            <X className="size-3 text-gray-500 mr-1" />
-          )}
-          <span className={item.met ? "text-green-500" : "text-gray-400"}>
-            {item.label}
-          </span>
-        </div>
-      ))}
+      {/* <p className="text-xs mb-1">
+        Use at least 6 characters, including an uppercase letter, a number, and
+        a symbol.
+      </p> */}
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] leading-tight justify-evenly">
+        {criteria.map((item) => (
+          <div key={item.label} className="flex items-center">
+            {item.met ? (
+              <Check className="size-3 text-green-500 mr-1" />
+            ) : (
+              <X className="size-3 text-gray-500 mr-1" />
+            )}
+            <span className={item.met ? "text-green-500" : "text-gray-400"}>
+              {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -58,7 +61,7 @@ const PasswordStrengthMeter = ({ password }) => {
   };
 
   return (
-    <div className="mt-1 space-y-0.5">
+    <div className="mt-1 py-1 space-y-0.5">
       <div className="flex justify-between items-center">
         <span className="text-[10px] text-gray-400">Strength</span>
         <span className="text-[10px] text-gray-400">
