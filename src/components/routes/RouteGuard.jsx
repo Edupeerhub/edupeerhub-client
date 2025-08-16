@@ -1,5 +1,5 @@
 import { Navigate } from "react-router";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../hooks/useAuthContext";
 
 /**
  * RouteGuard handles auth, verification, and onboarding checks.
@@ -50,16 +50,6 @@ const RouteGuard = ({
   if (requireAuth && !authUser) return <Navigate to="/login" replace />;
 
   if (authUser) {
-    // Role checks
-    if (requireAdminRole && !["admin", "super_admin"].includes(authUser.role))
-      return <Navigate to={getDashboardRoute(authUser.role)} replace />;
-
-    if (requireStudentRole && authUser.role !== "student")
-      return <Navigate to={getDashboardRoute(authUser.role)} replace />;
-
-    if (requireTutorRole && authUser.role !== "tutor")
-      return <Navigate to={getDashboardRoute(authUser.role)} replace />;
-
     // Verification checks
     if (requireVerified !== false && !authUser.isVerified)
       return <Navigate to="/verify-email" replace />;
@@ -72,6 +62,16 @@ const RouteGuard = ({
       return <Navigate to="/role-selection" replace />;
 
     if (requireOnboarded === false && authUser.isOnboarded)
+      return <Navigate to={getDashboardRoute(authUser.role)} replace />;
+
+    // Role checks
+    if (requireAdminRole && !["admin", "super_admin"].includes(authUser.role))
+      return <Navigate to={getDashboardRoute(authUser.role)} replace />;
+
+    if (requireStudentRole && authUser.role !== "student")
+      return <Navigate to={getDashboardRoute(authUser.role)} replace />;
+
+    if (requireTutorRole && authUser.role !== "tutor")
       return <Navigate to={getDashboardRoute(authUser.role)} replace />;
   }
 

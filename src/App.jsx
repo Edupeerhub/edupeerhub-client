@@ -16,6 +16,7 @@ import { AuthProvider } from "./context/AuthContext";
 import EmailVerificationRoute from "./components/routes/EmailVerificationRoute";
 import AdminRoute from "./components/routes/AdminRoute";
 import OnboardingRoute from "./components/routes/OnboardingRoute";
+import PrivateRoute from "./components/routes/PrivateRoute";
 
 export default function App() {
   return (
@@ -88,6 +89,14 @@ export default function App() {
           {/* <Route path="profile" element={<TutorProfilePage />} /> */}
           {/* <Route path="settings" element={<TutorSettingsPage />} /> */}
         </Route>
+
+        {/* ----------------------- */}
+        {/* Chat & Video/Calling routes: accessible to both students and tutors */}
+        {/* Requires: logged-in, verified, onboarded */}
+        {/* <Route element={<PrivateRoute />}>
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/call" element={<CallPage />} />
+        </Route> */}
 
         {/* ----------------------- */}
         {/* Admin protected routes: require login, verified, onboarded, role = admin */}

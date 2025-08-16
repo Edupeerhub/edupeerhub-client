@@ -1,4 +1,4 @@
-import { AuthContext } from "./authContext";
+import { AuthContext } from "../hooks/useAuthContext";
 import useAuthUser from "../hooks/auth/useAuthUser";
 import PageLoader from "../components/common/PageLoader";
 
