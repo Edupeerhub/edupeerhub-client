@@ -55,6 +55,7 @@ const SignupPage = () => {
         <Input
           label="First Name"
           name="firstName"
+          placeholder={"Enter your First Name"}
           value={credentials.firstName}
           onChange={handleChange}
           required
@@ -67,6 +68,7 @@ const SignupPage = () => {
         <Input
           label="Last Name"
           name="lastName"
+          placeholder={"Enter your Last Name"}
           value={credentials.lastName}
           onChange={handleChange}
           required
@@ -80,6 +82,7 @@ const SignupPage = () => {
           label="Email"
           name="email"
           type="email"
+          placeholder={"Enter your email"}
           value={credentials.email}
           onChange={handleChange}
           required
@@ -90,7 +93,7 @@ const SignupPage = () => {
         <Input
           label="Password"
           type="password"
-          placeholder="********"
+          placeholder={"Enter your password"}
           name="password"
           value={credentials.password}
           onChange={handleChange}
