@@ -1,211 +1,95 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import AuthLayout from "../../layouts/AuthLayout";
-import Button from "../../components/ui/Button";
+import StepHeader from "../../components/onboarding/StepHeader";
+import SelectableCardList from "../../components/onboarding/SelectableCardList";
+import ProgressBar from "../../components/onboarding/ProgressBar";
+import StepNavigation from "../../components/onboarding/StepNavigation";
+import TextAreaInput from "../../components/onboarding/TextAreaInput";
+import FileUpload from "../../components/onboarding/FileUpload";
+
 const TutorOnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    subjects: [],
-    availableTime: "",
-    days: [],
-  });
-
   const totalSteps = 3;
 
-  const toggleSubject = (subject) => {
+  const [formData, setFormData] = useState({
+    subjects: [],
+    background: "",
+    credentials: null,
+  });
+
+  const toggleSubject = (subject) =>
     setFormData((prev) => ({
       ...prev,
       subjects: prev.subjects.includes(subject)
         ? prev.subjects.filter((s) => s !== subject)
         : [...prev.subjects, subject],
     }));
-  };
-
-  const toggleDay = (day) => {
-    setFormData((prev) => ({
-      ...prev,
-      days: prev.days.includes(day)
-        ? prev.days.filter((d) => d !== day)
-        : [...prev.days, day],
-    }));
-  };
 
   const handleSubmit = () => {
     console.log("Final JSON Data:", formData);
     alert("Data sent! Check console.");
   };
 
+  const steps = [
+    <div key="step1">
+      <StepHeader
+        title="What are your subject expertise?"
+        subtitle="Choose all that apply"
+      />
+      <SelectableCardList
+        options={["Math", "English", "Science", "History"]}
+        selectedItems={formData.subjects}
+        onToggle={toggleSubject}
+        roundedFull={true}
+      />
+    </div>,
+
+    <div key="step2">
+      <StepHeader
+        title="Tell us your academic background"
+        subtitle="Briefly share your academic history"
+      />
+      <TextAreaInput
+        value={formData.background}
+        onChange={(val) =>
+          setFormData((prev) => ({ ...prev, background: val }))
+        }
+        placeholder="Not more than 100 words"
+      />
+    </div>,
+
+    <div key="step3">
+      <StepHeader
+        title="Upload your academic credentials or NYSC details"
+        subtitle="Supported formats: PDF, JPG, PNG"
+      />
+      <FileUpload
+        onChange={(file) =>
+          setFormData((prev) => ({ ...prev, credentials: file }))
+        }
+      />
+      {formData.credentials && (
+        <p className="mt-2 text-sm text-gray-600">
+          Selected: {formData.credentials.name}
+        </p>
+      )}
+    </div>,
+  ];
+
   return (
     <AuthLayout>
-      <div
-        style={{ maxWidth: "400px", margin: "20px auto", fontFamily: "Arial" }}
-      >
-        {/* Segmented Progress Bar */}
-        <div style={{ marginBottom: "20px" }}>
-          <div style={{ display: "flex", gap: "4px", marginBottom: "8px" }}>
-            {Array.from({ length: totalSteps }, (_, index) => (
-              <div
-                key={index}
-                style={{
-                  flex: 1,
-                  height: "8px",
-                  background: index < currentStep ? "#4cafef" : "#ddd",
-                  borderRadius: "4px",
-                }}
-              />
-            ))}
-          </div>
-          <p style={{ fontSize: "14px", textAlign: "right", margin: 0 }}>
-            Step {currentStep} of {totalSteps}
-          </p>
-        </div>
+      <div className="flex flex-col justify-between h-[70vh] md:h-[90vh] space-y-2">
+        <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
-        {/* Step 1: Select Subjects */}
-        {currentStep === 1 && (
-          <div>
-            <h3
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#4cafef",
-                color: "white",
-                borderRadius: "6px",
-                marginBottom: "16px",
-              }}
-            >
-              Select your interested subjects:
-            </h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["Math", "English", "Science", "History"].map((subject) => (
-                <div
-                  key={subject}
-                  onClick={() => toggleSubject(subject)}
-                  style={{
-                    padding: "12px 16px",
-                    backgroundColor: formData.subjects.includes(subject)
-                      ? "#4cafef"
-                      : "#f0f0f0",
-                    color: formData.subjects.includes(subject)
-                      ? "white"
-                      : "black",
-                    border: "1px solid #ddd",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    minWidth: "80px",
-                    textAlign: "center",
-                  }}
-                >
-                  {subject}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="flex-1">{steps[currentStep - 1]}</div>
 
-        {/* Step 2: Available Time */}
-        {currentStep === 2 && (
-          <div>
-            <h3
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#4cafef",
-                color: "white",
-                borderRadius: "6px",
-                marginBottom: "16px",
-              }}
-            >
-              Set your available time:
-            </h3>
-            <input
-              type="time"
-              value={formData.availableTime}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  availableTime: e.target.value,
-                }))
-              }
-              style={{
-                padding: "12px",
-                fontSize: "16px",
-                border: "1px solid #ddd",
-                borderRadius: "6px",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-        )}
-
-        {/* Step 3: Pick Days */}
-        {currentStep === 3 && (
-          <div>
-            <h3
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#4cafef",
-                color: "white",
-                borderRadius: "6px",
-                marginBottom: "16px",
-              }}
-            >
-              Pick your available days:
-            </h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                <div
-                  key={day}
-                  onClick={() => toggleDay(day)}
-                  style={{
-                    padding: "12px 16px",
-                    backgroundColor: formData.days.includes(day)
-                      ? "#4cafef"
-                      : "#f0f0f0",
-                    color: formData.days.includes(day) ? "white" : "black",
-                    border: "1px solid #ddd",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    minWidth: "60px",
-                    textAlign: "center",
-                  }}
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Navigation Buttons */}
-        <div style={{ marginTop: "20px", display: "flex", gap: "8px" }}>
-          {currentStep > 1 && (
-            <Button
-              type="button"
-              onClick={() => setCurrentStep((s) => s - 1)}
-              className="bg-grey-500 text-white hover:bg-blue-600"
-            >
-              Back
-            </Button>
-          )}
-          {currentStep < totalSteps && (
-            <Button
-              type="button"
-              onClick={() => setCurrentStep((s) => s + 1)}
-              className="bg-blue-500 text-white hover:bg-blue-600"
-            >
-              Continue
-            </Button>
-          )}
-          {currentStep === totalSteps && (
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              className="bg-blue-500 text-white hover:bg-blue-600"
-            >
-              Submit
-            </Button>
-          )}
-        </div>
+        <StepNavigation
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onBack={() => setCurrentStep((s) => s - 1)}
+          onNext={() => setCurrentStep((s) => s + 1)}
+          onSubmit={handleSubmit}
+        />
       </div>
     </AuthLayout>
   );
