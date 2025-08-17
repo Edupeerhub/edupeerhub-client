@@ -3,7 +3,9 @@ import RouteGuard from "./RouteGuard";
 
 export default function OnboardingRoute() {
   return (
-    <RouteGuard requireAuth requireVerified requireOnboarded={false}>
+    <RouteGuard
+    // requireAuth requireVerified requireOnboarded={false}
+    >
       <Outlet />
     </RouteGuard>
   );
