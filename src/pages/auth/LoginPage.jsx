@@ -1,9 +1,20 @@
+import { useNavigate } from "react-router-dom";
 import AuthIntro from "../../components/auth/AuthIntro";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import AuthLayout from "../../layouts/AuthLayout";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    // Here you'd normally check credentials with your backend
+
+    // For now, just go to onboarding
+    navigate("/student-onboarding");
+  };
+
   return (
     <AuthLayout>
       <AuthIntro
@@ -12,27 +23,21 @@ const LoginPage = () => {
         linkText="Sign up"
         linkTo="/signup"
       />
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={handleLogin}>
         <Input
           label="Email"
           name="email"
-          placeholder={"Enter your email"}
+          placeholder="Enter your email"
           type="email"
-          // value={email}
-          // onChange={handleChange}
         />
         <Input
           label="Password"
           name="password"
-          placeholder={"Enter your password"}
+          placeholder="Enter your password"
           type="password"
-          // value={password}
-          // onChange={handleChange}
         />
 
-        <Button
-        // onClick={handleSubmit}
-        >
+        <Button type="submit">
           Log in
         </Button>
       </form>

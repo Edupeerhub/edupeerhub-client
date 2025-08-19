@@ -5,207 +5,191 @@ import Button from "../../components/ui/Button";
 const StudentOnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
+    goals: [],
     subjects: [],
-    availableTime: "",
-    days: [],
+    exams: [],
   });
 
   const totalSteps = 3;
+
+  const learningGoals = [
+    "Prepare for an upcoming exam",
+    "Get better at subjects I struggle with",
+    "Get personalized help from tutors",
+    "Build a consistent study routine",
+  ];
+
+  const subjects = ["Maths", "English", "Science", "History"];
+
+
+  const exams = ["WAEC", "NECO", "JAMB", "GCE"];
+
+  // ✅ Selection handlers
+  const toggleGoal = (goal) => {
+    setFormData((prev) => ({
+      ...prev,
+      goals: prev.goals.includes(goal)
+        ? prev.goals.filter((g) => g !== goal)
+        : [...prev.goals, goal],
+    }));
+  };
 
   const toggleSubject = (subject) => {
     setFormData((prev) => ({
       ...prev,
       subjects: prev.subjects.includes(subject)
-        ? prev.subjects.filter((s) => s !== subject)
+        ? prev.subjectss.filter((s) => s !== subject)
         : [...prev.subjects, subject],
     }));
   };
 
-  const toggleDay = (day) => {
+  const toggleExam = (exam) => {
     setFormData((prev) => ({
       ...prev,
-      days: prev.days.includes(day)
-        ? prev.days.filter((d) => d !== day)
-        : [...prev.days, day],
+      exams: prev.exams.includes(exam)
+        ? prev.exams.filter((e) => e !== exam)
+        : [...prev.exams, exam],
     }));
   };
 
   const handleSubmit = () => {
-    console.log("Final JSON Data:", formData);
-    alert("Data sent! Check console.");
+    console.log("Form submitted:", formData);
+    alert("Onboarding completed!");
   };
 
   return (
     <AuthLayout>
-      <div
-        style={{ maxWidth: "400px", margin: "20px auto", fontFamily: "Arial" }}
-      >
-        {/* Segmented Progress Bar */}
-        <div style={{ marginBottom: "20px" }}>
-          <div style={{ display: "flex", gap: "4px", marginBottom: "8px" }}>
+      <div className="w-[543px] h-[897px] justify-between flex flex-col gap-12 pt-[36px] pr-[16px] pl-[16px] pb-[36px]  bg-[#FCFCFC]">
+        {/* Progress Indicators */}
+        <div className="mb-8">
+          <div className="flex gap-6 w-[242px] r- h-[4px]">
             {Array.from({ length: totalSteps }, (_, index) => (
               <div
                 key={index}
-                style={{
-                  flex: 1,
-                  height: "8px",
-                  background: index < currentStep ? "#4cafef" : "#ddd",
-                  borderRadius: "4px",
-                }}
+                className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                  index < currentStep ? "bg-blue-500" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
-          <p style={{ fontSize: "14px", textAlign: "right", margin: 0 }}>
-            Step {currentStep} of {totalSteps}
+          <p className="text-sm text-gray-500  font-semibold whitespace-nowrap text-right -mt-3 ">
+            Step {currentStep}/{totalSteps}
           </p>
         </div>
 
-        {/* Step 1: Select Subjects */}
-        {currentStep === 1 && (
-          <div>
-            <h3
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#4cafef",
-                color: "white",
-                borderRadius: "6px",
-                marginBottom: "16px",
-              }}
-            >
-              Select your interested subjects:
-            </h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["Math", "English", "Science", "History"].map((subject) => (
-                <div
-                  key={subject}
-                  onClick={() => toggleSubject(subject)}
-                  style={{
-                    padding: "12px 16px",
-                    backgroundColor: formData.subjects.includes(subject)
-                      ? "#4cafef"
-                      : "#f0f0f0",
-                    color: formData.subjects.includes(subject)
-                      ? "white"
-                      : "black",
-                    border: "1px solid #ddd",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    minWidth: "80px",
-                    textAlign: "center",
-                  }}
-                >
-                  {subject}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Step Content */}
+        <div className=" w-[471px] h-[484px] gap-12 ">
+          {/* ✅ Step 1: Learning Goals */}
+          {currentStep === 1 && (
+            <div>
+              <h2 className="text-4xl font-bold text-gray-800 mb-3 text-center">
+                What are your learning goals?
+              </h2>
+              <p className="text-gray-600 mb-6 text-center tracking-widest">
+                Let us help you personalize your experience
+              </p>
 
-        {/* Step 2: Available Time */}
-        {currentStep === 2 && (
-          <div>
-            <h3
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#4cafef",
-                color: "white",
-                borderRadius: "6px",
-                marginBottom: "16px",
-              }}
-            >
-              Set your available time:
-            </h3>
-            <input
-              type="time"
-              value={formData.availableTime}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  availableTime: e.target.value,
-                }))
-              }
-              style={{
-                padding: "12px",
-                fontSize: "16px",
-                border: "1px solid #ddd",
-                borderRadius: "6px",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-        )}
-
-        {/* Step 3: Pick Days */}
-        {currentStep === 3 && (
-          <div>
-            <h3
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#4cafef",
-                color: "white",
-                borderRadius: "6px",
-                marginBottom: "16px",
-              }}
-            >
-              Pick your available days:
-            </h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                <div
-                  key={day}
-                  onClick={() => toggleDay(day)}
-                  style={{
-                    padding: "12px 16px",
-                    backgroundColor: formData.days.includes(day)
-                      ? "#4cafef"
-                      : "#f0f0f0",
-                    color: formData.days.includes(day) ? "white" : "black",
-                    border: "1px solid #ddd",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    minWidth: "60px",
-                    textAlign: "center",
-                  }}
-                >
-                  {day}
-                </div>
-              ))}
+              <div className="flex flex-col gap-4">
+                {learningGoals.map((goal) => (
+                  <label
+                    key={goal}
+                    className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-200 border ${
+                      formData.goals.includes(goal)
+                        ? "bg-blue-50 border-2 border-blue-500"
+                        : "bg-white border-gray-300  hover:bg-gray-100"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.goals.includes(goal)}
+                      onChange={() => toggleGoal(goal)}
+                      className="mr-3 size-5"
+                    />
+                    <span className="text-gray-900">{goal}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+                    
+          {/* ✅ Step 2: Subject Selection */}
+          {currentStep === 2 && (
+           <div className="  text-center">
+              <h2 className="mb-2 font-poppins font-bold text-[32px] leading-[40px] tracking-normal text-center">
+
+                What subjects are you interested in?
+              </h2>
+              <p className="text-gray-600 mb-8">Let us help you personalize your experience</p>
+
+              <div className="flex flex-wrap gap-3 justify-center mb-6">
+                {subjects.map((subject) => (
+                  <button
+                    type="button"
+                    key={subject}
+                    onClick={() => toggleSubject(subject)}
+                    className={`py-3 px-4 rounded-full text-sm font-medium transition-all duration-200 border ${
+                      formData.subjects.includes(subject)
+                        ? "bg-blue-500 shadow-md border-blue-500 transform scale-105 "
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    {subject}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ✅ Step 3: Exams */}
+          {currentStep === 3 && (
+            <div className="text-center">
+              <h2 className="text-4xl font-bold text-gray-800 mb-3">
+                What exams are you targeting?
+              </h2>
+              <p className="text-gray-600 mb-8 tracking-wide">
+                Select the exams you plan to take
+              </p>
+
+              <div className="flex flex-col gap-6 w-full items-center">
+                {exams.map((exam) => (
+                  <div
+                   key={exam}
+                   onClick={() => toggleExam(exam)}
+                     className={`cursor-pointer flex items-center justify-center py-4 px-6 rounded-lg border text-lg font-medium transition-all duration-200  w-full ${
+                       formData.exams.includes(exam)
+                        ? "bg-blue-500 text-white border-blue-500 shadow-md"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    }`}
+                   >
+                    {exam}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Navigation Buttons */}
-        <div style={{ marginTop: "20px", display: "flex", gap: "8px" }}>
+        <div className="flex gap-4">
           {currentStep > 1 && (
             <Button
-              type="button"
               onClick={() => setCurrentStep((s) => s - 1)}
-              className="bg-grey-500 text-white hover:bg-blue-600"
+              className="bg-gray-200 text-gray-700 hover:bg-gray-300"
             >
               Back
             </Button>
           )}
-          {currentStep < totalSteps && (
-            <Button
-              type="button"
-              onClick={() => setCurrentStep((s) => s + 1)}
-              className="bg-blue-500 text-white hover:bg-blue-600"
-            >
-              Continue
-            </Button>
-          )}
-          {currentStep === totalSteps && (
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              className="bg-blue-500 text-white hover:bg-blue-600"
-            >
-              Submit
-            </Button>
-          )}
+          <Button
+            onClick={() => {
+              if (currentStep < totalSteps) {
+                setCurrentStep((s) => s + 1);
+              } else {
+                handleSubmit();
+              }
+            }}
+          >
+            {currentStep === totalSteps ? "Get Started" : "Continue"}
+          </Button>
         </div>
       </div>
     </AuthLayout>
