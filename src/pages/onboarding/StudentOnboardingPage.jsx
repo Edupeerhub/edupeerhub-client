@@ -70,7 +70,23 @@ const StudentOnboardingPage = () => {
         subtitle="Choose all that apply"
       />
       <SelectableCardList
-        options={["Math", "English", "Science", "History"]}
+        options={[
+          "Chemistry",
+          "Mathematics",
+          "English",
+          "Physics",
+          "Literature",
+          "Accounting",
+          "Computer Science",
+          "Economics",
+          "Government",
+          "French",
+          "Music",
+          "Commerce",
+          "History",
+          "Biology",
+          "Further Math",
+        ]}
         selectedItems={formData.subjects}
         onToggle={toggleSubject}
         roundedFull={true}

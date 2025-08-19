@@ -3,15 +3,16 @@ const TextAreaInput = ({ value, onChange, placeholder, maxLength = 600 }) => {
     <div className=" w-full">
       <textarea
         value={value}
+        rows="8"
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
         className="
             w-full 
-            h-32 
             p-3 
             border 
             border-gray-300 
+            bg-gray-200
             rounded-lg 
             focus:outline-none 
             focus:ring-2 

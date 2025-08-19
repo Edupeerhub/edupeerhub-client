@@ -17,7 +17,6 @@ const TutorOnboardingPage = () => {
     subjects: [],
     background: "",
     credentials: null,
-    
   });
 
   const toggleSubject = (subject) =>
@@ -27,7 +26,6 @@ const TutorOnboardingPage = () => {
         ? prev.subjects.filter((s) => s !== subject)
         : [...prev.subjects, subject],
     }));
-  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -68,7 +66,23 @@ const TutorOnboardingPage = () => {
         subtitle="Choose all that apply"
       />
       <SelectableCardList
-        options={["Math", "English", "Science", "History"]}
+        options={[
+          "Chemistry",
+          "Mathematics",
+          "English",
+          "Physics",
+          "Literature",
+          "Accounting",
+          "Computer Science",
+          "Economics",
+          "Government",
+          "French",
+          "Music",
+          "Commerce",
+          "History",
+          "Biology",
+          "Further Math",
+        ]}
         selectedItems={formData.subjects}
         onToggle={toggleSubject}
         roundedFull={true}
@@ -92,7 +106,7 @@ const TutorOnboardingPage = () => {
     <div key="step3">
       <StepHeader
         title="Upload your academic credentials or NYSC details"
-        subtitle="Supported formats: PDF, JPG, PNG"
+        subtitle="Supported formats:  JPG, JPEG, PNG, PDF"
       />
       <FileUpload
         onChange={(file) =>

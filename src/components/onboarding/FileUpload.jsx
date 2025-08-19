@@ -1,11 +1,41 @@
 import { useRef } from "react";
+import toast from "react-hot-toast";
 
 const FileUpload = ({ onChange, accept = ".pdf,.jpg,.jpeg,.png" }) => {
   const inputRef = useRef(null);
 
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) onChange(file);
+  // };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) onChange(file);
+    if (file) {
+      //file type
+      const allowedFormat = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "application/pdf",
+      ];
+      const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+      if (!allowedFormat.includes(file.type)) {
+        toast.error(
+          "Invalid file type. Please upload a JPEG, JPG, PNG, or PDF file."
+        );
+        e.target.value = "";
+        return;
+      }
+
+      if (file.size > maxFileSize) {
+        toast.error("File size exceeds the 5MB limit.");
+        e.target.value = "";
+        return;
+      }
+
+      onChange(file);
+    }
   };
 
   return (
@@ -27,22 +57,47 @@ const FileUpload = ({ onChange, accept = ".pdf,.jpg,.jpeg,.png" }) => {
         onChange={handleFileChange}
       />
       <svg
-        className="w-12 h-12 text-gray-400 mb-2"
+        width="64px"
+        height="64px"
+        viewBox="-3.12 -3.12 30.24 30.24"
         fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M7 16V4m0 0L3 8m4-4l4 4M13 16h4m-2-2v4m-6 4h12a2 2 0 002-2V8a2 2 0 00-2-2h-6l-2-2H7a2 2 0 00-2 2v4"
-        />
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          {" "}
+          <path
+            d="M3 10V18C3 19.1046 3.89543 20 5 20H12M3 10V6C3 4.89543 3.89543 4 5 4H19C20.1046 4 21 4.89543 21 6V10M3 10H21M21 10V13"
+            stroke="#000000"
+            stroke-width="1.056"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>{" "}
+          <path
+            d="M17.5 21L17.5 15M17.5 15L20 17.5M17.5 15L15 17.5"
+            stroke="#000000"
+            stroke-width="1.056"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>{" "}
+          <circle cx="6" cy="7" r="1" fill="#000000"></circle>{" "}
+          <circle cx="9" cy="7" r="1" fill="#000000"></circle>{" "}
+        </g>
       </svg>
-      <span className="text-sm text-gray-600">Click to upload</span>
-      <span className="text-xs text-gray-400 mt-1">
-        PDF, JPG, PNG up to 5MB
-      </span>
+      <div className="text-center">
+        <p className="text-gray-600 font-medium">
+          <span className="text-primary hover:underline font-bold">
+            Click to upload
+          </span>{" "}
+          or drag and drop
+        </p>
+        <p className="text-text text-sm mt-1">(Max size. 5MB)</p>
+      </div>
     </div>
   );
 };
