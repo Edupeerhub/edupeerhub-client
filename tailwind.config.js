@@ -1,9 +1,8 @@
+import daisyui from "daisyui";
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -14,13 +13,15 @@ export default {
         text: "#2C3A47",
       },
       fontFamily: {
-        heading: ["Poppins", "sans-serif"],
-        body: ["Roboto", "sans-serif"],
-        ui: ["Inter", "sans-serif"],
+        sans: ["Poppins", "sans-serif"],
+
+        // heading: ["Poppins", "sans-serif"],
+        // body: ["Roboto", "sans-serif"],
+        // ui: ["Inter", "sans-serif"],
       },
       fontSize: {
         xs: "0.75rem",
-        sm: "0.875rem" ,
+        sm: "0.875rem",
         base: "1rem",
         lg: "1.125rem",
         xl: "1.25rem",
@@ -31,6 +32,8 @@ export default {
       },
     },
   },
-  plugins: [],
-}
-
+  plugins: [daisyui],
+  daisyui: {
+    themes: ["light"],
+  },
+};

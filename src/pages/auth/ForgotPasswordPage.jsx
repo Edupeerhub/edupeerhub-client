@@ -1,7 +1,119 @@
-import React from "react";
+import { useState } from "react";
+import logo from "../../assets/images/edupeerhub-logo1.svg";
+import checkmark from "../../assets/images/auth/checkmark-green.svg";
+import { AppleIcon, ArrowLeft, Loader, Mail } from "lucide-react";
+import { Link } from "react-router";
+import useForgotPassword from "../../hooks/auth/useForgotPassword";
+// import { useCooldown } from "../../hooks/useCooldown";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import AuthLayout from "../../layouts/AuthLayout";
+import Button from "../../components/ui/Button";
 
 const ForgotPasswordPage = () => {
-  return <div>ForgotPasswordPage</div>;
+  const [email, setEmail] = useState("");
+
+  const {
+    forgotPasswordMutation,
+    fieldErrors,
+    generalError,
+    clearErrors,
+    isPending,
+    isSuccess,
+    retryAfter,
+    setRetryAfter,
+  } = useForgotPassword();
+
+  // const { cooldown, isActive, formatTime } = useCooldown(retryAfter);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // if (isActive) return;
+
+    clearErrors();
+    setRetryAfter(null);
+    forgotPasswordMutation({ email });
+  };
+  return (
+    <>
+      <AuthLayout>
+        {/* FORM */}
+        {!isSuccess && (
+          <div className="space-y-4">
+            <div className=" flex flex-col items-center justify-center gap-2 ">
+              <img src={logo} alt="Edupeerhub" />
+              <h2 className="text-2xl font-semibold text-center mb-3 text-black">
+                Forgot Password{" "}
+              </h2>
+              {generalError && <ErrorAlert message={generalError} />}
+              <p className="text-m ">
+                Enter your email address and we'll send you a link to reset your
+                password.{" "}
+              </p>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-3">
+                <div className="form-control w-full space-y-2">
+                  <input
+                    type="email"
+                    placeholder="hello@example.com"
+                    className="input input-bordered w-full"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  {fieldErrors.email && (
+                    <span className="text-red-500 text-sm">
+                      {fieldErrors.email}
+                    </span>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={
+                    isPending
+                    // || isActive
+                  }
+                >
+                  {isPending ? (
+                    <>
+                      <span className="loading loading-spinner loading-xs"></span>
+                      Sending link...
+                    </>
+                  ) : (
+                    // : isActive ? (
+                    // `Wait ${formatTime} to retry`
+                    // )
+                    "Send Reset Link"
+                  )}
+                </Button>
+
+                <div className=" ">
+                  <Link
+                    to="/login"
+                    className="text-sm text-blue-600 hover:underline flex items-center"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1 " /> Back to Login
+                  </Link>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
+        {/* SUCCESS MESSAGE */}
+        {isSuccess && (
+          <div className="items-center flex flex-col space-y-4">
+            <img src={checkmark} alt="Edupeerhub" />
+            <p className="text-base-content text-center">
+              If an account exists for{" "}
+              <span className="font-semibold">{email}</span>, you will receive a
+              password reset link shortly.
+            </p>
+          </div>
+        )}
+      </AuthLayout>
+    </>
+  );
 };
 
 export default ForgotPasswordPage;
