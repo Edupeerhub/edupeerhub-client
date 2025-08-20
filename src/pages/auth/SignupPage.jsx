@@ -43,83 +43,97 @@ const SignupPage = () => {
   };
   return (
     <AuthLayout>
-      <AuthIntro
-        heading="Welcome To Edupeerhub"
-        subText="Already have an account?"
-        linkText="Log In"
-        linkTo="/login"
-      />
-      <ErrorAlert message={generalError} />
+      <div className="flex flex-col justify-center space-y-5 md:space-y-1">
+        <AuthIntro
+          heading="Welcome To Edupeerhub"
+          subText="Already have an account?"
+          linkText="Log In"
+          linkTo="/login"
+        />
+        <ErrorAlert message={generalError} />
 
-      <form onSubmit={handleSignup} className="space-y-2">
-        <Input
-          label="First Name"
-          name="firstName"
-          placeholder={"Enter your First Name"}
-          value={credentials.firstName}
-          onChange={handleChange}
-          required
-        />
-        {fieldErrors.firstName && (
-          <span className="text-error text-xs mt-1">
-            {fieldErrors.firstName}
-          </span>
-        )}
-        <Input
-          label="Last Name"
-          name="lastName"
-          placeholder={"Enter your Last Name"}
-          value={credentials.lastName}
-          onChange={handleChange}
-          required
-        />
-        {fieldErrors.lastName && (
-          <span className="text-error text-xs mt-1">
-            {fieldErrors.lastName}
-          </span>
-        )}
-        <Input
-          label="Email"
-          name="email"
-          type="email"
-          placeholder={"Enter your email"}
-          value={credentials.email}
-          onChange={handleChange}
-          required
-        />
-        {fieldErrors.email && (
-          <span className="text-error text-xs mt-1">{fieldErrors.email}</span>
-        )}
-        <Input
-          label="Password"
-          type="password"
-          placeholder={"Enter your password"}
-          name="password"
-          value={credentials.password}
-          onChange={handleChange}
-          required
-        />
-        {fieldErrors.password && (
-          <span className="text-error text-xs mt-1">
-            {fieldErrors.password}
-          </span>
-        )}
-        <PasswordStrengthMeter password={credentials.password} />
-
-        <Button type="submit">
-          {isPending ? (
-            <>
-              <span className="loading loading-spinner loading-xs"></span>
-              Loading...
-            </>
-          ) : (
-            // : isActive ? (
-            // `Wait ${formatTime} to retry`
-            // )
-            "Create Account"
+        <form onSubmit={handleSignup} className="space-y-6 md:space-y-5">
+          <Input
+            label="First Name"
+            name="firstName"
+            placeholder={"Enter your First Name"}
+            value={credentials.firstName}
+            onChange={handleChange}
+            required
+          />
+          {fieldErrors.firstName && (
+            <span className="text-error text-xs mt-1">
+              {fieldErrors.firstName}
+            </span>
           )}
-        </Button>
-      </form>
+          <Input
+            label="Last Name"
+            name="lastName"
+            placeholder={"Enter your Last Name"}
+            value={credentials.lastName}
+            onChange={handleChange}
+            required
+          />
+          {fieldErrors.lastName && (
+            <span className="text-error text-xs mt-1">
+              {fieldErrors.lastName}
+            </span>
+          )}
+          <Input
+            label="Email"
+            name="email"
+            type="email"
+            placeholder={"Enter your email"}
+            value={credentials.email}
+            onChange={handleChange}
+            required
+          />
+          {fieldErrors.email && (
+            <span className="text-error text-xs mt-1">{fieldErrors.email}</span>
+          )}
+          <Input
+            label="Password"
+            type="password"
+            placeholder={"Enter your password"}
+            name="password"
+            value={credentials.password}
+            onChange={handleChange}
+            required
+          />
+          {fieldErrors.password && (
+            <span className="text-error text-xs mt-1">
+              {fieldErrors.password}
+            </span>
+          )}
+          {/* <PasswordStrengthMeter password={credentials.password} /> */}
+
+          <Button type="submit">
+            {isPending ? (
+              <>
+                <span className="loading loading-spinner loading-xs"></span>
+                Loading...
+              </>
+            ) : (
+              // : isActive ? (
+              // `Wait ${formatTime} to retry`
+              // )
+              "Create Account"
+            )}
+          </Button>
+          <div className="text-center">
+            <p className="text-xs">
+              By creating an account you agree to our <br />
+              <span className="text-primary font-bold hover:underline">
+                Terms of Use
+              </span>{" "}
+              &{" "}
+              <span className="text-primary font-bold hover:underline">
+                Privacy Policy
+              </span>
+            </p>
+          </div>
+        </form>
+      </div>
     </AuthLayout>
   );
 };

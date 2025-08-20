@@ -21,6 +21,7 @@ const EmailVerificationPage = () => {
   const inputRefs = useRef([]);
 
   const [feedback, setFeedback] = useState(null);
+  const [isTestSuccess, setIsTestSuccess] = useState(false);
   const [resendRetryAfter, setResendRetryAfter] = useState(null);
 
   const handleChange = (index, value) => {
@@ -104,7 +105,8 @@ const EmailVerificationPage = () => {
     clearErrors();
     setRetryAfter(null);
     const code = verificationCode.join("");
-    verifyEmailMutation({ code });
+    // verifyEmailMutation({ code });
+    setIsTestSuccess(true);
   };
 
   const handleResendCode = async () => {
@@ -124,7 +126,7 @@ const EmailVerificationPage = () => {
 
   return (
     <AuthLayout>
-      {!isSuccess ? (
+      {!isTestSuccess ? (
         <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-5">
           <div className="mb-4 flex flex-col items-center justify-center gap-2 ">
             <img src={logo} alt="Edupeerhub" />

@@ -15,7 +15,7 @@ const PasswordCriteria = ({ password }) => {
         Use at least 6 characters, including an uppercase letter, a number, and
         a symbol.
       </p> */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] leading-tight justify-evenly">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] leading-tight justify-start">
         {criteria.map((item) => (
           <div key={item.label} className="flex items-center">
             {item.met ? (

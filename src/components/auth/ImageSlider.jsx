@@ -40,7 +40,7 @@ export default function ImageSlider() {
       />
 
       {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      {/* <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {images.map((_, index) => (
           <span
             key={index}
@@ -50,7 +50,7 @@ export default function ImageSlider() {
             onClick={() => setCurrent(index)}
           />
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }

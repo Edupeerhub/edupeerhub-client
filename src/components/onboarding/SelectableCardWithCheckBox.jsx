@@ -1,5 +1,5 @@
 const SelectableCardWithCheckbox = ({ options, selectedItems, onToggle }) => (
-  <div className="flex flex-col gap-3">
+  <div className="flex flex-col gap-8 md:gap-3 ">
     {options.map((option) => (
       <div
         key={option}
