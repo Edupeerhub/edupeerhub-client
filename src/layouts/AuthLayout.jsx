@@ -18,8 +18,8 @@ const AuthLayout = ({ children }) => {
         </div>
       </div>
 
-      {/* Right: Auth Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+      {/* Right: Dynamic Page Content */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-4">
         <div className="w-full max-w-md">{children}</div>
       </div>
     </div>

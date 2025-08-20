@@ -1,27 +1,24 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { verifyEmail } from "../lib/api";
+import { verifyEmail } from "../../lib/api/auth/authApi";
 import { useState } from "react";
 import {
   handleToastError,
   handleToastSuccess,
-} from "../utils/toastDisplayHandler";
-import { useNavigate } from "react-router";
+} from "../../utils/toastDisplayHandler";
 
 const useVerifyEmail = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [retryAfter, setRetryAfter] = useState(null);
 
-  const { mutate, isPending, error } = useMutation({
+  const { mutate, isPending, error, isSuccess } = useMutation({
     mutationFn: verifyEmail,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Email verified successfully! Welcome aboard!");
       setRetryAfter(null);
-      navigate("/");
     },
     onError: (error) => {
       const responseData = error.response?.data;
@@ -62,6 +59,7 @@ const useVerifyEmail = () => {
   return {
     error,
     isPending,
+    isSuccess,
     verifyEmailMutation: mutate,
     fieldErrors,
     generalError,

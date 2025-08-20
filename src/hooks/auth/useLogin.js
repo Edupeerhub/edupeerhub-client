@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login } from "../lib/api/auth";
+import { login } from "../../lib/api/auth/authApi";
 import { useState } from "react";
-import toast from "react-hot-toast";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
 
 const useLogin = () => {
   const queryClient = useQueryClient();
@@ -14,7 +17,7 @@ const useLogin = () => {
     mutationFn: login,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
-      toast.success("Login successful! Welcome back!");
+      handleToastSuccess("Login successful! Welcome back!");
       setRetryAfter(null);
     },
     onError: (error) => {
@@ -26,7 +29,7 @@ const useLogin = () => {
           responseData?.message ||
             "Too many login attempts. Please wait before trying again."
         );
-        toast.error(error);
+        handleToastError(error);
         return;
       }
 
@@ -37,12 +40,12 @@ const useLogin = () => {
           errors[err.field] = err.issue;
         });
         setFieldErrors(errors);
-        toast.error(error);
+        handleToastError(error);
       } else {
         // General error
         const msg = responseData?.message || "An error occurred.";
         setGeneralError(msg);
-        toast.error(error);
+        handleToastError(error);
       }
     },
   });

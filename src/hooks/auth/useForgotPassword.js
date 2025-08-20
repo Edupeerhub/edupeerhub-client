@@ -1,32 +1,31 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { signup } from "../lib/api";
+import { useMutation } from "@tanstack/react-query";
+import { forgotPassword } from "../../lib/api/auth/authApi";
 import { useState } from "react";
 import {
   handleToastError,
   handleToastSuccess,
-} from "../utils/toastDisplayHandler";
+} from "../../utils/toastDisplayHandler";
 
-const useSignUp = () => {
-  const queryClient = useQueryClient();
+const useForgotPassword = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [retryAfter, setRetryAfter] = useState(null);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: signup,
+  const { mutate, isPending, error, isSuccess } = useMutation({
+    mutationFn: forgotPassword,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
-      handleToastSuccess("Signup successful! Welcome aboard!");
+      handleToastSuccess("Password reset link sent to your email!");
       setRetryAfter(null);
     },
     onError: (error) => {
       const responseData = error.response?.data;
 
+      // Rate limiting handling
       if (error.response?.status === 429 && responseData?.retryAfter) {
         setRetryAfter(responseData.retryAfter);
         setGeneralError(
           responseData?.message ||
-            "Too many signup attempts. Please wait before trying again."
+            "Too many requests. Please wait before trying again."
         );
         handleToastError(error);
         return;
@@ -42,7 +41,7 @@ const useSignUp = () => {
         handleToastError(error);
       } else {
         // General error
-        const msg = responseData?.message || "An error occurred.";
+        const msg = responseData?.error || "An error occurred.";
         setGeneralError(msg);
         handleToastError(error);
       }
@@ -55,8 +54,10 @@ const useSignUp = () => {
   };
 
   return {
+    error,
     isPending,
-    signupMutation: mutate,
+    isSuccess,
+    forgotPasswordMutation: mutate,
     fieldErrors,
     generalError,
     clearErrors,
@@ -65,4 +66,4 @@ const useSignUp = () => {
   };
 };
 
-export default useSignUp;
+export default useForgotPassword;

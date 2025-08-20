@@ -5,6 +5,7 @@ const Input = ({
   value,
   onChange,
   placeholder,
+  required = false,
 }) => (
   <div className="mb-4">
     {label && <label className="block mb-1 font-medium">{label}</label>}
@@ -14,7 +15,8 @@ const Input = ({
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      className="w-full px-3 py-2 border rounded"
+      required={required}
+      className="w-full px-3 py-2 border input input-bordered rounded"
     />
   </div>
 );
