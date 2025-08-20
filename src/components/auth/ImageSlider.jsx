@@ -30,27 +30,27 @@ export default function ImageSlider() {
   // }, [images.length]);
 
   return (
-  <div className="relative w-full h-screen overflow-hidden">
-    <img
-      src={images[current]}
-      alt={`Slide ${current + 1}`}
-      className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
-        fade ? "opacity-100" : "opacity-0"
-      }`}
-    />
+    <div className="relative w-full h-screen overflow-hidden">
+      <img
+        src={images[current]}
+        alt={`Slide ${current + 1}`}
+        className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
+          fade ? "opacity-100" : "opacity-0"
+        }`}
+      />
 
-    {/* Dots */}
-    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
-      {images.map((_, index) => (
-        <span
-          key={index}
-          className={`h-2 w-2 rounded-full cursor-pointer ${
-            current === index ? "bg-blue-800" : "bg-blue-400"
-          }`}
-          onClick={() => setCurrent(index)}
-        />
-      ))}
+      {/* Dots */}
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {images.map((_, index) => (
+          <span
+            key={index}
+            className={`h-2 w-2 rounded-full cursor-pointer ${
+              current === index ? "bg-blue-800" : "bg-blue-400"
+            }`}
+            onClick={() => setCurrent(index)}
+          />
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
 }

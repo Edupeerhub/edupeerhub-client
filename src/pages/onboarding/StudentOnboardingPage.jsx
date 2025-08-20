@@ -14,7 +14,6 @@ const StudentOnboardingPage = () => {
     goals: [],
     subjects: [],
     exams: [],
-    goals: [],
   });
 
   const toggleGoal = (goal) =>
@@ -26,7 +25,6 @@ const StudentOnboardingPage = () => {
     }));
 
   const toggleSubject = (subject) =>
-
     setFormData((prev) => ({
       ...prev,
       subjects: prev.subjects.includes(subject)
