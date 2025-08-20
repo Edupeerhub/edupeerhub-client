@@ -123,7 +123,7 @@ const TutorOnboardingPage = () => {
 
   return (
     <AuthLayout>
-      <div className="flex flex-col justify-between h-[70vh] md:h-[90vh] space-y-2">
+      <div className="flex flex-col justify-between md:h-[90vh] space-y-2">
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
         <div className="flex-1">{steps[currentStep - 1]}</div>
