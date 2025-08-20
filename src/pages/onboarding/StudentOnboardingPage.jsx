@@ -11,6 +11,7 @@ const StudentOnboardingPage = () => {
   const totalSteps = 3;
 
   const [formData, setFormData] = useState({
+    goals: [],
     subjects: [],
     exams: [],
     goals: [],
@@ -25,10 +26,11 @@ const StudentOnboardingPage = () => {
     }));
 
   const toggleSubject = (subject) =>
+
     setFormData((prev) => ({
       ...prev,
       subjects: prev.subjects.includes(subject)
-        ? prev.subjects.filter((s) => s !== subject)
+        ? prev.subjectss.filter((s) => s !== subject)
         : [...prev.subjects, subject],
     }));
 

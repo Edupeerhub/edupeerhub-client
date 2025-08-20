@@ -30,36 +30,27 @@ export default function ImageSlider() {
   // }, [images.length]);
 
   return (
-    <div className="w-full max-w-xl mx-auto relative">
-      <img
-        src={images[current]}
-        alt={`Slide ${current + 1}`}
-        className={`w-full rounded-xl transition-opacity duration-500 ease-in-out ${
-          fade ? "opacity-100" : "opacity-5"
-        }`}
-      />
+  <div className="relative w-full h-screen overflow-hidden">
+    <img
+      src={images[current]}
+      alt={`Slide ${current + 1}`}
+      className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${
+        fade ? "opacity-100" : "opacity-0"
+      }`}
+    />
 
-      <div>
-        <h1 className="text-center text-[#2C3A47] text-2xl font-bold mt-4">
-          Where learning connects
-        </h1>
-        <p className="text-center text-[#727C84] mt-1">
-          Get the tools and guidance you need to pass with confidence.
-        </p>
-      </div>
-
-      {/* Dots */}
-      <div className="flex justify-center mt-3 space-x-2">
-        {images.map((_, index) => (
-          <span
-            key={index}
-            className={`h-2 w-2 rounded-full cursor-pointer ${
-              current === index ? "bg-blue-800" : "bg-blue-400"
-            }`}
-            onClick={() => setCurrent(index)}
-          ></span>
-        ))}
-      </div>
+    {/* Dots */}
+    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      {images.map((_, index) => (
+        <span
+          key={index}
+          className={`h-2 w-2 rounded-full cursor-pointer ${
+            current === index ? "bg-blue-800" : "bg-blue-400"
+          }`}
+          onClick={() => setCurrent(index)}
+        />
+      ))}
     </div>
-  );
+  </div>
+);
 }

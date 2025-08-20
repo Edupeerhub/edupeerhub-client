@@ -53,7 +53,7 @@ const LoginPage = () => {
         <Input
           label="Email"
           name="email"
-          placeholder={"Enter your email"}
+          placeholder="Enter your email"
           type="email"
           value={credentials.email}
           onChange={handleChange}
@@ -65,7 +65,7 @@ const LoginPage = () => {
         <Input
           label="Password"
           name="password"
-          placeholder={"Enter your password"}
+          placeholder="Enter your password"
           type="password"
           value={credentials.password}
           onChange={handleChange}
