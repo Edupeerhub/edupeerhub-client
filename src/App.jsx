@@ -17,6 +17,7 @@ import EmailVerificationRoute from "./components/routes/EmailVerificationRoute";
 import AdminRoute from "./components/routes/AdminRoute";
 import OnboardingRoute from "./components/routes/OnboardingRoute";
 import PrivateRoute from "./components/routes/PrivateRoute";
+import NotFoundPage from "./pages/general/NotFoundPage";
 
 export default function App() {
   return (
@@ -25,9 +26,7 @@ export default function App() {
         {/* Public landing page */}
         <Route path="/" element={<HomePage />} />
 
-        {/* ----------------------- */}
         {/* Public-only routes: accessible only if NOT logged in */}
-        {/* Includes signup, login, forgot/reset password */}
         <Route element={<PublicOnlyRoute />}>
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -38,7 +37,6 @@ export default function App() {
           />
         </Route>
 
-        {/* ----------------------- */}
         {/* Email verification route: accessible only if logged in and NOT verified */}
         <Route
           path="/verify-email"
@@ -49,7 +47,6 @@ export default function App() {
           }
         />
 
-        {/* ----------------------- */}
         {/* Onboarding routes: accessible only if logged in, verified, but NOT onboarded */}
         <Route element={<OnboardingRoute />}>
           <Route path="/role-selection" element={<RoleSelectionPage />} />
@@ -60,7 +57,6 @@ export default function App() {
           <Route path="/tutor/onboarding" element={<TutorOnboardingPage />} />
         </Route>
 
-        {/* ----------------------- */}
         {/* Student protected routes: require login, verified, onboarded, role = student */}
         <Route
           path="/student"
@@ -75,7 +71,6 @@ export default function App() {
           {/* <Route path="settings" element={<StudentSettingsPage />} /> */}
         </Route>
 
-        {/* ----------------------- */}
         {/* Tutor protected routes: require login, verified, onboarded, role = tutor */}
         <Route
           path="/tutor"
@@ -90,7 +85,6 @@ export default function App() {
           {/* <Route path="settings" element={<TutorSettingsPage />} /> */}
         </Route>
 
-        {/* ----------------------- */}
         {/* Chat & Video/Calling routes: accessible to both students and tutors */}
         {/* Requires: logged-in, verified, onboarded */}
         {/* <Route element={<PrivateRoute />}>
@@ -98,7 +92,6 @@ export default function App() {
           <Route path="/call" element={<CallPage />} />
         </Route> */}
 
-        {/* ----------------------- */}
         {/* Admin protected routes: require login, verified, onboarded, role = admin */}
         {/* Currently commented out until ready */}
         {/* <Route
@@ -113,6 +106,7 @@ export default function App() {
           <Route path="users" element={<ManageUsersPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route> */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster />
     </AuthProvider>
