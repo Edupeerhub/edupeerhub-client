@@ -41,9 +41,9 @@ export default function App() {
         <Route
           path="/verify-email"
           element={
-            // <EmailVerificationRoute>
-            // </EmailVerificationRoute>
-            <EmailVerificationPage />
+            <EmailVerificationRoute>
+              <EmailVerificationPage />
+            </EmailVerificationRoute>
           }
         />
 

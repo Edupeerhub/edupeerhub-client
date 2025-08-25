@@ -6,10 +6,8 @@ import ProgressBar from "../../components/onboarding/ProgressBar";
 import StepNavigation from "../../components/onboarding/StepNavigation";
 import TextAreaInput from "../../components/onboarding/TextAreaInput";
 import FileUpload from "../../components/onboarding/FileUpload";
-import Button from "../../components/ui/Button";
 
 const TutorOnboardingPage = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
 
@@ -26,33 +24,6 @@ const TutorOnboardingPage = () => {
         ? prev.subjects.filter((s) => s !== subject)
         : [...prev.subjects, subject],
     }));
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      //file type
-      const allowedFormat = ["image/jpeg", "image/png", "application/pdf"];
-      const maxFileSize = 5 * 1024 * 1024; // 5MB
-
-      if (!allowedFormat.includes(file.type)) {
-        alert("Invalid file type. Please upload a JPG, PNG, or PDF.");
-        setSelectedFile(null);
-        e.target.value = "";
-        return;
-      }
-
-      if (file.size > maxFileSize) {
-        alert("File size exceeds the 5MB limit.");
-        setSelectedFile(null);
-        e.target.value = "";
-        return;
-      }
-
-      setSelectedFile(file);
-    } else {
-      setSelectedFile(null);
-    }
-  }; // Delete later after merge into dev
 
   const handleSubmit = () => {
     console.log("Final JSON Data:", formData);
