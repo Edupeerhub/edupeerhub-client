@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AuthLayout from "../../layouts/AuthLayout";
 import StepHeader from "../../components/onboarding/StepHeader";
 import SelectableCardWithCheckbox from "../../components/onboarding/SelectableCardWithCheckBox";
 import SelectableCardList from "../../components/onboarding/SelectableCardList";
 import ProgressBar from "../../components/onboarding/ProgressBar";
 import StepNavigation from "../../components/onboarding/StepNavigation";
+import { getSubjects } from "../../lib/api/subject/subjectsApi";
+import useCreateStudent from "../../hooks/student/useCreateStudent";
+import ErrorAlert from "../../components/common/ErrorAlert";
 
 const StudentOnboardingPage = () => {
+  const [subjectInfo, setSubjectInfo] = useState(null);
+
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
 
@@ -40,9 +45,28 @@ const StudentOnboardingPage = () => {
         : [...prev.exams, exam],
     }));
 
-  const handleSubmit = () => {
-    console.log("Final JSON Data:", { formData });
-    alert("Data sent! Check console.");
+  useEffect(() => {
+    async function fetchSubjects() {
+      const subjects = await getSubjects();
+      setSubjectInfo(subjects);
+    }
+    fetchSubjects();
+  }, []);
+
+  const {
+    isPending,
+    createStudentMutation,
+    fieldErrors,
+    generalError,
+    clearErrors,
+  } = useCreateStudent();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    clearErrors();
+
+    // createStudentMutation(formData);
+    console.log("Final JSON Data:", formData);
   };
 
   // Step Components
@@ -70,20 +94,7 @@ const StudentOnboardingPage = () => {
         subtitle="Choose all that apply"
       />
       <SelectableCardList
-        options={[
-          "Chemistry",
-          "Mathematics",
-          "English",
-          "Physics",
-          "Literature",
-          "Accounting",
-          "Computer Science",
-          "Economics",
-          "Government",
-          "French",
-          "Music",
-          "Commerce",
-        ]}
+        options={subjectInfo}
         selectedItems={formData.subjects}
         onToggle={toggleSubject}
         roundedFull={true}
@@ -96,7 +107,12 @@ const StudentOnboardingPage = () => {
         subtitle="Select the exams you plan to take"
       />
       <SelectableCardList
-        options={["WAEC", "NECO", "JAMB", "GCE"]}
+        options={[
+          { id: 1, name: "WAEC" },
+          { id: 2, name: "NECO" },
+          { id: 3, name: "JAMB" },
+          { id: 4, name: "GCE" },
+        ]}
         selectedItems={formData.exams}
         onToggle={toggleExam}
         roundedFull={true}
@@ -109,6 +125,8 @@ const StudentOnboardingPage = () => {
     <AuthLayout>
       <div className="flex flex-col justify-between md:h-[90vh] space-y-1">
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+
+        <ErrorAlert message={generalError} />
 
         <div className="flex-1">{steps[currentStep - 1]}</div>
 
