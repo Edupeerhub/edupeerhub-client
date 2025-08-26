@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AuthLayout from "../../layouts/AuthLayout";
 import StepHeader from "../../components/onboarding/StepHeader";
 import SelectableCardList from "../../components/onboarding/SelectableCardList";
@@ -6,14 +6,19 @@ import ProgressBar from "../../components/onboarding/ProgressBar";
 import StepNavigation from "../../components/onboarding/StepNavigation";
 import TextAreaInput from "../../components/onboarding/TextAreaInput";
 import FileUpload from "../../components/onboarding/FileUpload";
+import useCreateTutor from "../../hooks/tutor/useCreateTutor";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import { getSubjects } from "../../lib/api/subject/subjectsApi";
 
 const TutorOnboardingPage = () => {
+  const [subjectInfo, setSubjectInfo] = useState(null);
+
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
 
   const [formData, setFormData] = useState({
     subjects: [],
-    background: "",
+    education: "",
     credentials: null,
   });
 
@@ -25,9 +30,28 @@ const TutorOnboardingPage = () => {
         : [...prev.subjects, subject],
     }));
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    async function fetchSubjects() {
+      const subjects = await getSubjects();
+      setSubjectInfo(subjects);
+    }
+    fetchSubjects();
+  }, []);
+
+  const {
+    isPending,
+    createTutorMutation,
+    fieldErrors,
+    generalError,
+    clearErrors,
+  } = useCreateTutor();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    clearErrors();
+
+    createTutorMutation(formData);
     console.log("Final JSON Data:", formData);
-    alert("Data sent! Check console.");
   };
 
   const steps = [
@@ -37,23 +61,7 @@ const TutorOnboardingPage = () => {
         subtitle="Choose all that apply"
       />
       <SelectableCardList
-        options={[
-          "Chemistry",
-          "Mathematics",
-          "English",
-          "Physics",
-          "Literature",
-          "Accounting",
-          "Computer Science",
-          "Economics",
-          "Government",
-          "French",
-          "Music",
-          "Commerce",
-          "History",
-          "Biology",
-          "Further Math",
-        ]}
+        options={subjectInfo}
         selectedItems={formData.subjects}
         onToggle={toggleSubject}
         roundedFull={true}
@@ -66,10 +74,8 @@ const TutorOnboardingPage = () => {
         subtitle="Briefly share your academic history"
       />
       <TextAreaInput
-        value={formData.background}
-        onChange={(val) =>
-          setFormData((prev) => ({ ...prev, background: val }))
-        }
+        value={formData.education}
+        onChange={(val) => setFormData((prev) => ({ ...prev, education: val }))}
         placeholder="Not more than 100 words"
       />
     </div>,
@@ -97,6 +103,7 @@ const TutorOnboardingPage = () => {
       <div className="flex flex-col justify-between md:h-[90vh] space-y-2">
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
+        <ErrorAlert message={generalError} />
         <div className="flex-1">{steps[currentStep - 1]}</div>
 
         <StepNavigation

@@ -6,19 +6,19 @@ const SelectableCardList = ({
   className = "",
 }) => (
   <div className="flex flex-wrap gap-4 justify-center">
-    {options.map((option) => (
+    {options?.map((option) => (
       <div
-        key={option}
-        onClick={() => onToggle(option)}
+        key={option.id}
+        onClick={() => onToggle(option.id)}
         className={`flex items-center justify-center px-4 py-3 border cursor-pointer min-w-[80px] text-sm ${className} ${
           roundedFull ? "rounded-full" : "rounded-md"
         } ${
-          selectedItems.includes(option)
+          selectedItems.includes(option.id)
             ? "bg-blue-400 text-white border-blue-400"
             : "bg-white text-gray-700 border-gray-300"
         }`}
       >
-        {option}
+        {option.name}
       </div>
     ))}
   </div>

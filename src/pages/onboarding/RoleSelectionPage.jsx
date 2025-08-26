@@ -18,8 +18,8 @@ const RoleSelectionPage = () => {
 
   const roles = [
     {
-      id: "teacher",
-      role: "Teacher",
+      id: "tutor",
+      role: "Tutor",
       description: "You want to share your knowledge and help students succeed",
       image: TeacherAvatar,
     },
