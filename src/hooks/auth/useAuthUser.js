@@ -6,8 +6,13 @@ const useAuthUser = () => {
     queryKey: ["authUser"],
     queryFn: getAuthUser,
     retry: false,
+    // refetchOnWindowFocus: false, // stable UX
+    refetchOnReconnect: true,
   });
-  return { isLoading: authUser.isLoading, authUser: authUser.data };
+  return {
+    isLoading: authUser.isLoading,
+    authUser: authUser.data,
+  };
 };
 
 export default useAuthUser;

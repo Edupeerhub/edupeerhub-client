@@ -16,7 +16,6 @@ const useVerifyEmail = () => {
   const { mutate, isPending, error, isSuccess } = useMutation({
     mutationFn: verifyEmail,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Email verified successfully! Welcome aboard!");
       setRetryAfter(null);
     },
@@ -56,6 +55,10 @@ const useVerifyEmail = () => {
     setGeneralError("");
   };
 
+  const invalidateQuery = async () => {
+    await queryClient.refetchQueries({ queryKey: ["authUser"] });
+  };
+
   return {
     error,
     isPending,
@@ -66,6 +69,7 @@ const useVerifyEmail = () => {
     clearErrors,
     retryAfter,
     setRetryAfter,
+    invalidateQuery,
   };
 };
 
