@@ -5,10 +5,10 @@ import { useParams } from "react-router";
 import { Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import useResetPassword from "../../hooks/auth/useResetPassword";
-// import { useCooldown } from "../../hooks/useCooldown";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import AuthLayout from "../../layouts/AuthLayout";
 import Button from "../../components/ui/Button";
+import { useCooldown } from "../../hooks/auth/useCooldown";
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -26,12 +26,12 @@ const ResetPasswordPage = () => {
     setRetryAfter,
   } = useResetPassword();
 
-  // const { cooldown, isActive, formatTime } = useCooldown(retryAfter);
+  const { label, isActive, formattedTime } = useCooldown(retryAfter);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // if (isActive) return;
+    if (isActive) return;
 
     clearErrors();
     setRetryAfter(null);
@@ -84,22 +84,14 @@ const ResetPasswordPage = () => {
                 </div>
                 <Button
                   type="submit"
-                  disabled={
-                    isPending
-                    // || isActive
-                  }
+                  disabled={isPending || isActive}
+                  loading={isPending}
                 >
-                  {isPending ? (
-                    <>
-                      <span className="loading loading-spinner loading-xs"></span>
-                      Resetting...
-                    </>
-                  ) : (
-                    // : isActive ? (
-                    // `Wait ${formatTime} to retry`
-                    // )
-                    "Set New Password"
-                  )}
+                  {isPending
+                    ? "Resetting..."
+                    : isActive
+                    ? `Wait ${formattedTime} ${label} to retry`
+                    : "Set New Password"}
                 </Button>
               </div>
             </div>

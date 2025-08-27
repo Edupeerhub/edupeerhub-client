@@ -4,30 +4,30 @@ import checkmark from "../../assets/images/auth/checkmark-green.svg";
 import { AppleIcon, ArrowLeft, Loader, Mail } from "lucide-react";
 import { Link } from "react-router";
 import useForgotPassword from "../../hooks/auth/useForgotPassword";
-// import { useCooldown } from "../../hooks/useCooldown";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import AuthLayout from "../../layouts/AuthLayout";
 import Button from "../../components/ui/Button";
+import { useCooldown } from "../../hooks/auth/useCooldown";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
 
   const {
     forgotPasswordMutation,
+    isPending,
     fieldErrors,
     generalError,
     clearErrors,
-    isPending,
     isSuccess,
     retryAfter,
     setRetryAfter,
   } = useForgotPassword();
 
-  // const { cooldown, isActive, formatTime } = useCooldown(retryAfter);
+  const { label, isActive, formattedTime } = useCooldown(retryAfter);
 
   const handleSubmit = (e) => {
+    if (isActive) return;
     e.preventDefault();
-    // if (isActive) return;
 
     clearErrors();
     setRetryAfter(null);
@@ -70,22 +70,14 @@ const ForgotPasswordPage = () => {
 
                 <Button
                   type="submit"
-                  disabled={
-                    isPending
-                    // || isActive
-                  }
+                  disabled={isPending || isActive}
+                  loading={isPending}
                 >
-                  {isPending ? (
-                    <>
-                      <span className="loading loading-spinner loading-xs"></span>
-                      Sending link...
-                    </>
-                  ) : (
-                    // : isActive ? (
-                    // `Wait ${formatTime} to retry`
-                    // )
-                    "Send Reset Link"
-                  )}
+                  {isPending
+                    ? "Sending link..."
+                    : isActive
+                    ? `Wait ${formattedTime} ${label} to retry`
+                    : "Send Reset Link"}
                 </Button>
 
                 <div className=" ">
