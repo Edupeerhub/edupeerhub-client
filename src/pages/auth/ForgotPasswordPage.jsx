@@ -1,7 +1,7 @@
 import { useState } from "react";
 import logo from "../../assets/images/edupeerhub-logo1.svg";
 import checkmark from "../../assets/images/auth/checkmark-green.svg";
-import { AppleIcon, ArrowLeft, Loader, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router";
 import useForgotPassword from "../../hooks/auth/useForgotPassword";
 import ErrorAlert from "../../components/common/ErrorAlert";
