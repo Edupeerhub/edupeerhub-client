@@ -1,16 +1,12 @@
-// ===== STEP 3: BUILDING THE SIDEBAR COMPONENT =====
-const Sidebar = ({ isOpen, onClose }) => {
-  // Navigation links data - easy to modify
-  const navigationLinks = [
-    { name: "Home", href: "#", icon: "🏠" },
-    { name: "Dashboard", href: "#", icon: "📊" },
-    { name: "Settings", href: "#", icon: "⚙️" },
-    { name: "Logout", href: "#", icon: "🚪" },
-  ];
+import { NavLink } from "react-router-dom";
+import LogoutIcon from "../assets/images/layout-icons/logout.svg?react";
+import Logo from "../assets/images/edupeerhub-logo1.svg?react";
 
-  const handleLinkClick = (linkName) => {
-    alert(`Clicked: ${linkName}`);
-    // On mobile, close sidebar when link is clicked
+const Sidebar = ({ isOpen, onClose, links = [] }) => {
+  const baseClasses =
+    "btn btn-ghost justify-start w-full gap-3 px-3 normal-case transition-colors duration-200";
+
+  const handleLinkClick = () => {
     if (window.innerWidth < 1024) {
       onClose();
     }
@@ -31,27 +27,25 @@ const Sidebar = ({ isOpen, onClose }) => {
       <aside
         className={`
         fixed top-0 left-0 z-40 
-        w-64 h-full 
-        bg-gray-900 text-white
+        w-full md:w-64 h-full 
+        bg-white text-white
         transform transition-transform duration-300 ease-in-out
-        
-        
-        ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } /* On mobile: slide in/out based on isOpen state */
-        
-        lg:translate-x-0         /* On desktop (lg:): always visible, no transform */
-
+        ${isOpen ? "translate-x-0" : "-translate-x-full"} 
+        lg:translate-x-0    
+        border-r-2 border-[#D5D8DA]   
+        flex flex-col
       `}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-lg font-semibold">Navigation</h2>
-
+        <div className="flex items-center justify-center gap-3 p-5 ">
+          <Logo className="hidden md:block size-10  " />{" "}
+          <h1 className="hidden md:block text-2xl font-bold text-gray-900">
+            Edupeerhub
+          </h1>
           {/* Close button - only visible on mobile */}
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+            className="md:hidden ml-auto p-2 rounded-md text-gray-400 hover:text-white bg-gray-700 transition-colors "
           >
             <svg
               className="w-5 h-5"
@@ -70,20 +64,34 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 p-4 space-y-2">
-          {navigationLinks.map((link) => (
-            <button
-              key={link.name}
-              onClick={() => handleLinkClick(link.name)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left
-                       text-gray-300 hover:text-white hover:bg-gray-700 
-                       transition-colors duration-200"
+        <nav className="flex-1 p-4 space-y-7 mt-4">
+          {links.map(({ path, label, icon: Icon }) => (
+            <NavLink
+              key={path}
+              to={path}
+              onClick={() => handleLinkClick()}
+              className={({ isActive }) =>
+                `${baseClasses} ${
+                  isActive
+                    ? " text-[#0568FF] bg-[#CDE1FF]"
+                    : "text-[#2C3A47] hover:text-[#0568FF] hover:bg-[#CDE1FF]"
+                }`
+              }
             >
-              <span className="text-lg">{link.icon}</span>
-              <span>{link.name}</span>
-            </button>
+              {Icon && <Icon className="size-5 opacity-70" />}
+              <span>{label}</span>
+            </NavLink>
           ))}
         </nav>
+        <div className="p-4">
+          <button
+            className="flex w-full justify-center items-center gap-3 text-[#0568FF]  border border-[#0568FF] rounded-full p-3"
+            // onClick={logoutMutation}
+          >
+            <LogoutIcon />
+            Logout
+          </button>
+        </div>
       </aside>
     </>
   );

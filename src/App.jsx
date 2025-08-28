@@ -18,6 +18,8 @@ import AdminRoute from "./components/routes/AdminRoute";
 import OnboardingRoute from "./components/routes/OnboardingRoute";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import NotFoundPage from "./pages/general/NotFoundPage";
+import Layout from "./layouts/Layout";
+import { studentSidebarLinks, tutorSidebarLinks } from "./config/sideBarLinks";
 
 export default function App() {
   return (
@@ -60,11 +62,11 @@ export default function App() {
         {/* Student protected routes: require login, verified, onboarded, role = student */}
         <Route
           path="/student"
-          // element={
+          element={
+            <Layout fullHeight={false} sidebarLinks={studentSidebarLinks} />
+          }
           //   <StudentRoute>
-          //     <StudentLayout />
           //   </StudentRoute>
-          // }
         >
           <Route path="dashboard" element={<StudentDashboardPage />} />
           {/* <Route path="profile" element={<StudentProfilePage />} /> */}
@@ -74,9 +76,10 @@ export default function App() {
         {/* Tutor protected routes: require login, verified, onboarded, role = tutor */}
         <Route
           path="/tutor"
-          // element={
+          element={
+            <Layout fullHeight={true} sidebarLinks={tutorSidebarLinks} />
+          }
           //   <TutorRoute >
-          //     <TutorLayout />
           //   </TutorRoute>
           // }
         >

@@ -1,19 +1,12 @@
-import React from "react";
-// ===== STEP 4: MAIN CONTENT WRAPPER =====
+import { Outlet } from "react-router-dom";
+
 const MainContent = ({ children, fullHeight = false }) => {
   return (
     <main
       className={`
-      transition-all duration-300 ease-in-out
-      
-      /* Always leave space for navbar at top */
-      pt-16
-      
-      /* On desktop: leave space for sidebar on left */
-      lg:pl-64
-      
-      /* Height behavior based on fullHeight prop */
-      ${fullHeight ? "min-h-screen" : "min-h-full"}
+      transition-all duration-300 ease-in-out pt-16 lg:pl-64 ${
+        fullHeight ? "min-h-screen" : "min-h-full"
+      }
     `}
     >
       {/* Content container with proper spacing */}
@@ -23,7 +16,7 @@ const MainContent = ({ children, fullHeight = false }) => {
         ${fullHeight ? "h-full" : ""}
       `}
       >
-        {children}
+        {children || <Outlet />}
       </div>
     </main>
   );
