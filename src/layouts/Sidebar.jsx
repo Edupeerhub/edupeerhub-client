@@ -1,8 +1,11 @@
 import { NavLink } from "react-router-dom";
 import LogoutIcon from "../assets/images/layout-icons/logout.svg?react";
 import Logo from "../assets/images/edupeerhub-logo1.svg?react";
+import useLogout from "../hooks/auth/useLogout";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
+  const { logoutMutation } = useLogout();
+
   const baseClasses =
     "btn btn-ghost justify-start w-full gap-3 px-3 normal-case transition-colors duration-200";
 
@@ -86,7 +89,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
         <div className="p-4">
           <button
             className="flex w-full justify-center items-center gap-3 text-[#0568FF]  border border-[#0568FF] rounded-full p-3"
-            // onClick={logoutMutation}
+            onClick={logoutMutation}
           >
             <LogoutIcon />
             Logout
