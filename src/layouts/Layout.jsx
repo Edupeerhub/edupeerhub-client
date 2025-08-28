@@ -11,21 +11,23 @@ const Layout = ({ children, fullHeight = false, sidebarLinks = [] }) => {
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="min-h-screen">
+    <div className={`flex flex-col ${fullHeight ? "min-h-screen" : ""}`}>
       {/* Navbar - fixed at top */}
       <Navbar onToggleSidebar={toggleSidebar} />
 
-      {/* Sidebar - fixed on left */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={closeSidebar}
-        links={sidebarLinks}
-      />
+      <div className="flex flex-1">
+        {/* Sidebar - fixed on left */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={closeSidebar}
+          links={sidebarLinks}
+        />
 
-      {/* Main Content Area */}
-      <MainContent fullHeight={fullHeight}>
-        {children || <Outlet />}
-      </MainContent>
+        {/* Main Content Area */}
+        <MainContent fullHeight={fullHeight}>
+          {children || <Outlet />}
+        </MainContent>
+      </div>
     </div>
   );
 };

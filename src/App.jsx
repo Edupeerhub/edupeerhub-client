@@ -20,6 +20,8 @@ import PrivateRoute from "./components/routes/PrivateRoute";
 import NotFoundPage from "./pages/general/NotFoundPage";
 import Layout from "./layouts/Layout";
 import { studentSidebarLinks, tutorSidebarLinks } from "./config/sideBarLinks";
+import StudentRoute from "./components/routes/StudentRoute";
+import TutorRoute from "./components/routes/TutorRoute";
 
 export default function App() {
   return (
@@ -63,10 +65,10 @@ export default function App() {
         <Route
           path="/student"
           element={
-            <Layout fullHeight={false} sidebarLinks={studentSidebarLinks} />
+            <StudentRoute>
+              <Layout fullHeight={true} sidebarLinks={studentSidebarLinks} />
+            </StudentRoute>
           }
-          //   <StudentRoute>
-          //   </StudentRoute>
         >
           <Route path="dashboard" element={<StudentDashboardPage />} />
           {/* <Route path="profile" element={<StudentProfilePage />} /> */}
@@ -77,11 +79,10 @@ export default function App() {
         <Route
           path="/tutor"
           element={
-            <Layout fullHeight={true} sidebarLinks={tutorSidebarLinks} />
+            <TutorRoute>
+              <Layout fullHeight={true} sidebarLinks={tutorSidebarLinks} />
+            </TutorRoute>
           }
-          //   <TutorRoute >
-          //   </TutorRoute>
-          // }
         >
           <Route path="dashboard" element={<TutorDashboardPage />} />
           {/* <Route path="profile" element={<TutorProfilePage />} /> */}
