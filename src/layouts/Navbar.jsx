@@ -1,5 +1,9 @@
+import { BellIcon } from "lucide-react";
 import Logo from "../assets/images/edupeerhub-logo1.svg?react";
+import useAuthUser from "../hooks/auth/useAuthUser";
 const Navbar = ({ onToggleSidebar }) => {
+  const { authUser } = useAuthUser();
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-0 bg-white shadow-md border-b border-gray-300">
       <div className="px-4 sm:px-6 lg:px-8">
@@ -12,9 +16,15 @@ const Navbar = ({ onToggleSidebar }) => {
 
           {/* Right side: Hamburger menu, User menu, notifications, etc. */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-medium">U</span>
+            <button className="btn btn-ghost btn-circle btn-sm sm:btn-md">
+              <BellIcon className="h-5 w-5 sm:h-6 sm:w-6 text-base-content opacity-70" />
+            </button>
+            <div className="avatar cursor-pointer">
+              <div className="w-8 sm:w-9 rounded-full border-2 border-gray-300 transition-all hover:ring-2 hover:ring-gray-400/50">
+                <img src={authUser?.profileImageUrl} alt="User Avatar" />
+              </div>
             </div>
+
             {/* Hamburger Menu Button - Only visible on mobile/tablet */}
             <button
               onClick={onToggleSidebar}
