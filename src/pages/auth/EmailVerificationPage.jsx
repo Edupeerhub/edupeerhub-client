@@ -127,7 +127,7 @@ const EmailVerificationPage = () => {
   return (
     <AuthLayout>
       {!isTestSuccess ? (
-        <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-5">
+        <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-2 pb-10 sm:pb-0 sm:p-5">
           <div className="mb-4 flex flex-col items-center justify-center gap-2 ">
             <img src={logo} alt="Edupeerhub" />
             <h2 className="text-2xl font-semibold text-center mb-1 text-black">
@@ -139,7 +139,7 @@ const EmailVerificationPage = () => {
             </p>
           </div>
           <div className="w-full">
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-3">
               <div className="flex justify-between">
                 {verificationCode.map((digit, index) => (
                   <input
@@ -154,7 +154,7 @@ const EmailVerificationPage = () => {
                       handleChange(index, val);
                     }}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-2xl font-semibold text-black border-2 border-gray-600 rounded-lg focus:border-blue-700 focus:outline-none"
+                    className="w-10 h-10 sm:w-12 sm:h-12 text-center text-2xl font-semibold text-black border-2 border-gray-600 rounded-lg focus:border-blue-700 focus:outline-none"
                   />
                 ))}
               </div>
