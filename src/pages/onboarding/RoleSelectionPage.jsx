@@ -9,7 +9,7 @@ const RoleSelectionPage = () => {
   const navigate = useNavigate();
 
   const handleRoleSelection = (role) => {
-    if (role === "Teacher") {
+    if (role === "Tutor") {
       navigate("/tutor/onboarding");
     } else if (role === "Student") {
       navigate("/student/onboarding");
@@ -18,8 +18,8 @@ const RoleSelectionPage = () => {
 
   const roles = [
     {
-      id: "teacher",
-      role: "Teacher",
+      id: "tutor",
+      role: "Tutor",
       description: "You want to share your knowledge and help students succeed",
       image: TeacherAvatar,
     },

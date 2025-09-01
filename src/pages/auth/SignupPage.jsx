@@ -6,6 +6,7 @@ import Input from "../../components/ui/Input";
 import PasswordStrengthMeter from "../../components/auth/PasswordStrengthMeter";
 import useSignUp from "../../hooks/auth/useSignup";
 import ErrorAlert from "../../components/common/ErrorAlert";
+import { useCooldown } from "../../hooks/auth/useCooldown";
 
 const SignupPage = () => {
   const [credentials, setCredentials] = useState({
@@ -25,12 +26,11 @@ const SignupPage = () => {
     setRetryAfter,
   } = useSignUp();
 
-  // const { cooldown, isActive, formatTime } = useCooldown(retryAfter);
+  const { label, isActive, formattedTime } = useCooldown(retryAfter);
 
   const handleSignup = (e) => {
+    if (isActive) return;
     e.preventDefault();
-
-    // if (isActive) return;
 
     clearErrors();
     setRetryAfter(null);
@@ -107,18 +107,16 @@ const SignupPage = () => {
           )}
           {/* <PasswordStrengthMeter password={credentials.password} /> */}
 
-          <Button type="submit">
-            {isPending ? (
-              <>
-                <span className="loading loading-spinner loading-xs"></span>
-                Loading...
-              </>
-            ) : (
-              // : isActive ? (
-              // `Wait ${formatTime} to retry`
-              // )
-              "Create Account"
-            )}
+          <Button
+            type="submit"
+            disabled={isPending || isActive}
+            loading={isPending}
+          >
+            {isPending
+              ? "Loading..."
+              : isActive
+              ? `Wait ${formattedTime} ${label} to retry`
+              : "Create Account"}
           </Button>
           <div className="text-center">
             <p className="text-xs">

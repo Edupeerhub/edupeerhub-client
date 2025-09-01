@@ -6,6 +6,7 @@ import AuthLayout from "../../layouts/AuthLayout";
 import useLogin from "../../hooks/auth/useLogin";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { Link } from "react-router-dom";
+import { useCooldown } from "../../hooks/auth/useCooldown";
 
 const LoginPage = () => {
   const [credentials, setCredentials] = useState({
@@ -28,7 +29,7 @@ const LoginPage = () => {
     setRetryAfter,
   } = useLogin();
 
-  // const { cooldown, isActive, formatTime } = useCooldown(retryAfter);
+  const { label, isActive, formattedTime } = useCooldown(retryAfter);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -87,18 +88,16 @@ const LoginPage = () => {
           </Link>
           {/* </div> */}
 
-          <Button type="submit" disabled={isPending}>
-            {isPending ? (
-              <>
-                <span className="loading loading-spinner loading-xs"></span>
-                Logging in...
-              </>
-            ) : (
-              // : isActive ? (
-              // `Wait ${formatTime} to retry`
-              // )
-              "Log In"
-            )}
+          <Button
+            type="submit"
+            disabled={isPending || isActive}
+            loading={isPending}
+          >
+            {isPending
+              ? "Logging in..."
+              : isActive
+              ? `Wait ${formattedTime} ${label} to retry`
+              : "Log In"}
           </Button>
         </form>
       </div>

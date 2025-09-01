@@ -1,38 +1,25 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { verifyEmail } from "../../lib/api/auth/authApi";
 import { useState } from "react";
 import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
+import { createStudent } from "../../lib/api/student/studentApi";
 
-const useVerifyEmail = () => {
+const useCreateStudent = () => {
   const queryClient = useQueryClient();
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
-  const [retryAfter, setRetryAfter] = useState(null);
 
-  const { mutate, isPending, error, isSuccess } = useMutation({
-    mutationFn: verifyEmail,
+  const { mutate, isPending, error } = useMutation({
+    mutationFn: createStudent,
     onSuccess: () => {
-      handleToastSuccess("Email verified successfully! Welcome aboard!");
-      setRetryAfter(null);
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      handleToastSuccess("Profile created.");
     },
     onError: (error) => {
       const responseData = error.response?.data;
-
-      // rate limiting error handling
-      if (error.response?.status === 429 && responseData?.retryAfter) {
-        setRetryAfter(responseData.retryAfter);
-        setGeneralError(
-          responseData?.message ||
-            "Too many attempts. Please wait before trying again."
-        );
-        handleToastError(error);
-        return;
-      }
-
       if (Array.isArray(responseData?.error)) {
         // Validation (field) errors
         const errors = {};
@@ -55,22 +42,14 @@ const useVerifyEmail = () => {
     setGeneralError("");
   };
 
-  const invalidateQuery = async () => {
-    await queryClient.refetchQueries({ queryKey: ["authUser"] });
-  };
-
   return {
     error,
     isPending,
-    isSuccess,
-    verifyEmailMutation: mutate,
+    createStudentMutation: mutate,
     fieldErrors,
     generalError,
     clearErrors,
-    retryAfter,
-    setRetryAfter,
-    invalidateQuery,
   };
 };
 
-export default useVerifyEmail;
+export default useCreateStudent;

@@ -3,13 +3,15 @@ import checkmark from "../../assets/images/auth/checkmark-green.svg";
 import { useEffect, useRef, useState } from "react";
 import AuthLayout from "../../layouts/AuthLayout";
 import Button from "../../components/ui/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import useVerifyEmail from "../../hooks/auth/useVerifyEmail";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { resendVerificationEmail } from "../../lib/api/auth/authApi";
+import { useCooldown } from "../../hooks/auth/useCooldown";
 
 const EmailVerificationPage = () => {
+  const navigate = useNavigate();
   const [verificationCode, setVerificationCode] = useState([
     "",
     "",
@@ -21,7 +23,7 @@ const EmailVerificationPage = () => {
   const inputRefs = useRef([]);
 
   const [feedback, setFeedback] = useState(null);
-  const [isTestSuccess, setIsTestSuccess] = useState(false);
+  // const [isTestSuccess, setIsTestSuccess] = useState(false);
   const [resendRetryAfter, setResendRetryAfter] = useState(null);
 
   const handleChange = (index, value) => {
@@ -87,34 +89,42 @@ const EmailVerificationPage = () => {
     isSuccess,
     setRetryAfter,
     retryAfter: verifyRetryAfter,
+    invalidateQuery,
   } = useVerifyEmail();
 
-  // const {
-  //   cooldown: resendCooldown,
-  //   isActive: resendIsActive,
-  //   formatTime: resendFormatTime,
-  // } = useCooldown(resendRetryAfter);
-  // const {
-  //   cooldown: verifyCooldown,
-  //   isActive: verifyIsActive,
-  //   formatTime: verifyFormatTime,
-  // } = useCooldown(verifyRetryAfter);
+  const {
+    label: resendLabel,
+    isActive: resendIsActive,
+    formattedTime: resendFormatTime,
+  } = useCooldown(resendRetryAfter);
+
+  const {
+    label: verifyLabel,
+    isActive: verifyIsActive,
+    formattedTime: verifyFormatTime,
+  } = useCooldown(verifyRetryAfter);
 
   const handleSubmit = async (e) => {
+    if (verifyIsActive) return;
+
     e.preventDefault();
     clearErrors();
     setRetryAfter(null);
     const code = verificationCode.join("");
-    // verifyEmailMutation({ code });
-    setIsTestSuccess(true);
+    verifyEmailMutation({ code });
   };
 
   const handleResendCode = async () => {
-    // if (resendIsActive) return;
+    if (resendIsActive) return;
 
     setFeedback(null);
     setResendRetryAfter(null);
     resendVerificationMutation.mutate();
+  };
+
+  const handleContinue = async () => {
+    await invalidateQuery();
+    navigate("/role-selection");
   };
 
   // Auto submit when all fields are filled
@@ -126,8 +136,8 @@ const EmailVerificationPage = () => {
 
   return (
     <AuthLayout>
-      {!isTestSuccess ? (
-        <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-2 pb-10 sm:pb-0 sm:p-5">
+      {!isSuccess ? (
+        <div className=" flex flex-col max-w-2xl mx-auto  overflow-hidden p-5">
           <div className="mb-4 flex flex-col items-center justify-center gap-2 ">
             <img src={logo} alt="Edupeerhub" />
             <h2 className="text-2xl font-semibold text-center mb-1 text-black">
@@ -165,19 +175,17 @@ const EmailVerificationPage = () => {
                 <p className="text-error text-xs">{fieldErrors.code}</p>
               )}
 
-              <Button onClick={handleSubmit} type="submit" disabled={isPending}>
-                {isPending ? (
-                  <>
-                    {" "}
-                    <span className="loading loading-spinner loading-xs"></span>
-                    Verifying...
-                  </>
-                ) : (
-                  // : verifyIsActive ? (
-                  // `Wait ${verifyFormatTime} to retry`
-                  // )
-                  "Verify Email"
-                )}
+              <Button
+                onClick={handleSubmit}
+                type="submit"
+                disabled={isPending || verifyIsActive}
+                loading={isPending}
+              >
+                {isPending
+                  ? "Verifying..."
+                  : verifyIsActive
+                  ? `Wait ${verifyFormatTime} ${verifyLabel} to retry`
+                  : "Verify Email"}
               </Button>
             </form>
           </div>
@@ -187,21 +195,19 @@ const EmailVerificationPage = () => {
               <button
                 onClick={handleResendCode}
                 disabled={
-                  resendVerificationMutation.isPending
-                  // || resendIsActive
+                  resendVerificationMutation.isPending || resendIsActive
                 }
                 className={`font-semibold ${
-                  // resendIsActive ||
-                  resendVerificationMutation.isPending
+                  resendIsActive || resendVerificationMutation.isPending
                     ? "text-gray-400 cursor-not-allowed"
                     : "text-primary hover:underline"
                 }`}
               >
                 {resendVerificationMutation.isPending
                   ? "Sending..."
-                  : // : resendIsActive
-                    // ? `Resend in ${resendFormatTime}`
-                    "Resend Code"}
+                  : resendIsActive
+                  ? `Resend in ${resendFormatTime} ${resendLabel}`
+                  : "Resend Code"}
               </button>
             </p>
             {feedback && (
@@ -224,12 +230,7 @@ const EmailVerificationPage = () => {
           <h2 className="text-4xl font-bold text-black-300 text-center mb-4">
             Let’s set up your account
           </h2>
-          <Link
-            to={"/role-selection"}
-            className="btn btn-outline w-full px-4 py-2 rounded-full font-medium bg-blue-500 text-white hover:bg-blue-600 text-center"
-          >
-            Continue
-          </Link>
+          <Button onClick={handleContinue}>Continue</Button>
         </div>
       )}
     </AuthLayout>
