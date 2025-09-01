@@ -1,6 +1,9 @@
 import { Navigate } from "react-router";
 import { useAuth } from "../../hooks/useAuthContext";
 
+const DISABLE_ROUTE_GUARDS =
+  import.meta.env.VITE_DISABLE_ROUTE_GUARDS === "true";
+
 /**
  * RouteGuard handles auth, verification, and onboarding checks.
  *
@@ -22,6 +25,10 @@ const RouteGuard = ({
   children,
 }) => {
   const { authUser } = useAuth();
+
+  if (DISABLE_ROUTE_GUARDS) {
+    return children;
+  }
 
   const getDashboardRoute = (role) => {
     if (!role) return "/role-selection";

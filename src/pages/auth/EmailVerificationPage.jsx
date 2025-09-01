@@ -149,7 +149,7 @@ const EmailVerificationPage = () => {
             </p>
           </div>
           <div className="w-full">
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-3">
               <div className="flex justify-between">
                 {verificationCode.map((digit, index) => (
                   <input
@@ -164,7 +164,7 @@ const EmailVerificationPage = () => {
                       handleChange(index, val);
                     }}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-2xl font-semibold text-black border-2 border-gray-600 rounded-lg focus:border-blue-700 focus:outline-none"
+                    className="w-10 h-10 sm:w-12 sm:h-12 text-center text-2xl font-semibold text-black border-2 border-gray-600 rounded-lg focus:border-blue-700 focus:outline-none"
                   />
                 ))}
               </div>

@@ -8,8 +8,8 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import EmailVerificationPage from "./pages/auth/EmailVerificationPage";
 import RoleSelectionPage from "./pages/onboarding/RoleSelectionPage";
-import StudentDashboardPage from "./pages/dashboard/StudentDashboardPage";
-import TutorDashboardPage from "./pages/dashboard/TutorDashboardPage";
+import StudentDashboardPage from "./pages/student/StudentDashboardPage";
+import TutorDashboardPage from "./pages/tutor/TutorDashboardPage";
 import { Toaster } from "react-hot-toast";
 import PublicOnlyRoute from "./components/routes/PublicRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -18,6 +18,17 @@ import AdminRoute from "./components/routes/AdminRoute";
 import OnboardingRoute from "./components/routes/OnboardingRoute";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import NotFoundPage from "./pages/general/NotFoundPage";
+import Layout from "./layouts/Layout";
+import { studentSidebarLinks, tutorSidebarLinks } from "./utils/sideBarLinks";
+import StudentRoute from "./components/routes/StudentRoute";
+import TutorRoute from "./components/routes/TutorRoute";
+import StudentLibraryPage from "./pages/student/StudentLibraryPage";
+import StudentTutorsPage from "./pages/student/StudentTutorsPage";
+import StudentFaqPage from "./pages/general/FAQPage";
+import StudentSettingsPage from "./pages/student/StudentSettingsPage";
+import FAQPage from "./pages/general/FAQPage";
+import TutorSettingsPage from "./pages/tutor/TutorSettingsPage";
+import TutorProfilePage from "./pages/tutor/TutorProfilePage";
 
 export default function App() {
   return (
@@ -60,29 +71,32 @@ export default function App() {
         {/* Student protected routes: require login, verified, onboarded, role = student */}
         <Route
           path="/student"
-          // element={
-          //   <StudentRoute>
-          //     <StudentLayout />
-          //   </StudentRoute>
-          // }
+          element={
+            <StudentRoute>
+              <Layout fullHeight={true} sidebarLinks={studentSidebarLinks} />
+            </StudentRoute>
+          }
         >
           <Route path="dashboard" element={<StudentDashboardPage />} />
-          {/* <Route path="profile" element={<StudentProfilePage />} /> */}
-          {/* <Route path="settings" element={<StudentSettingsPage />} /> */}
+          <Route path="library" element={<StudentLibraryPage />} />
+          <Route path="tutors" element={<StudentTutorsPage />} />
+          <Route path="tutor-profile" element={<TutorProfilePage />} />
+          <Route path="faq" element={<FAQPage />} />
+          <Route path="settings" element={<StudentSettingsPage />} />
         </Route>
 
         {/* Tutor protected routes: require login, verified, onboarded, role = tutor */}
         <Route
           path="/tutor"
-          // element={
-          //   <TutorRoute >
-          //     <TutorLayout />
-          //   </TutorRoute>
-          // }
+          element={
+            <TutorRoute>
+              <Layout fullHeight={true} sidebarLinks={tutorSidebarLinks} />
+            </TutorRoute>
+          }
         >
           <Route path="dashboard" element={<TutorDashboardPage />} />
-          {/* <Route path="profile" element={<TutorProfilePage />} /> */}
-          {/* <Route path="settings" element={<TutorSettingsPage />} /> */}
+          <Route path="faq" element={<FAQPage />} />
+          <Route path="settings" element={<TutorSettingsPage />} />
         </Route>
 
         {/* Chat & Video/Calling routes: accessible to both students and tutors */}

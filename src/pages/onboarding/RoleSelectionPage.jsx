@@ -9,7 +9,7 @@ const RoleSelectionPage = () => {
   const navigate = useNavigate();
 
   const handleRoleSelection = (role) => {
-    if (role === "Teacher") {
+    if (role === "Tutor") {
       navigate("/tutor/onboarding");
     } else if (role === "Student") {
       navigate("/student/onboarding");
