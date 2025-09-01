@@ -8,8 +8,11 @@ import StepNavigation from "../../components/onboarding/StepNavigation";
 import { getSubjects } from "../../lib/api/subject/subjectsApi";
 import useCreateStudent from "../../hooks/student/useCreateStudent";
 import ErrorAlert from "../../components/common/ErrorAlert";
+import { useNavigate } from "react-router-dom";
 
 const StudentOnboardingPage = () => {
+  const navigate = useNavigate();
+
   const [subjectInfo, setSubjectInfo] = useState(null);
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -66,7 +69,8 @@ const StudentOnboardingPage = () => {
     clearErrors();
 
     // createStudentMutation(formData);
-    console.log("Final JSON Data:", formData);
+
+    navigate("/student/dashboard");
   };
 
   // Step Components

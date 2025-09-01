@@ -51,7 +51,6 @@ const TutorOnboardingPage = () => {
     clearErrors();
 
     createTutorMutation(formData);
-    console.log("Final JSON Data:", formData);
   };
 
   const steps = [

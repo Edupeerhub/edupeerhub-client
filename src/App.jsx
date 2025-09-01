@@ -72,9 +72,9 @@ export default function App() {
         <Route
           path="/student"
           element={
-            <StudentRoute>
-              <Layout fullHeight={true} sidebarLinks={studentSidebarLinks} />
-            </StudentRoute>
+            // <StudentRoute>
+            //  </StudentRoute>
+            <Layout fullHeight={true} sidebarLinks={studentSidebarLinks} />
           }
         >
           <Route path="dashboard" element={<StudentDashboardPage />} />
