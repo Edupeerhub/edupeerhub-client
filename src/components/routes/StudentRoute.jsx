@@ -5,8 +5,8 @@ export default function StudentRoute({ children }) {
     <RouteGuard
       requireAuth
       requireVerified
-      requireOnboarded={true}
-      requireStudentRole
+      // requireOnboarded={true}
+      // requireStudentRole
     >
       {children}
     </RouteGuard>
