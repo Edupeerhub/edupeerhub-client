@@ -3,7 +3,7 @@ import { axiosInstance } from "../axios";
 export const getAuthUser = async () => {
   try {
     const response = await axiosInstance.get("/auth/me");
-    return response.data.data;
+    return response.data.data || null;
   } catch (error) {
     return null;
   }
