@@ -2,97 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edupeer || Home</title>
-
-    <!-- font awesome cdn link -->
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
-
-    <!--- custom css file link -->
+    <title>Edupeer</title>
     <link rel="stylesheet" href="style.css">
-
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="icon" href="Logo.png" type="image/x-icon">
+    <script src="https://kit.fontawesome.com/yourkit.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    
-<!-- header section starts -->
-<header class="header">
-
-    <section class="flex">
-    
-        <a href="Edupeer.html" class="logo">Welcome!</a>
-
-        <form action="" method="post" class="search-form">
-           <input type="text" name="search_box" placeholder="Search" 
-           required maxlength="100">
-           <button type="submit" class="fas fa-search" name="search_box"></button>
-        </form>
-
-        <div class="icons">
-            <div id="menu-btn" class="fas fa-bars"></div>
-            <div id="search-btn" class="fas fa-search"></div>
-            <div id="notification-icon" class="far fa-bell"></div>
-            <div id="users-btn" class="fas fa-user"></div>
-        </div>
-
-        <div class="profile">
-            <img src="pfp.png" alt="">
-            <h3>Charles</h3>
-            <span>Student</span>
-            <a href="#" class="btn">View profile</a>
-            <div class="flex-btn">
-                <a href="#" class="option-btn">Login</a>
-                <a href="#" class="option-btn">Sign-Up</a>
+    <section class="header">
+        <nav>
+            <a href="Edupeer 2.html"><img src="Vector.png"></a>
+            <div class="nav-links" id="navLinks">
+                <i class="fa fa-times" onclick="HideMenu()"></i>
+                <ul>
+                    <li><a href="">HOME</a></li>
+                    <li><a href="">ABOUT</a></li>
+                    <li><a href="">COURSES</a></li>
+                    <li><a href="">REFERENCES</a></li>
+                    <li><a href="">CONTACT</a></li>
+                    <a href="" class="hero-btn-3">SIGN UP</a>
+                    <a href="" class="hero-btn-4">LOGIN</a>
+                </ul>
             </div>
-        </div>
-
+            <i class="fa fa-bars" onclick="ShowMenu()"></i>
+        </nav>
+        <div class="text-box">
+        <h1><span style="color: #7ab7f9;">Peer</span> Tutoring that Bridges the Education Gap</h1>
+        <p>Join a movement of students and volunteers working together to make learning free, fun, and fair.</b></p>
+        <a href="" class="hero-btn">Become a Tutor</a>
+        <a href="" class="hero-btn-2">Join As a Student</a>
+    </div>
+    <div class="pic-1">
+        <img src="Frame 15.png">
+    </div>
     </section>
 
-</header>
-<!-- header section ends -->
+<!---------- Courses ---------->
 
-<!-- side bar section starts -->
-
-<div class="side-bar">
-
-    <div class="close-side-bar">
-        <i class="fas fa-times"></i>
+<section class="courses">
+    <h1>How EduPeerHub Works</h1>
+    <p>Your learning journey made simple, supportive and powerful.</p>
+    <div class="row">
+        <div class="course-col">
+            <i class="fa fa-user-plus" style="font-size:20px;color:#7ab7f9;margin-bottom:10px;"></i>
+            <h3>Join EduPeerHub</h3>
+            <p>Sign up easily as a student looking for support or a tutor ready to help.</p>
+        </div>
+        <div class="course-col">
+            <i class="fa fa-dashboard" style="font-size:20px;color:#7ab7f9;margin-bottom:10px;"></i>
+            <h3>Access Your Dashboard</h3>
+            <p>Instantly view your learning stats—daily streaks, quiz completions, and more.</p>
+        </div>
+        <div class="course-col">
+            <i class="fa fa-tv" style="font-size:20px;color:#7ab7f9;margin-bottom:10px;"></i>
+            <h3>Join Live Sessions</h3>
+            <p>Learn with others in real-time tutor-led sessions tailored to your subjects.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="course-col-2">
+            <i class="fa fa-book" style="font-size:20px;color:#7ab7f9;margin-bottom:10px;"></i>
+            <h3>Explore the Library</h3>
+            <p>Access learning resources, notes, and WAEC/NECO/JAMB practice materials based on your enrolled classes.</p>
+        </div>
+        <div class="course-col-2">
+            <i class="fa fa-question" style="font-size:20px;color:#7ab7f9;margin-bottom:10px;"></i>
+            <h3>Ask a Question Anytime</h3>
+            <p>Post academic questions to get help from verified tutors or our AI tutor assistant.</p>
+        </div>
+        <div class="course-col-2">
+            <i class="fa fa-trophy" style="font-size:20px;color:#7ab7f9;margin-bottom:10px;"></i>
+            <h3>Stay Motivated</h3>
+            <p>Earn badges, maintain learning streaks, and celebrate milestones as you grow.</p>
+        </div>
     </div>
 
-    <div class="profile">
-            <img src="pfp.png" alt="">
-            <h3>Charles</h3>
-            <span>Student</span>
-            <a href="#" class="btn">View profile</a>
-
-        </div>
-
-    <nav class="navbar">
-        <a href="Edupeer.html"><i class="fas fa-home"></i><span>Home</span></a>
-        <a href="#"><i class="fas fa-book"></i><span> Courses</span></a>
-        <a href="#"><i class="fas fa-users"></i><span> Community</span></a>
-        <a href="#"><i class="fas fa-cog"></i><span> Settings</span></a>
-        <a href="#"><i class="fas fa-sign-out-alt"></i><span> Logout</span></a>
-    </nav>
-
-<!--side bar section ends-->
-
-
-
-
-
-
-<!--footer section starts-->
-
-<footer class="footer">
-    &copy; copyright @ 2025 by <span>Ireoluwa Popoola</span>||All rights reseved!
-<footer>
-
-<!--footer section ends-->
-
-<!-- custom js file link -->
- <script src="script.js"></script>
+</section>
 
 </body>
 </html>
