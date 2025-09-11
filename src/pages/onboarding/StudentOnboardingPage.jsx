@@ -5,21 +5,23 @@ import SelectableCardWithCheckbox from "../../components/onboarding/SelectableCa
 import SelectableCardList from "../../components/onboarding/SelectableCardList";
 import ProgressBar from "../../components/onboarding/ProgressBar";
 import StepNavigation from "../../components/onboarding/StepNavigation";
-import { getSubjects } from "../../lib/api/subject/subjectsApi";
+import { getExams, getSubjects } from "../../lib/api/common/subjectsApi";
 import useCreateStudent from "../../hooks/student/useCreateStudent";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { useNavigate } from "react-router-dom";
+import { handleToastError } from "../../utils/toastDisplayHandler";
 
 const StudentOnboardingPage = () => {
   const navigate = useNavigate();
 
   const [subjectInfo, setSubjectInfo] = useState(null);
+  const [examInfo, setExamInfo] = useState(null);
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
 
   const [formData, setFormData] = useState({
-    goals: [],
+    learningGoals: [],
     subjects: [],
     exams: [],
   });
@@ -27,16 +29,16 @@ const StudentOnboardingPage = () => {
   const toggleGoal = (goal) =>
     setFormData((prev) => ({
       ...prev,
-      goals: prev.goals.includes(goal)
-        ? prev.goals.filter((g) => g !== goal)
-        : [...prev.goals, goal],
+      learningGoals: prev.learningGoals.includes(goal)
+        ? prev.learningGoals.filter((g) => g !== goal)
+        : [...prev.learningGoals, goal],
     }));
 
   const toggleSubject = (subject) =>
     setFormData((prev) => ({
       ...prev,
       subjects: prev.subjects.includes(subject)
-        ? prev.subjectss.filter((s) => s !== subject)
+        ? prev.subjects.filter((s) => s !== subject)
         : [...prev.subjects, subject],
     }));
 
@@ -49,11 +51,19 @@ const StudentOnboardingPage = () => {
     }));
 
   useEffect(() => {
-    async function fetchSubjects() {
-      const subjects = await getSubjects();
-      setSubjectInfo(subjects);
+    try {
+      async function fetchData() {
+        const subjects = await getSubjects();
+        setSubjectInfo(subjects);
+        const exams = await getExams();
+        setExamInfo(exams);
+      }
+
+      fetchData();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      handleToastError(error);
     }
-    fetchSubjects();
   }, []);
 
   const {
@@ -68,9 +78,7 @@ const StudentOnboardingPage = () => {
     e.preventDefault();
     clearErrors();
 
-    // createStudentMutation(formData);
-
-    navigate("/student/dashboard");
+    createStudentMutation(formData);
   };
 
   // Step Components
@@ -87,7 +95,7 @@ const StudentOnboardingPage = () => {
           "Get personalized help from tutors",
           "Build a consistent study routine",
         ]}
-        selectedItems={formData.goals}
+        selectedItems={formData.learningGoals}
         onToggle={toggleGoal}
       />
     </div>,
@@ -111,12 +119,7 @@ const StudentOnboardingPage = () => {
         subtitle="Select the exams you plan to take"
       />
       <SelectableCardList
-        options={[
-          { id: 1, name: "WAEC" },
-          { id: 2, name: "NECO" },
-          { id: 3, name: "JAMB" },
-          { id: 4, name: "GCE" },
-        ]}
+        options={examInfo}
         selectedItems={formData.exams}
         onToggle={toggleExam}
         roundedFull={true}
@@ -134,12 +137,33 @@ const StudentOnboardingPage = () => {
 
         <div className="flex-1">{steps[currentStep - 1]}</div>
 
+        {currentStep === 1 && formData.learningGoals.length === 0 && (
+          <p className="text-sm text-red-500 mt-2">
+            Please select at least one goal to continue.
+          </p>
+        )}
+        {currentStep === 2 && formData.subjects.length === 0 && (
+          <p className="text-sm text-red-500 mt-2">
+            Please select at least one subject to continue.
+          </p>
+        )}
+        {currentStep === 3 && formData.exams.length === 0 && (
+          <p className="text-sm text-red-500 mt-2">
+            Please select at least one exam to continue.
+          </p>
+        )}
+
         <StepNavigation
           currentStep={currentStep}
           totalSteps={totalSteps}
           onBack={() => setCurrentStep((s) => s - 1)}
           onNext={() => setCurrentStep((s) => s + 1)}
           onSubmit={handleSubmit}
+          disableNext={
+            (currentStep === 1 && formData.learningGoals.length === 0) ||
+            (currentStep === 2 && formData.subjects.length === 0) ||
+            (currentStep === 3 && formData.exams.length === 0)
+          }
         />
       </div>
     </AuthLayout>
