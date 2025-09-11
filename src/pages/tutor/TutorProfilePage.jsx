@@ -76,6 +76,7 @@ const TutorProfilePage = () => {
           </p>
           <p className="text-sm mt-2 text-gray-500">{tutor.bio}</p>
           <p className="text-sm mt-2 text-gray-500">{tutor.schedule}</p>
+
           <button className="btn btn-primary mt-2 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary">
             Book Session
           </button>
