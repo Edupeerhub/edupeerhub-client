@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import Mathematics from "../../assets/images/mathematics.jpg";
 import English from "../../assets/images/english.jpg";
@@ -14,22 +14,19 @@ const subjects = [
   { name: "Chemistry", image: Biology },
   { name: "Physics", image: Physics },
   { name: "English Literature", image: Literature },
-]
+];
 
 const StudentLibraryPage = () => {
   const [eachsubject, setEachSubject] = useState(null);
 
   if (eachsubject) {
     return (
-      <StudentSubjectPage 
-        subject={eachsubject}
-        setSubject={setEachSubject}
-      />
-    )
+      <StudentSubjectPage subject={eachsubject} setSubject={setEachSubject} />
+    );
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <div className="flex items-center gap-4">
         <button className="btn btn-primary rounded-full bg-white text-primary border-none shadow-md hover:bg-primary hover:text-white">
           <ChevronLeft />
@@ -38,7 +35,7 @@ const StudentLibraryPage = () => {
         <p className="font-bold">All Subjects</p>
       </div>
 
-      <div className="m-4 mt-10 flex flex-wrap gap-4 cursor-pointer">
+      <div className=" pt-2 flex flex-wrap justify-center gap-10 cursor-pointer">
         {subjects.map((subj) => (
           <div
             key={subj.name}
@@ -58,7 +55,7 @@ const StudentLibraryPage = () => {
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -67,11 +64,14 @@ export default StudentLibraryPage;
 const StudentSubjectPage = ({ subject, setSubject }) => {
   const handleBack = () => {
     setSubject(null);
-  }
+  };
   return (
     <>
       <div className="flex items-center gap-4">
-        <button onClick={handleBack} className="btn btn-primary rounded-full bg-white text-primary border-none shadow-md hover:bg-primary hover:text-white">
+        <button
+          onClick={handleBack}
+          className="btn btn-primary rounded-full bg-white text-primary border-none shadow-md hover:bg-primary hover:text-white"
+        >
           <ChevronLeft />
           Back
         </button>
@@ -82,5 +82,4 @@ const StudentSubjectPage = ({ subject, setSubject }) => {
       </div>
     </>
   );
-}
-
+};
