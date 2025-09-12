@@ -29,6 +29,9 @@ import StudentSettingsPage from "./pages/student/StudentSettingsPage";
 import FAQPage from "./pages/general/FAQPage";
 import TutorSettingsPage from "./pages/tutor/TutorSettingsPage";
 import TutorProfilePage from "./pages/tutor/TutorProfilePage";
+import AboutPage from "./pages/landing/AboutPage";
+import FeaturePage from "./pages/landing/FeaturePage";
+import ContactPage from "./pages/landing/ContactPage";
 
 export default function App() {
   return (
@@ -36,6 +39,9 @@ export default function App() {
       <Routes>
         {/* Public landing page */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/features" element={<FeaturePage />} />
+        <Route path="/contact" element={<ContactPage />} />
 
         {/* Public-only routes: accessible only if NOT logged in */}
         <Route element={<PublicOnlyRoute />}>
