@@ -1,14 +1,14 @@
 import useAuthUser from "../../hooks/auth/useAuthUser";
 import Calendar from "../../components/Calendar";
-import streakIcon from "../../assets/streak.svg";
-import quizIcon from "../../assets/quiz.svg";
-import scoreIcon from "../../assets/score.svg";
-import greaterThanIcon from "../../assets/greater-than.svg";
-import Upcoming from "../../assets/upcoming.svg";
-import tutorImageA from "../../assets/tutor-image-A.svg";
-import tutorImageB from "../../assets/tutor-image-B.svg";
-import tutorImageC from "../../assets/tutor-image-C.svg";
-import clockIcon from "../../assets/clock.svg";
+import streakIcon from "../../assets/Student-icon/streak.svg";
+import quizIcon from "../../assets/Student-icon/score.svg";
+import scoreIcon from "../../assets/Student-icon/score.svg";
+import greaterThanIcon from "../../assets/Student-icon/greater-than.svg";
+import Upcoming from "../../assets/Student-icon/upcoming.svg";
+import tutorImageA from "../../assets/Student-icon/tutor-image-A.svg";
+import tutorImageB from "../../assets/Student-icon/tutor-image-B.svg";
+import tutorImageC from "../../assets/Student-icon/tutor-image-C.svg";
+import clockIcon from "../../assets/Student-icon/clock.svg";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
