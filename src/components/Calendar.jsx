@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import dropdownIcon from "../assets/chevron-down.svg"; 
+import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg"; 
 
 const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
