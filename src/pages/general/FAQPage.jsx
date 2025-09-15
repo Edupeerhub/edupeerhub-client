@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
-import handWaving from "../../assets/hand-waving.svg";
-import dropDown from "../../assets/drop-down.svg";
-import chatDots from "../../assets/chat-dots.svg";
+import handWaving from "../../assets//Faq/hand-waving.svg";
+import dropDown from "../../assets/Faq/drop-down.svg";
+import chatDots from "../../assets/Faq/chat-dots.svg";
 
 const FAQPage = () => {
   const [openIndex, setOpenIndex] = useState(null);
