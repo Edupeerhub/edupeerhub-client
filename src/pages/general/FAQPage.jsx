@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
-import handWaving from "../../assets//Faq/hand-waving.svg";
-import dropDown from "../../assets/Faq/drop-down.svg";
-import chatDots from "../../assets/Faq/chat-dots.svg";
+import handWaving from "../../assets/hand-waving.svg";
+import dropDown from "../../assets/drop-down.svg";
+import chatDots from "../../assets/chat-dots.svg";
 
 const FAQPage = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -54,10 +54,7 @@ const FAQPage = () => {
       {/* FAQs */}
       <div className="mt-6 space-y-4">
         {faqs.map((faq, index) => (
-          <div
-            key={index}
-            className="border rounded-lg bg-white shadow-sm"
-          >
+          <div key={index} className="border rounded-lg bg-white shadow-sm">
             <button
               onClick={() => setOpenIndex(openIndex === index ? null : index)}
               className="w-full flex justify-between items-center px-4 py-3 text-left text-gray-800 font-medium"
@@ -79,7 +76,7 @@ const FAQPage = () => {
         ))}
       </div>
 
-       {/* Chat Button */}
+      {/* Chat Button */}
       <button className="fixed bottom-6 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 flex items-center gap-2 bg-[#0568FF] rounded-3xl shadow-lg px-4 py-2 hover:scale-105 transition">
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#0568FF]">
           <img src={chatDots} alt="chat" className="w-8 h-8 text-white" />

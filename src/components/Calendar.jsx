@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import dayjs from "dayjs";
-import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg"; 
+import dropdownIcon from "../assets/chevron-down.svg";
 
 const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
@@ -14,12 +14,15 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   const today = dayjs().format("YYYY-MM-DD");
 
   const startOfMonth = currentMonth.startOf("month");
-  const startDay = (startOfMonth.day() + 6) % 7; 
+  const startDay = (startOfMonth.day() + 6) % 7;
   const daysInMonth = currentMonth.daysInMonth();
   const days = [];
 
   for (let i = 0; i < startDay; i++) {
-    days.push({ date: startOfMonth.subtract(startDay - i, "day"), isCurrentMonth: false });
+    days.push({
+      date: startOfMonth.subtract(startDay - i, "day"),
+      isCurrentMonth: false,
+    });
   }
   for (let i = 1; i <= daysInMonth; i++) {
     days.push({ date: currentMonth.date(i), isCurrentMonth: true });
@@ -65,7 +68,9 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
               <img
                 src={dropdownIcon}
                 alt="toggle months"
-                className={`w-4 h-4 transition-transform ${showDropdown ? "rotate-180" : ""}`}
+                className={`w-4 h-4 transition-transform ${
+                  showDropdown ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -73,11 +78,19 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white border rounded shadow-lg w-48 z-50 p-2">
                 {/* Year controls */}
                 <div className="flex items-center justify-between mb-2">
-                  <button onClick={() => setCurrentMonth((m) => m.subtract(1, "year"))} className="px-2">
+                  <button
+                    onClick={() =>
+                      setCurrentMonth((m) => m.subtract(1, "year"))
+                    }
+                    className="px-2"
+                  >
                     ◀
                   </button>
                   <span className="font-semibold">{currentMonth.year()}</span>
-                  <button onClick={() => setCurrentMonth((m) => m.add(1, "year"))} className="px-2">
+                  <button
+                    onClick={() => setCurrentMonth((m) => m.add(1, "year"))}
+                    className="px-2"
+                  >
                     ▶
                   </button>
                 </div>
@@ -95,7 +108,9 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
                           setCurrentMonth(month);
                           setShowDropdown(false);
                         }}
-                        className={`px-2 py-1 rounded text-sm hover:bg-gray-100 ${isThisMonth ? "bg-gray-100" : ""}`}
+                        className={`px-2 py-1 rounded text-sm hover:bg-gray-100 ${
+                          isThisMonth ? "bg-gray-100" : ""
+                        }`}
                       >
                         {month.format("MMM")}
                       </button>

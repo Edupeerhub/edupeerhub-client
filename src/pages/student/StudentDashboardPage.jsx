@@ -1,21 +1,29 @@
 import useAuthUser from "../../hooks/auth/useAuthUser";
 import Calendar from "../../components/Calendar";
-import streakIcon from "../../assets/Student-icon/streak.svg";
-import quizIcon from "../../assets/Student-icon/score.svg";
-import scoreIcon from "../../assets/Student-icon/score.svg";
-import greaterThanIcon from "../../assets/Student-icon/greater-than.svg";
-import Upcoming from "../../assets/Student-icon/upcoming.svg";
-import tutorImageA from "../../assets/Student-icon/tutor-image-A.svg";
-import tutorImageB from "../../assets/Student-icon/tutor-image-B.svg";
-import tutorImageC from "../../assets/Student-icon/tutor-image-C.svg";
-import clockIcon from "../../assets/Student-icon/clock.svg";
+import streakIcon from "../../assets/streak.svg";
+import quizIcon from "../../assets/quiz.svg";
+import scoreIcon from "../../assets/score.svg";
+import greaterThanIcon from "../../assets/greater-than.svg";
+import Upcoming from "../../assets/upcoming.svg";
+import tutorImageA from "../../assets/tutor-image-A.svg";
+import tutorImageB from "../../assets/tutor-image-B.svg";
+import tutorImageC from "../../assets/tutor-image-C.svg";
+import clockIcon from "../../assets/clock.svg";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
 
   const tutors = [
-    { name: "Mr. Ola Williams", subjects: ["Maths", "Chemistry", "Physics"], image: tutorImageA },
-    { name: "Ms. Nkechi Onu", subjects: ["English", "Eng Literature"], image: tutorImageB },
+    {
+      name: "Mr. Ola Williams",
+      subjects: ["Maths", "Chemistry", "Physics"],
+      image: tutorImageA,
+    },
+    {
+      name: "Ms. Nkechi Onu",
+      subjects: ["English", "Eng Literature"],
+      image: tutorImageB,
+    },
     { name: "Mr. Wale Ola", subjects: ["Biology"], image: tutorImageC },
   ];
 
@@ -23,7 +31,6 @@ const StudentDashboardPage = () => {
     <div className="p-4 space-y-4 max-w-8xl mx-auto">
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-      
         <div className="lg:col-span-2 space-y-6">
           <h1 className="text-2xl mb-4">
             Welcome back, {authUser?.firstName || "Student"}
@@ -56,7 +63,6 @@ const StudentDashboardPage = () => {
             <h3 className="font-semibold text-lg mb-4">Upcoming Sessions</h3>
 
             <div className="flex items-center justify-between rounded-lg p-4 h-44">
-    
               <div className="flex flex-col justify-between h-full p-1">
                 <div>
                   <p className="text-blue-600 font-semibold">Mathematics</p>
@@ -84,9 +90,12 @@ const StudentDashboardPage = () => {
         </div>
 
         <div className="bg-[#F9FAFB] rounded-lg shadow p-4 space-y-4 flex flex-col self-start ">
-         {/* Calendar */}
+          {/* Calendar */}
           <div className="flex-none">
-            <Calendar compact={true} bookingDates={["2025-09-10", "2025-09-14"]} />
+            <Calendar
+              compact={true}
+              bookingDates={["2025-09-10", "2025-09-14"]}
+            />
           </div>
 
           <hr className="border-t border-gray-100" />
@@ -95,7 +104,11 @@ const StudentDashboardPage = () => {
             <h3 className="font-semibold text-lg mb-4">Currently Enrolled</h3>
             <div className="flex items-center justify-between w-full">
               <p className="text-gray-500 text-sm font-semibold">No subject</p>
-              <img src={greaterThanIcon} alt=">" className="w-3 h-3 opacity-70" />
+              <img
+                src={greaterThanIcon}
+                alt=">"
+                className="w-3 h-3 opacity-70"
+              />
             </div>
 
             <p className="text-sm text-gray-500 mt-1">Progress 0%</p>
@@ -141,7 +154,8 @@ const StudentDashboardPage = () => {
                     {tutor.subjects.join(" • ")}
                   </p>
                   <p className="text-gray-600 text-xs">
-                    An experienced and Passionate tutor dedicated to helping students achieve their academic goals.
+                    An experienced and Passionate tutor dedicated to helping
+                    students achieve their academic goals.
                   </p>
                 </div>
                 <div className="w-full flex justify-end">
