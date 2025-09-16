@@ -19,7 +19,11 @@ import OnboardingRoute from "./components/routes/OnboardingRoute";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import NotFoundPage from "./pages/general/NotFoundPage";
 import Layout from "./layouts/Layout";
-import { studentSidebarLinks, tutorSidebarLinks } from "./utils/sideBarLinks";
+import {
+  adminSidebarLinks,
+  studentSidebarLinks,
+  tutorSidebarLinks,
+} from "./utils/sideBarLinks";
 import StudentRoute from "./components/routes/StudentRoute";
 import TutorRoute from "./components/routes/TutorRoute";
 import StudentLibraryPage from "./pages/student/StudentLibraryPage";
@@ -32,6 +36,10 @@ import TutorProfilePage from "./pages/tutor/TutorProfilePage";
 import AboutPage from "./pages/landing/AboutPage";
 import FeaturePage from "./pages/landing/FeaturePage";
 import ContactPage from "./pages/landing/ContactPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage.JSX";
+import StudentBookingPage from "./pages/student/StudentBookingPage";
+import AdminTutorsPage from "./pages/admin/AdminTutorsPage";
 
 export default function App() {
   return (
@@ -87,6 +95,7 @@ export default function App() {
           <Route path="library" element={<StudentLibraryPage />} />
           <Route path="tutors" element={<StudentTutorsPage />} />
           <Route path="tutor-profile" element={<TutorProfilePage />} />
+          <Route path="booking" element={<StudentBookingPage />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="settings" element={<StudentSettingsPage />} />
         </Route>
@@ -113,19 +122,19 @@ export default function App() {
         </Route> */}
 
         {/* Admin protected routes: require login, verified, onboarded, role = admin */}
-        {/* Currently commented out until ready */}
-        {/* <Route
+        <Route
           path="/admin"
           element={
             <AdminRoute>
-              <AdminLayout />
+              <Layout fullHeight={true} sidebarLinks={adminSidebarLinks} />
             </AdminRoute>
           }
         >
           <Route path="dashboard" element={<AdminDashboardPage />} />
-          <Route path="users" element={<ManageUsersPage />} />
+          <Route path="tutors" element={<AdminTutorsPage />} />
+
           <Route path="settings" element={<AdminSettingsPage />} />
-        </Route> */}
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster />

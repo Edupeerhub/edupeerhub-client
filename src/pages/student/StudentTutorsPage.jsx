@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Search, ChevronDown, X, SlidersHorizontal } from "lucide-react";
-import "./StudentTutorsPage.css";
 import FilterPanel from "../../components/student/FilterPanel";
-import TutorCard from "./TutorSearchCard";
+import TutorCard from "../../components/student/TutorSearchCard";
 
 // Mock data for tutors
 const mockTutors = [
