@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    // Output & language settings
+
+    "target": "ES2020",
+    "module": "ESNext",              // For modern bundlers
+    "moduleResolution": "Bundler",   // Or "NodeNext" for Node ESM
+    "jsx": "react-jsx",              // If using React; otherwise remove
+    "noEmit": true,                  // Type-check only; your bundler compiles
+
+    // Strictness & interop
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // Gradual adoption flags
+    "allowJs": false,                 // Let TS include .js during migration
+    "checkJs": false,                 // Type-check .js files too (via JSDoc or inference)
+
+    // Path aliases (optional)
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] }
+  },
+  "include": ["src", "types"],
+  "exclude": ["node_modules", "dist", "build"]
+}
