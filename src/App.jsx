@@ -37,7 +37,7 @@ import AboutPage from "./pages/landing/AboutPage";
 import FeaturePage from "./pages/landing/FeaturePage";
 import ContactPage from "./pages/landing/ContactPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import AdminSettingsPage from "./pages/admin/AdminSettingsPage.JSX";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import StudentBookingPage from "./pages/student/StudentBookingPage";
 import AdminTutorsPage from "./pages/admin/AdminTutorsPage";
 
