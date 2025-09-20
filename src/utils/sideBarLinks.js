@@ -17,3 +17,8 @@ export const tutorSidebarLinks = [
   { path: "/tutor/faq", label: "Ask Question", icon: AskIcon },
   { path: "/tutor/settings", label: "Settings", icon: SettingsIcon },
 ];
+
+export const adminSidebarLinks = [
+  { path: "/admin/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { path: "/admin/settings", label: "Settings", icon: SettingsIcon },
+];
