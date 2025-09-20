@@ -32,19 +32,20 @@ const StudentDashboardPage = () => {
   ];
 
   const { data, isLoading, error } = useQuery({
+    queryKey: ["recommendedTutors"],
     queryFn: () => getRecommendedTutors(),
   });
   return (
-    <div className="p-4 space-y-4 max-w-8xl mx-auto">
+    <div className="md:p-4 space-y-4 md:max-w-8xl mx-auto">
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2 space-y-6">
-          <h1 className="text-2xl mb-4">
+        <div className="lg:col-span-2 space-y-2 md:space-y-6">
+          <h1 className="text-2xl md:mb-4 p-2 sm:p-0 font-semibold">
             Welcome back, {authUser?.firstName || "Student"}
           </h1>
 
           {/* Overview */}
-          <div className="bg-white rounded-lg border shadow p-4">
+          <div className="bg-white rounded-lg border shadow p-2 sm:p-4">
             <h2 className="text-lg font-semibold mb-4 ">Overview</h2>
             <div className="grid grid-cols-3 gap-4">
               <OverviewPanel icon={streakIcon} text="Daily Streak" />
@@ -57,7 +58,7 @@ const StudentDashboardPage = () => {
           <div className="bg-white rounded-lg border shadow p-4">
             <h3 className="font-semibold text-lg mb-4">Upcoming Sessions</h3>
 
-            <div className="flex items-center justify-between rounded-lg p-4 h-44">
+            <div className="flex items-center justify-between rounded-lg md:p-4 h-44">
               <div className="flex flex-col justify-between h-full p-1">
                 <div>
                   <p className="text-blue-600 font-semibold">Mathematics</p>
@@ -84,7 +85,7 @@ const StudentDashboardPage = () => {
           </div>
         </div>
 
-        <div className="bg-[#F9FAFB] border rounded-lg shadow p-4 space-y-4 flex flex-col self-start ">
+        <div className="bg-[#F9FAFB] border rounded-lg shadow md:p-4 space-y-4 flex flex-col self-start ">
           {/* Calendar */}
           <div className="flex-none">
             <Calendar
@@ -96,7 +97,7 @@ const StudentDashboardPage = () => {
           <hr className="border-t border-gray-300" />
 
           {/* Currently Enrolled */}
-          <div className="flex-none">
+          <div className="flex-none px-2 sm:px-0">
             <h3 className="font-semibold text-lg mb-4">Currently Enrolled</h3>
             <div className="flex items-center justify-between w-full">
               <p className="text-gray-500 text-sm font-semibold">No subject</p>
@@ -124,9 +125,9 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* ===== Recommended Tutors ===== */}
-      <div className="bg-[#F9FAFB] rounded-lg p-4 w-full border shadow-md">
+      <div className="bg-[#F9FAFB] rounded-lg md:p-4 w-full border shadow-md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg">Recommended Tutors</h3>
+          <h3 className="font-semibold text-lg px-2">Recommended Tutors</h3>
           <Link
             to="/student/tutors"
             className="text-blue-600 text-sm font-medium hover:underline"
@@ -140,7 +141,7 @@ const StudentDashboardPage = () => {
             No tutors found.
           </p>
         ) : (
-          <div className="overflow-x-auto scrollbar-hide">
+          <div className="">
             <div className="flex gap-4 pb-2" style={{ width: "max-content" }}>
               {data.rows.map((tutor) => (
                 <div
@@ -180,17 +181,6 @@ const StudentDashboardPage = () => {
           </div>
         )}
       </div>
-
-      {/* Add this CSS to hide scrollbar if desired */}
-      <style jsx>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none; /* Internet Explorer 10+ */
-          scrollbar-width: none; /* Firefox */
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none; /* Safari and Chrome */
-        }
-      `}</style>
     </div>
   );
 };

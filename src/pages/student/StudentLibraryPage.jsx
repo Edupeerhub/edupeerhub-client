@@ -60,14 +60,14 @@ const StudentSubjectPage = ({ subject, setSubject }) => {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={handleBack}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full 
-             border border-[#0568FF] shadow-sm 
-             bg-white text-primary font-semibold 
-             hover:bg-primary hover:text-white hover:border-transparent 
-             transition"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full 
+                  border border-[#0568FF] shadow-sm 
+                  bg-white text-primary font-semibold 
+                  hover:bg-primary hover:text-white hover:border-transparent 
+                  transition-colors duration-200"
         >
           <ChevronLeft size={18} />
-          Back
+          <span className="hidden md:inline">Back</span>
         </button>
 
         {/* <p className="font-bold text-lg mx-auto text-center">{subject.name}</p> */}

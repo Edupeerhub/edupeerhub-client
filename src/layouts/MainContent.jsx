@@ -12,7 +12,7 @@ const MainContent = ({ children, fullHeight = false }) => {
       {/* Content container with proper spacing */}
       <div
         className={`
-        p-6 
+        p-2 md:p-6 
         ${fullHeight ? "flex-1" : ""}
       `}
       >

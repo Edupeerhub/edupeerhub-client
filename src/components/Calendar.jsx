@@ -41,7 +41,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   const headerPadding = compact ? "mb-2" : "mb-3";
 
   return (
-    <div className="w-full">
+    <div className="p-2 sm:p-0 w-full">
       {/* Header */}
       <div className={`relative w-full ${headerPadding}`}>
         <div className="grid grid-cols-3 items-center">
@@ -135,8 +135,8 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
 
       {/* Weekday headers */}
       <div className="grid grid-cols-7 text-center text-xs gap-y-1 text-gray-500 mb-1">
-        {["M", "T", "W", "T", "F", "S", "S"].map((d) => (
-          <div key={d}>{d}</div>
+        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+          <div key={i}>{d}</div>
         ))}
       </div>
 
