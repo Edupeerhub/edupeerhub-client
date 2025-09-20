@@ -81,7 +81,15 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
                 }`
               }
             >
-              {Icon && <Icon className="size-5 opacity-70" />}
+              {Icon && (
+                <Icon
+                  className="size-5 opacity-70"
+                  style={{
+                    fill: "cuurrentColor",
+                    stroke: "currentColor",
+                  }}
+                />
+              )}
               <span>{label}</span>
             </NavLink>
           ))}
