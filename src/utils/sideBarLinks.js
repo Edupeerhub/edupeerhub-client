@@ -3,6 +3,11 @@ import LibraryIcon from "../assets/images/layout-icons/library.svg?react";
 import AskIcon from "../assets/images/layout-icons/question.svg?react";
 import TutorIcon from "../assets/images/layout-icons/tutors.svg?react";
 import SettingsIcon from "../assets/images/layout-icons/setting.svg?react";
+import SessionIcon from "../assets/images/layout-icons/calendar.svg?react";
+import AvailabilityIcon from "../assets/images/layout-icons/clock.svg?react";
+import MessageIcon from "../assets/images/layout-icons/message.svg?react";
+import StudentsIcon from "../assets/images/layout-icons/students.svg?react";
+import ReportsIcon from "../assets/images/layout-icons/reports.svg?react";
 
 export const studentSidebarLinks = [
   { path: "/student/dashboard", label: "Dashboard", icon: DashboardIcon },
@@ -14,11 +19,20 @@ export const studentSidebarLinks = [
 
 export const tutorSidebarLinks = [
   { path: "/tutor/dashboard", label: "Dashboard", icon: DashboardIcon },
-  { path: "/tutor/faq", label: "Ask Question", icon: AskIcon },
+  { path: "/tutor/sessions", label: "My Sessions", icon: SessionIcon },
+  {
+    path: "/tutor/availability",
+    label: "Availability",
+    icon: AvailabilityIcon,
+  },
+  { path: "/tutor/messages", label: "Messages", icon: MessageIcon },
   { path: "/tutor/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 export const adminSidebarLinks = [
   { path: "/admin/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { path: "/admin/tutors", label: "Tutors", icon: TutorIcon },
+  { path: "/admin/students", label: "Students", icon: StudentsIcon },
+  { path: "/admin/report", label: "Reports", icon: ReportsIcon },
   { path: "/admin/settings", label: "Settings", icon: SettingsIcon },
 ];

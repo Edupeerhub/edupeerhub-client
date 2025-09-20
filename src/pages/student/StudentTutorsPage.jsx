@@ -2,31 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getTutors } from "../../lib/api/tutor/tutorApi";
-import { Link, useNavigate } from "react-router-dom";
-
-// Mock tutors
-const mockTutors = [
-  {
-    id: 1,
-    name: "Mr. Ola Williams",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Math", "English", "Chemistry", "Physics"],
-    bio: "An experienced and passionate tutor dedicated to helping students achieve their academic goals.",
-  },
-  {
-    id: 2,
-    name: "Ms. Nkechi Onu",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    subjects: ["English", "Chemistry", "Physics"],
-    bio: "An experienced and passionate tutor dedicated to helping students achieve their academic goals.",
-  },
-];
+import { Link } from "react-router-dom";
 
 const StudentTutorsPage = () => {
-  const navigate = useNavigate();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef(null);
@@ -47,17 +25,13 @@ const StudentTutorsPage = () => {
     queryFn: () => getTutors(),
   });
 
-  const handleViewProfile = (userId) => {
-    navigate(`/student/tutor-profile/${userId}`);
-  };
-
   if (isLoading) return <p>Loading tutors...</p>;
   if (error) return <p className="text-red-500">Failed to load tutors.</p>;
   return (
-    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="mx-auto px-1 sm:px-6 lg:px-8 md:py-6">
       {/* Search + Filter */}
-      <div className="flex items-center gap-4 mb-6 relative">
-        <div className="flex-1 relative">
+      <div className="flex items-center gap-2 md:gap-4 mb-6 relative">
+        <div className="flex-1 relative ">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
