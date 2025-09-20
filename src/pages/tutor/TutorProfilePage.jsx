@@ -1,9 +1,9 @@
-import { ChevronLeft } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getTutorProfile } from "../../lib/api/tutor/tutorApi";
 import RatingSummary from "../../components/common/RatingSummary";
 import ReviewList from "../../components/common/ReviewList";
+import BackButton from "../../components/common/BackButton";
 
 const TutorProfilePage = () => {
   const navigate = useNavigate();
@@ -55,46 +55,50 @@ const TutorProfilePage = () => {
     return <p className="text-red-500">Failed to load tutor profile.</p>;
 
   return (
-    <>
-      <Link
-        to="/student/tutors"
-        className="btn items-center ggap-1 px-3 py-1.5 rounded-full 
-             border border-[#0568FF] shadow-sm 
-             bg-white text-primary font-semibold 
-             hover:bg-primary hover:text-white hover:border-transparent 
-             transition"
-      >
-        <ChevronLeft size={18} />
-        Back
-      </Link>
+    <div className="w-full overflow-x-hidden">
+      {/* Back Button */}
+      <div className="px-4 sm:px-8 py-4">
+        <BackButton to="/student/tutors" />
+      </div>
 
-      <div className="sm:px-8 py-2">
+      <div className="px-2 sm:px-8 md:pb-8">
         {/* Tutor Header */}
-        <div className="flex gap-6 items-center mt-6">
-          <div className="avatar avatar-online shrink-0">
-            <div className="w-24 rounded-full">
+        <div className="flex flex-col md:flex-row gap-1 sm:gap-6 items-center">
+          {/* Avatar - centered on mobile */}
+          <div className="avatar avatar-online shrink-0 self-center">
+            <div className="w-20 sm:w-24 rounded-full">
               <img
                 src={data?.user.profileImageUrl}
                 alt={`${data?.user.firstName} ${data?.user.lastName}`}
+                className="w-auto sm:w-full h-full object-cover"
               />
             </div>
           </div>
-          <div>
-            <h1 className="font-bold text-xl">
+
+          {/* Info section */}
+          <div className="flex-1 min-w-0 sm:w-full w-auto text-center sm:text-left">
+            <h1 className="font-bold text-xl sm:text-2xl break-words">
               {data?.user.firstName} {data?.user.lastName}
             </h1>
 
-            {/* Subjects */}
-            <p className="text-sm mt-2 text-primary font-semibold">
-              {data?.subjects?.map((s) => s.name).join(" · ")}
-            </p>
+            {/* Subjects - allow text wrapping */}
+            <div className="mt-2">
+              <p className="text-sm text-primary font-semibold break-words">
+                {data?.subjects?.map((s) => s.name).join(" · ")}
+              </p>
+            </div>
 
-            {/* Schedule */}
-            <p className="text-sm mt-2 text-gray-500">{schedule}</p>
+            {/* Schedule - allow text wrapping */}
+            <div className="mt-2">
+              <p className="text-sm text-gray-500 break-words leading-relaxed">
+                {schedule}
+              </p>
+            </div>
 
+            {/* Book Session Button - full width on mobile */}
             <button
               onClick={handleBookSession}
-              className="btn btn-primary mt-2 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary"
+              className="btn btn-primary mt-2 md:mt-4 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary transition-colors duration-200 w-full sm:w-auto px-6"
             >
               Book Session
             </button>
@@ -102,23 +106,25 @@ const TutorProfilePage = () => {
         </div>
 
         {/* About */}
-        <div className="mt-3">
-          <h1 className="font-bold">About Me</h1>
-          <p className="text-sm mt-2 text-gray-500">{data?.bio}</p>
+        <div className="mt-6">
+          <h2 className="font-bold text-lg">About Me</h2>
+          <p className="text-sm mt-2 text-gray-500 leading-relaxed break-words">
+            {data?.bio}
+          </p>
         </div>
 
         {/* Rating */}
-        <div className="mt-4">
+        <div className="mt-3 md:mt-6">
           <RatingSummary rating={rating} />
         </div>
 
         {/* Reviews */}
-        <div className="mt-6">
-          <h1 className="font-bold mb-4">Reviews</h1>
+        <div className="mt-6 ">
+          <h2 className="font-bold text-lg mb-4">Reviews</h2>
           <ReviewList reviews={reviews} />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

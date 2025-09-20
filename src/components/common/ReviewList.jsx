@@ -3,9 +3,12 @@ import { Star } from "lucide-react";
 
 const ReviewList = ({ reviews }) => {
   return (
-    <div className="bg-background rounded-lg shadow-sm divide-y">
+    <div className="">
       {reviews.map((review, idx) => (
-        <div key={idx} className="p-5">
+        <div
+          key={idx}
+          className="pb-4 md:p-5 border rounded-lg shadow-sm mb-4 last:mb-0"
+        >
           <div className="flex gap-3 items-start">
             <div className="avatar shrink-0">
               <div className="w-12 rounded-full">
