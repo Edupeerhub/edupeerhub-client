@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { ChevronLeft, Star } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getTutorProfile } from "../../lib/api/tutor/tutorApi";
 
 const TutorProfilePage = () => {
   // Simulated API data
@@ -57,25 +60,40 @@ const TutorProfilePage = () => {
     },
   ]);
 
+  const { id } = useParams();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["tutorProfile", id],
+    queryFn: () => getTutorProfile(id),
+  });
+
   return (
     <>
-      <button className="btn btn-primary rounded-full bg-white text-primary border-none shadow-md hover:bg-primary hover:text-white">
-        <ChevronLeft />
+      <Link
+        className="btn items-center ggap-1 px-3 py-1.5 rounded-full 
+             border border-[#0568FF] shadow-sm 
+             bg-white text-primary font-semibold 
+             hover:bg-primary hover:text-white hover:border-transparent 
+             transition"
+      >
+        <ChevronLeft size={18} />
         Back
-      </button>
+      </Link>
       <div className="flex gap-10 items-start">
         <div className="avatar avatar-online mt-8 shrink-0 !static">
           <div className="w-24 rounded-full">
-            <img src={tutor.avatar} />
+            <img src={data?.user.profileImageUrl} alt="Tutor Profile Picture" />
           </div>
         </div>
         <div className="">
-          <h1 className="font-bold">{tutor.name}</h1>
+          <h1 className="font-bold">
+            {data?.user.firstName} {data?.user.lastName}
+          </h1>
           <p className="text-sm mt-2 text-primary font-semibold">
-            {tutor.subjects}
+            {data?.subjects?.map((s) => s.name).join(" · ")}
           </p>
-          <p className="text-sm mt-2 text-gray-500">{tutor.bio}</p>
-          <p className="text-sm mt-2 text-gray-500">{tutor.schedule}</p>
+
+          <p className="text-sm mt-2 text-gray-500">{tutor?.schedule}</p>
 
           <button className="btn btn-primary mt-2 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary">
             Book Session
@@ -85,7 +103,7 @@ const TutorProfilePage = () => {
 
       <div>
         <h1 className="font-bold">About Me</h1>
-        <p className="text-sm p-2 text-gray-500">{tutor.about}</p>
+        <p className="text-sm mt-2 text-gray-500">{data?.bio}</p>
       </div>
       <h1 className="font-bold mt-4 mb-4">Reviews</h1>
       <div className="bg-background">
