@@ -12,6 +12,7 @@ import clockIcon from "../../assets/Student-icon/clock.svg";
 import { useQuery } from "@tanstack/react-query";
 import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
 import { Link } from "react-router-dom";
+import OverviewPanel from "../../components/student/OverviewPanel";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
@@ -43,29 +44,17 @@ const StudentDashboardPage = () => {
           </h1>
 
           {/* Overview */}
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Overview</h2>
+          <div className="bg-white rounded-lg border shadow p-4">
+            <h2 className="text-lg font-semibold mb-4 ">Overview</h2>
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-[#F9FAFB] rounded-lg shadow p-4 h-28 flex flex-col justify-center">
-                <img src={streakIcon} alt="Streak" className="w-10 h-10 mb-1" />
-                <p className="text-gray-500 text-sm">Daily Streak</p>
-                <p className="text-lg font-bold">3 days</p>
-              </div>
-              <div className="bg-[#F9FAFB] rounded-lg shadow p-4 h-28 flex flex-col justify-center">
-                <img src={quizIcon} alt="Quiz" className="w-10 h-10 mb-1" />
-                <p className="text-gray-500 text-sm">Quizzes Completed</p>
-                <p className="text-lg font-bold">4</p>
-              </div>
-              <div className="bg-[#F9FAFB] rounded-lg shadow p-4 h-28 flex flex-col justify-center">
-                <img src={scoreIcon} alt="Score" className="w-10 h-10 mb-1" />
-                <p className="text-gray-500 text-sm">Average Score</p>
-                <p className="text-lg font-bold">85%</p>
-              </div>
+              <OverviewPanel icon={streakIcon} text="Daily Streak" />
+              <OverviewPanel icon={quizIcon} text="Quizzes Completed" />
+              <OverviewPanel icon={scoreIcon} text="Average Score" />
             </div>
           </div>
 
           {/* Upcoming Sessions */}
-          <div className="bg-white rounded-lg shadow p-1">
+          <div className="bg-white rounded-lg border shadow p-4">
             <h3 className="font-semibold text-lg mb-4">Upcoming Sessions</h3>
 
             <div className="flex items-center justify-between rounded-lg p-4 h-44">
@@ -95,7 +84,7 @@ const StudentDashboardPage = () => {
           </div>
         </div>
 
-        <div className="bg-[#F9FAFB] rounded-lg shadow p-4 space-y-4 flex flex-col self-start ">
+        <div className="bg-[#F9FAFB] border rounded-lg shadow p-4 space-y-4 flex flex-col self-start ">
           {/* Calendar */}
           <div className="flex-none">
             <Calendar
@@ -104,8 +93,9 @@ const StudentDashboardPage = () => {
             />
           </div>
 
-          <hr className="border-t border-gray-100" />
+          <hr className="border-t border-gray-300" />
 
+          {/* Currently Enrolled */}
           <div className="flex-none">
             <h3 className="font-semibold text-lg mb-4">Currently Enrolled</h3>
             <div className="flex items-center justify-between w-full">
@@ -122,8 +112,11 @@ const StudentDashboardPage = () => {
               <div className="bg-blue-600 h-2 rounded-full w-0"></div>
             </div>
             <div className="flex justify-center mt-4">
-              <button className="bg-blue-600 text-white px-4 py-1 border rounded-xl font-medium hover:underline w-full">
-                View All
+              <button
+                disabled
+                className="bg-blue-600 text-white px-4 py-1 border rounded-xl font-medium w-full disabled:opacity-50 disabled:cursor-not-allowed italic"
+              >
+                Coming Soon
               </button>
             </div>
           </div>
@@ -131,7 +124,7 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* ===== Recommended Tutors ===== */}
-      <div className="bg-[#F9FAFB] rounded-lg p-4 w-full">
+      <div className="bg-[#F9FAFB] rounded-lg p-4 w-full border shadow-md">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Recommended Tutors</h3>
           <Link
@@ -152,7 +145,7 @@ const StudentDashboardPage = () => {
               {data.rows.map((tutor) => (
                 <div
                   key={tutor.userId}
-                  className="flex flex-col p-4 border border-gray-200 rounded-lg shadow-lg hover:shadow-2xl transition w-80 flex-shrink-0"
+                  className="flex flex-col p-4 border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition w-80 flex-shrink-0"
                 >
                   <div className="flex items-center gap-4 mb-3">
                     <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
