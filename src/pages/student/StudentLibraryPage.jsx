@@ -26,12 +26,12 @@ const StudentLibraryPage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className=" pt-2 flex flex-wrap justify-center gap-10 cursor-pointer">
+    <div className="flex justify-center items-center min-h-[80vh] md:px-6">
+      <div className="flex flex-wrap justify-center gap-10 cursor-pointer">
         {subjects.map((subj) => (
           <div
             key={subj.name}
-            className="card w-72 shadow-sm bg-gray-50 rounded-xl overflow-hidden transition transform hover:shadow-md hover:-translate-y-1 cursor-pointer"
+            className="card w-72 shadow-sm bg-gray-300 rounded-xl overflow-hidden transition transform hover:shadow-md hover:-translate-y-1 cursor-pointer"
             onClick={() => setEachSubject(subj)}
           >
             <img
