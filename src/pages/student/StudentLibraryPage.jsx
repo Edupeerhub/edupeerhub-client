@@ -60,9 +60,11 @@ const StudentSubjectPage = ({ subject, setSubject }) => {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={handleBack}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full border-none shadow-md 
+          className="flex items-center gap-1 px-3 py-1.5 rounded-full 
+             border border-[#0568FF] shadow-sm 
              bg-white text-primary font-semibold 
-             hover:bg-primary hover:text-white transition"
+             hover:bg-primary hover:text-white hover:border-transparent 
+             transition"
         >
           <ChevronLeft size={18} />
           Back

@@ -94,7 +94,7 @@ export default function App() {
           <Route path="dashboard" element={<StudentDashboardPage />} />
           <Route path="library" element={<StudentLibraryPage />} />
           <Route path="tutors" element={<StudentTutorsPage />} />
-          <Route path="tutor-profile" element={<TutorProfilePage />} />
+          <Route path="tutor-profile/:id" element={<TutorProfilePage />} />
           <Route path="booking" element={<StudentBookingPage />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="settings" element={<StudentSettingsPage />} />
