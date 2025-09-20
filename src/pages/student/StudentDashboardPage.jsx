@@ -175,9 +175,12 @@ const StudentDashboardPage = () => {
                     </div>
                   </div>
 
-                  <button className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/80">
+                  <Link
+                    to={`/student/tutor-profile/${tutor.userId}`}
+                    className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/80 text-center no-underline"
+                  >
                     View Profile
-                  </button>
+                  </Link>
                 </div>
               ))}
             </div>
