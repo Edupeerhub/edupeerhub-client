@@ -68,53 +68,55 @@ const TutorProfilePage = () => {
         Back
       </Link>
 
-      {/* Tutor Header */}
-      <div className="flex gap-10 items-start mt-6">
-        <div className="avatar avatar-online shrink-0">
-          <div className="w-24 rounded-full">
-            <img
-              src={data?.user.profileImageUrl}
-              alt={`${data?.user.firstName} ${data?.user.lastName}`}
-            />
+      <div className="sm:px-8 py-2">
+        {/* Tutor Header */}
+        <div className="flex gap-6 items-center mt-6">
+          <div className="avatar avatar-online shrink-0">
+            <div className="w-24 rounded-full">
+              <img
+                src={data?.user.profileImageUrl}
+                alt={`${data?.user.firstName} ${data?.user.lastName}`}
+              />
+            </div>
+          </div>
+          <div>
+            <h1 className="font-bold text-xl">
+              {data?.user.firstName} {data?.user.lastName}
+            </h1>
+
+            {/* Subjects */}
+            <p className="text-sm mt-2 text-primary font-semibold">
+              {data?.subjects?.map((s) => s.name).join(" · ")}
+            </p>
+
+            {/* Schedule */}
+            <p className="text-sm mt-2 text-gray-500">{schedule}</p>
+
+            <button
+              onClick={handleBookSession}
+              className="btn btn-primary mt-2 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary"
+            >
+              Book Session
+            </button>
           </div>
         </div>
-        <div>
-          <h1 className="font-bold text-xl">
-            {data?.user.firstName} {data?.user.lastName}
-          </h1>
 
-          {/* Subjects */}
-          <p className="text-sm mt-2 text-primary font-semibold">
-            {data?.subjects?.map((s) => s.name).join(" · ")}
-          </p>
-
-          {/* Schedule */}
-          <p className="text-sm mt-2 text-gray-500">{schedule}</p>
-
-          <button
-            onClick={handleBookSession}
-            className="btn btn-primary mt-2 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary"
-          >
-            Book Session
-          </button>
+        {/* About */}
+        <div className="mt-3">
+          <h1 className="font-bold">About Me</h1>
+          <p className="text-sm mt-2 text-gray-500">{data?.bio}</p>
         </div>
-      </div>
 
-      {/* About */}
-      <div className="mt-2">
-        <h1 className="font-bold">About Me</h1>
-        <p className="text-sm mt-2 text-gray-500">{data?.bio}</p>
-      </div>
+        {/* Rating */}
+        <div className="mt-4">
+          <RatingSummary rating={rating} />
+        </div>
 
-      {/* Rating */}
-      <div className="mt-4">
-        <RatingSummary rating={rating} />
-      </div>
-
-      {/* Reviews */}
-      <div className="mt-6">
-        <h1 className="font-bold mb-4">Reviews</h1>
-        <ReviewList reviews={reviews} />
+        {/* Reviews */}
+        <div className="mt-6">
+          <h1 className="font-bold mb-4">Reviews</h1>
+          <ReviewList reviews={reviews} />
+        </div>
       </div>
     </>
   );
