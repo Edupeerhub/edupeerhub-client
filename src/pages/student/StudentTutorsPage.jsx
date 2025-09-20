@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getTutors } from "../../lib/api/tutor/tutorApi";
+import { Link, useNavigate } from "react-router-dom";
 
 // Mock tutors
 const mockTutors = [
@@ -24,6 +25,8 @@ const mockTutors = [
 ];
 
 const StudentTutorsPage = () => {
+  const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef(null);
@@ -43,6 +46,10 @@ const StudentTutorsPage = () => {
     queryKey: ["tutors"],
     queryFn: () => getTutors(),
   });
+
+  const handleViewProfile = (userId) => {
+    navigate(`/student/tutor-profile/${userId}`);
+  };
 
   if (isLoading) return <p>Loading tutors...</p>;
   if (error) return <p className="text-red-500">Failed to load tutors.</p>;
@@ -123,9 +130,12 @@ const StudentTutorsPage = () => {
               {/* <button className="mt-auto self-end px-4 py-2 text-sm bg-white border border-[#0457D4] text-[#0457D4] font-semibold rounded-full hover:bg-primary hover:text-white transition hover:border-transparent">
               View Profile
             </button> */}
-              <button className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/80">
+              <Link
+                to={`/student/tutor-profile/${tutor.userId}`}
+                className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/80 text-center no-underline"
+              >
                 View Profile
-              </button>
+              </Link>
             </div>
           ))}
         </div>
