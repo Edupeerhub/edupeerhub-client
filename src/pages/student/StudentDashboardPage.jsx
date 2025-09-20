@@ -9,6 +9,9 @@ import tutorImageA from "../../assets/Student-icon/tutor-image-A.svg";
 import tutorImageB from "../../assets/Student-icon/tutor-image-B.svg";
 import tutorImageC from "../../assets/Student-icon/tutor-image-C.svg";
 import clockIcon from "../../assets/Student-icon/clock.svg";
+import { useQuery } from "@tanstack/react-query";
+import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
+import { Link } from "react-router-dom";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
@@ -27,6 +30,9 @@ const StudentDashboardPage = () => {
     { name: "Mr. Wale Ola", subjects: ["Biology"], image: tutorImageC },
   ];
 
+  const { data, isLoading, error } = useQuery({
+    queryFn: () => getRecommendedTutors(),
+  });
   return (
     <div className="p-4 space-y-4 max-w-8xl mx-auto">
       {/* Grid Layout */}
@@ -125,49 +131,70 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* ===== Recommended Tutors ===== */}
-      <div className="bg-[#F9FAFB] rounded-lg shadow p-4 w-full">
+      <div className="bg-[#F9FAFB] rounded-lg p-4 w-full">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Recommended Tutors</h3>
-          <a href="#" className="text-blue-600 text-sm font-medium">
+          <Link
+            to="/student/tutors"
+            className="text-blue-600 text-sm font-medium hover:underline"
+          >
             View All
-          </a>
+          </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-          {tutors.map((tutor, index) => (
-            <div
-              key={index}
-              className="bg-white border rounded-lg shadow-sm p-3 flex h-34 w-84"
-            >
-              {/* images */}
-              <img
-                src={tutor.image}
-                alt={tutor.name}
-                className="w-12 h-12 rounded-full object-cover mr-3"
-              />
+        {!data || data.rows?.length === 0 ? (
+          <p className="flex justify-center items-center font-bold">
+            No tutors found.
+          </p>
+        ) : (
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-4 pb-2" style={{ width: "max-content" }}>
+              {data.rows.map((tutor) => (
+                <div
+                  key={tutor.userId}
+                  className="flex flex-col p-4 border border-gray-200 rounded-lg shadow-lg hover:shadow-2xl transition w-80 flex-shrink-0"
+                >
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+                      <img
+                        src={tutor.user.profileImageUrl}
+                        alt={`${tutor?.user.firstName} ${tutor?.user.lastName}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {tutor?.user.firstName} {tutor?.user.lastName}
+                      </h3>
+                      <p className="text-sm text-primary mt-1">
+                        {tutor?.subjects?.map((s) => s.name).join(" • ")}
+                      </p>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-3">
+                        {tutor.bio}
+                      </p>
+                    </div>
+                  </div>
 
-              {/* details */}
-              <div className="flex flex-col justify-between flex-1 items-start">
-                <div className="w-full">
-                  <h4 className="font-bold text-sm">{tutor.name}</h4>
-                  <p className="text-xs text-blue-600 mb-1">
-                    {tutor.subjects.join(" • ")}
-                  </p>
-                  <p className="text-gray-600 text-xs">
-                    An experienced and Passionate tutor dedicated to helping
-                    students achieve their academic goals.
-                  </p>
-                </div>
-                <div className="w-full flex justify-end">
-                  <button className="px-2 py-1 border border-gray-300 rounded-full text-xs leading-[13.51px] font-normal hover:bg-gray-100 -ml-1">
+                  <button className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/80">
                     View Profile
                   </button>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* Add this CSS to hide scrollbar if desired */}
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none; /* Internet Explorer 10+ */
+          scrollbar-width: none; /* Firefox */
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none; /* Safari and Chrome */
+        }
+      `}</style>
     </div>
   );
 };
