@@ -1,7 +1,7 @@
 import { BellIcon } from "lucide-react";
 import Logo from "../assets/images/edupeerhub-logo1.svg?react";
 import useAuthUser from "../hooks/auth/useAuthUser";
-const Navbar = ({ onToggleSidebar }) => {
+const Navbar = ({ onToggleSidebar, tutorGreeting }) => {
   const { authUser } = useAuthUser();
 
   return (
@@ -13,6 +13,8 @@ const Navbar = ({ onToggleSidebar }) => {
             {/* App Logo */}
             <Logo className="lg:hidden size-9 " />
           </div>
+
+          <div>{tutorGreeting}</div>
 
           {/* Right side: Hamburger menu, User menu, notifications, etc. */}
           <div className="flex items-center gap-2">
