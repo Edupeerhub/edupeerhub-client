@@ -2,7 +2,7 @@ name: "Bi-weekly Security Review"
 
 on:
   schedule:
-    - cron: "0 8 1,15 * *"  # 08:00 UTC on the 1st and 15th (≈ 09:00 Lagos)
+    - cron: "0 8 1,15 * *"  # 08:00 UTC on the 1st and 15th
   workflow_dispatch: {}
 
 jobs:
@@ -25,23 +25,38 @@ jobs:
 
             // Find existing tracking issue with label security-review
             const { data: issues } = await github.rest.issues.listForRepo({
-              owner: repo.owner, repo: repo.repo, state: 'open', labels: 'security-review'
+              owner: repo.owner,
+              repo: repo.repo,
+              state: 'open',
+              labels: 'security-review'
             });
             let issue = issues.find(i => i.title === title);
 
             const safeReq = async (route, params) => {
               try { return await github.request(route, params); }
               catch { return { data: [] }; }
-            }
+            };
 
-            const dependabot = await safeReq('GET /repos/{owner}/{repo}/dependabot/alerts',
-              { owner: repo.owner, repo: repo.repo, per_page: 100, state: 'open' });
+            const dependabot = await safeReq('GET /repos/{owner}/{repo}/dependabot/alerts', {
+              owner: repo.owner,
+              repo: repo.repo,
+              per_page: 100,
+              state: 'open'
+            });
 
-            const codeScan = await safeReq('GET /repos/{owner}/{repo}/code-scanning/alerts',
-              { owner: repo.owner, repo: repo.repo, per_page: 100, state: 'open' });
+            const codeScan = await safeReq('GET /repos/{owner}/{repo}/code-scanning/alerts', {
+              owner: repo.owner,
+              repo: repo.repo,
+              per_page: 100,
+              state: 'open'
+            });
 
-            const secretScan = await safeReq('GET /repos/{owner}/{repo}/secret-scanning/alerts',
-              { owner: repo.owner, repo: repo.repo, per_page: 100, state: 'open' });
+            const secretScan = await safeReq('GET /repos/{owner}/{repo}/secret-scanning/alerts', {
+              owner: repo.owner,
+              repo: repo.repo,
+              per_page: 100,
+              state: 'open'
+            });
 
             const fmt = (arr, map) => arr.length ? arr.map(map).join('\n') : "_None_";
 
@@ -79,12 +94,17 @@ ${secretList}
 
             if (!issue) {
               await github.rest.issues.create({
-                owner: repo.owner, repo: repo.repo,
-                title, body, labels: ['security-review']
+                owner: repo.owner,
+                repo: repo.repo,
+                title,
+                body,
+                labels: ['security-review']
               });
             } else {
               await github.rest.issues.update({
-                owner: repo.owner, repo: repo.repo,
-                issue_number: issue.number, body
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: issue.number,
+                body
               });
             }
