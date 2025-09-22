@@ -12,8 +12,6 @@ import {
   Thread,
   Window,
 } from "stream-chat-react";
-import { StreamChat } from "stream-chat";
-import toast from "react-hot-toast";
 
 import ChatLoader from "../../components/ui/ChatLoader";
 import CallButton from "../../components/ui/CallButton";
@@ -27,7 +25,6 @@ const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 const ChatPage = () => {
   const { id: targetUserId } = useParams();
 
-  // const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [isLoading, setLoading] = useState(true);
 
@@ -74,7 +71,7 @@ const ChatPage = () => {
   if (isLoading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-screen w-full flex flex-col p-4">
+    <div className="h-screen w-full flex flex-col">
       <Chat client={chatClient}>
         <Channel channel={channel}>
           <div className="w-full relative">

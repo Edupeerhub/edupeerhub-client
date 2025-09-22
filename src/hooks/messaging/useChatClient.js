@@ -22,10 +22,10 @@ export function useChatClient(user, token) {
       )
       .then(() => setClient(client));
 
-    return () => {
-      client.disconnectUser();
-      setClient(null);
-    };
+    // return () => {
+    //   client.disconnectUser();
+    //   setClient(null);
+    // };
   }, [user?.id, token]);
 
   return client;
