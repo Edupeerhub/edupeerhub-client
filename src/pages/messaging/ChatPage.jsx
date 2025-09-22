@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Chat,
   Channel,
@@ -20,6 +20,7 @@ const ChatPage = () => {
   const { id: targetUserId } = useParams();
   const [channel, setChannel] = useState(null);
   const [isLoading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const { authUser } = useAuthUser();
 
@@ -44,8 +45,17 @@ const ChatPage = () => {
 
   const handleVideoCall = () => {
     if (!channel) return;
-    const callUrl = `${window.location.origin}/call/${channel.id}`;
-    channel.sendMessage({ text: `Join my call: ${callUrl}` });
+
+    const role = authUser.role;
+    const routePrefix = role === "tutor" ? "/tutor" : "/student";
+    const callUrl = `${routePrefix}/call/${channel.id}`;
+
+    channel.sendMessage({
+      text: `Join my call: ${window.location.origin}${callUrl}`,
+    });
+
+    navigate(callUrl);
+
     handleToastSuccess("Video call link sent!");
   };
 

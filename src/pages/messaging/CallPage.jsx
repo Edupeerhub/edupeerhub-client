@@ -102,15 +102,17 @@ const CallContent = () => {
 
   const navigate = useNavigate();
 
-  if (callingState === CallingState.LEFT) {
-    if (authUser.role === "student") {
-      return navigate("/student");
-    } else if (authUser.role === "tutor") {
-      return navigate("/tutor");
-    } else {
-      return navigate("/");
+  useEffect(() => {
+    if (callingState === CallingState.LEFT) {
+      if (authUser.role === "student") {
+        return navigate("/student");
+      } else if (authUser.role === "tutor") {
+        return navigate("/tutor");
+      } else {
+        return navigate("/");
+      }
     }
-  }
+  }, [callingState, authUser, navigate]);
 
   return (
     <StreamTheme>
