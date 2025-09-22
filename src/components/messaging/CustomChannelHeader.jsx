@@ -1,57 +1,76 @@
 import { useNavigate } from "react-router-dom";
+import {
+  Avatar,
+  useChannelStateContext,
+  useChatContext,
+} from "stream-chat-react";
+import { useEffect, useState } from "react";
 import CallButton from "../ui/CallButton";
 
 const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
   const navigate = useNavigate();
+  const { members } = useChannelStateContext();
+  const { client } = useChatContext(); // 👈 gives you live user updates
 
-  if (!channel || !authUser) return null;
+  const [otherUser, setOtherUser] = useState(null);
 
-  // Get the other user (not the current user)
-  const otherUser = Object.values(channel.state.members).find(
-    (member) => member.user.id !== authUser.id
-  );
+  useEffect(() => {
+    if (!channel || !authUser) return;
 
-  if (!otherUser) return null;
+    const foundUser = Object.values(members).find(
+      (member) => member.user?.id !== authUser?.id
+    )?.user;
+
+    if (foundUser) {
+      setOtherUser(foundUser);
+
+      // 👀 listen for presence updates in real-time
+      const handleUserUpdated = (event) => {
+        if (event.user?.id === foundUser.id) {
+          setOtherUser({ ...foundUser, ...event.user });
+        }
+      };
+
+      client.on("user.updated", handleUserUpdated);
+      client.on("user.presence.changed", handleUserUpdated);
+
+      return () => {
+        client.off("user.updated", handleUserUpdated);
+        client.off("user.presence.changed", handleUserUpdated);
+      };
+    }
+  }, [members, channel, authUser, client]);
+
+  if (!channel || !authUser || !otherUser) return null;
 
   const handleProfileClick = () => {
-    // Adjust the route based on your app structure
-    navigate(`/profile/${otherUser.user.id}`);
+    navigate(`/profile/${otherUser.id}`);
   };
 
   return (
-    <div className="flex items-center justify-between p-1 border-b bg-white">
+    <div className="flex items-center justify-between p-2 border-b bg-white">
       <div className="flex items-center space-x-3">
-        {/* Clickable Avatar */}
         <button
           onClick={handleProfileClick}
           className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full transition-transform hover:scale-105"
-          title={`View ${otherUser.user.name || otherUser.user.id}'s profile`}
         >
-          <img
-            src={
-              otherUser.user.image ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                otherUser.user.name || otherUser.user.id
-              )}&background=4ca1f0&color=fff`
-            }
-            alt={otherUser.user.name || otherUser.user.id}
-            className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+          <Avatar
+            image={otherUser.image}
+            name={otherUser.name || otherUser.id}
+            size={40}
           />
         </button>
 
-        {/* User Info */}
         <div>
           <button
             onClick={handleProfileClick}
             className="text-lg font-semibold text-gray-900 hover:text-blue-600 focus:outline-none focus:underline transition-colors"
-            title={`View ${otherUser.user.name || otherUser.user.id}'s profile`}
           >
-            {otherUser.user.name || otherUser.user.id}
+            {otherUser.name || otherUser.id}
           </button>
 
-          {/* Online Status */}
           <div className="flex items-center space-x-2 mt-1">
-            {otherUser.user.online ? (
+            {otherUser.online ? (
               <>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <p className="text-sm text-green-600">Online</p>
@@ -66,7 +85,6 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
         </div>
       </div>
 
-      {/* Optional: Additional header actions */}
       <div className="flex items-center space-x-2">
         <CallButton handleVideoCall={handleVideoCall} />
       </div>
