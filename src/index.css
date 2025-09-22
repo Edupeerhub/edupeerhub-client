@@ -231,3 +231,28 @@ select {
 .str-chat__message-input {
   border-top: 1px solid #ddd;
 }
+
+.channel-preview {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.channel-info {
+  margin-left: 10px;
+}
+
+.channel-name {
+  font-weight: bold;
+}
+
+.last-message {
+  font-size: 0.9em;
+  color: #555;
+}
+
+.timestamp {
+  font-size: 0.8em;
+  color: #999;
+}
