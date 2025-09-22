@@ -6,10 +6,9 @@ import CustomChannelPreview from "../../components/messaging/ChannelList";
 
 const RecentChatsPage = () => {
   const { authUser } = useAuthUser();
-
   const chatClient = useChatClient();
 
-  if (!chatClient) return <div>Loading chats...</div>;
+  if (!chatClient) return <div className="loading-chats">Loading chats...</div>;
 
   return (
     <Chat client={chatClient} theme="messaging light">
@@ -17,6 +16,9 @@ const RecentChatsPage = () => {
         Preview={CustomChannelPreview}
         filters={{ members: { $in: [authUser.id] } }}
         sort={{ last_message_at: -1 }}
+        EmptyStateIndicator={() => (
+          <div className="no-chats">You have no chats yet.</div>
+        )}
       />
     </Chat>
   );

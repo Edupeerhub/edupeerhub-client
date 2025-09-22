@@ -293,3 +293,11 @@ select {
   min-width: 20px;
   text-align: center;
 }
+
+.loading-chats,
+.no-chats {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
