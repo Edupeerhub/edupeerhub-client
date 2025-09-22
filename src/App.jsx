@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import HomePage from "./pages/landing/HomePage";
 import StudentOnboardingPage from "./pages/onboarding/StudentOnboardingPage";
 import TutorOnboardingPage from "./pages/onboarding/TutorOnboardingPage";
@@ -50,6 +50,8 @@ import CallPage from "./pages/messaging/CallPage";
 import RecentChatsPage from "./pages/messaging/RecentChatsPage";
 
 export default function App() {
+  const location = useLocation();
+
   return (
     <AuthProvider>
       <Routes>
@@ -104,9 +106,18 @@ export default function App() {
           <Route path="library" element={<StudentLibraryPage />} />
           <Route path="tutors" element={<StudentTutorsPage />} />
           <Route path="tutor-profile/:id" element={<TutorProfilePage />} />
-          <Route path="chats" element={<RecentChatsPage />} />
-          <Route path="chat/:id" element={<ChatPage />} />
-          <Route path="call/:id" element={<CallPage />} />
+          <Route
+            path="chats"
+            element={<RecentChatsPage key={location.pathname} />}
+          />
+          <Route
+            path="chat/:id"
+            element={<ChatPage key={location.pathname} />}
+          />
+          <Route
+            path="call/:id"
+            element={<CallPage key={location.pathname} />}
+          />
           <Route path="booking/:id" element={<StudentBookingPage />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="settings" element={<StudentSettingsPage />} />
@@ -125,15 +136,24 @@ export default function App() {
           <Route path="dashboard" element={<TutorDashboardPage />} />
           <Route path="sessions" element={<TutorSessionsPage />} />
           <Route path="availability" element={<TutorAvailabilityPage />} />
-          <Route path="chats" element={<RecentChatsPage />} />
-          <Route path="chat/:id" element={<ChatPage />} />
-          <Route path="call/:id" element={<CallPage />} />
+          <Route
+            path="chats"
+            element={<RecentChatsPage key={location.pathname} />}
+          />
+          <Route
+            path="chat/:id"
+            element={<ChatPage key={location.pathname} />}
+          />
+          <Route
+            path="call/:id"
+            element={<CallPage key={location.pathname} />}
+          />
           <Route path="settings" element={<TutorSettingsPage />} />
         </Route>
 
         {/* Chat & Video/Calling routes: accessible to both students and tutors */}
         {/* Requires: logged-in, verified, onboarded */}
-        <Route
+        {/* <Route
           element={
             <PrivateRoute>
               <Layout fullHeight={true} />
@@ -142,7 +162,7 @@ export default function App() {
         >
           <Route path="/chat/:id" element={<ChatPage />} />
           <Route path="/call/:id" element={<CallPage />} />
-        </Route>
+        </Route> */}
 
         {/* Admin protected routes: require login, verified, onboarded, role = admin */}
         <Route

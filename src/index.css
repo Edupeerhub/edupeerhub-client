@@ -237,22 +237,40 @@ select {
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #ddd;
+  cursor: pointer;
 }
 
 .channel-info {
   margin-left: 10px;
+  flex: 1; /* take remaining space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .channel-name {
   font-weight: bold;
+  margin-bottom: 2px;
 }
 
-.last-message {
+.last-message-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 0.9em;
   color: #555;
 }
 
+.last-message {
+  flex: 1; /* message takes remaining space */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .timestamp {
-  font-size: 0.8em;
+  font-size: 0.75em;
   color: #999;
+  margin-left: 10px;
+  flex-shrink: 0; /* keep timestamp from shrinking */
 }
