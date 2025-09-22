@@ -45,6 +45,8 @@ import TutorAvailabilityPage from "./pages/tutor/TutorAvailabilityPage";
 import TutorMessagesPage from "./pages/tutor/TutorMessagesPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
+import ChatPage from "./pages/messaging/ChatPage";
+import CallPage from "./pages/messaging/CallPage";
 
 export default function App() {
   return (
@@ -125,10 +127,16 @@ export default function App() {
 
         {/* Chat & Video/Calling routes: accessible to both students and tutors */}
         {/* Requires: logged-in, verified, onboarded */}
-        {/* <Route element={<PrivateRoute />}>
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/call" element={<CallPage />} />
-        </Route> */}
+        <Route
+          element={
+            <PrivateRoute>
+              <Layout fullHeight={true} />
+            </PrivateRoute>
+          }
+        >
+          <Route path="/chat/:id" element={<ChatPage />} />
+          <Route path="/call/:id" element={<CallPage />} />
+        </Route>
 
         {/* Admin protected routes: require login, verified, onboarded, role = admin */}
         <Route
