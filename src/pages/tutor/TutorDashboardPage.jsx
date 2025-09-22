@@ -1,15 +1,50 @@
 import useAuthUser from "../../hooks/auth/useAuthUser";
-// import Navbar from "../../layouts/Navbar";
 import { Clock, Check, CalendarOffIcon, Hourglass, 
-  AlertCircle, CheckCircle2, Calendar1Icon, Users2, ChevronRight, StarsIcon} from "lucide-react";
+  AlertCircle, CheckCircle2, Calendar1Icon, Users2, ChevronRight, StarsIcon,
+  Calendar1} from "lucide-react";
+import Yinka from "../../assets/images/students-image/student-image-1.jpg"
+import Chima from "../../assets/images/students-image/student-image-2.jpg"
+import Eze from "../../assets/images/students-image/student-image-3.jpg"
 
 const TutorDashboardPage = () => {
   const { authUser } = useAuthUser();
 
   const tutor = {
-    status: "approved", // "pending" | "rejected" | "approved" | "active"
+    status: "active", // "pending" | "rejected" | "approved" | "active"
     progress: 82,
     bookings: [],
+    upcomingSessions: [
+      {
+        name: "Yinka Doe",
+        subject: "Mathematics",
+        exam: "SS3/UTME",
+        date: "Sept. 10, 2025",
+        time: "2hrs, 30min",
+        timehrs: "2:30pm",
+        image: Yinka,
+        action: "View",
+      },
+      {
+        name: "Chima Eke",
+        subject: "English",
+        exam: "SS3/UTME",
+        date: "Sept. 15, 2025",
+        time: "2hrs",
+        timehrs: "1:00pm",
+        image: Chima,
+        action: "View",
+      },
+      {
+        name: "Eze Victor",
+        subject: "Government",
+        exam: "SS3/UTME",
+        time: "1hr, 30min",
+        timehrs: "1:30pm",
+        date: "Sept. 16, 2025",
+        image: Eze,
+        action: "View",
+      }
+    ]
   };
 
   const profileStatus = {
@@ -20,7 +55,11 @@ const TutorDashboardPage = () => {
       btnMessage: "Check Status",
       bgColor: "bg-red-100",
       color: "text-red-500",
-      sessionMessage: "Sorry, there are no upcoming sessions yet until your verification is approved",
+      sessionMessage: (
+        <p className="text-[11px] pt-3">
+          Sorry, there are no upcoming sessions yet until your verification is approved
+        </p>
+      ),
       sessionIcon: <CalendarOffIcon className="text-accent" />,
       progress: tutor.progress,
     },
@@ -31,7 +70,11 @@ const TutorDashboardPage = () => {
       btnMessage: "Resubmit",
       bgColor: "bg-red-100",
       color: "text-red-500",
-      sessionMessage: "Sorry, there are no upcoming sessions yet until your verification is approved",
+      sessionMessage: (
+        <p className="text-[11px] pt-3">
+          Sorry, there are no upcoming sessions yet until your verification is approved
+        </p>
+      ),
       sessionIcon: <CalendarOffIcon className="text-accent" />,
       progress: tutor.progress,    
     },
@@ -42,14 +85,36 @@ const TutorDashboardPage = () => {
       btnMessage: "View Profile",
       bgColor: "bg-blue-200",
       color: "text-green-900",
-      sessionMessage: "Your upcoming session would appear here",
+      sessionMessage: (
+        <p className="text-[11px] pt-3">
+          Your upcoming session would appear here
+        </p>
+      ),
       sessionIcon: <Calendar1Icon className="text-accent" />,
+      progress: 100,
+    },
+    active: {
+      icon: <CheckCircle2 className="mt-2 text-green-900" />,
+      title: "Verified Tutor",
+      subtitle: "Your Profile is approved",
+      btnMessage: "View Profile",
+      bgColor: "bg-blue-200",
+      color: "text-green-900",
+      sessionMessage: (
+        <div className="w-full mt-[-20px] flex flex-col items-center gap-1 text-[12px]">
+          {tutor.upcomingSessions.map((session, i) => (
+            <SessionCard key={i} {...session} />
+          ))}
+          <button className="mt-1 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full">
+            Manage Schedule
+          </button>
+        </div>
+      ),
       progress: 100,
     }
   }
 
   const { icon, title, subtitle, btnMessage, bgColor, color, sessionMessage, sessionIcon, progress } = profileStatus[tutor.status] || profileStatus.pending;
-
 
   return (
     <>
@@ -65,6 +130,7 @@ const TutorDashboardPage = () => {
           {tutor.status === "pending" && <PendingLayout />}
           {tutor.status === "rejected" && <RejectedLayout />}
           {tutor.status === "approved" && <ApprovedLayout />}
+          {tutor.status === "active" && <ActiveLayout tutor={tutor}/>}
         </div>
 
         <div className="w-1/5 mt-[-30px]">
@@ -112,7 +178,7 @@ const TutorDashboardPage = () => {
             <p className="font-bold m-2">Upcoming sessions</p>
             <span className="flex flex-col mt-7 m-2 text-center items-center">
               {sessionIcon}
-              <p className="text-[11px] pt-3">{sessionMessage}</p>
+              {sessionMessage}
             </span>
           </div>
         </div>
@@ -122,8 +188,6 @@ const TutorDashboardPage = () => {
 };
 
 export default TutorDashboardPage;
-
-import React from "react";
 
 function PendingLayout() {
   return (
@@ -217,5 +281,134 @@ function ApprovedLayout() {
         </div>
       </div>
     </>
+  );
+}
+
+function ActiveLayout({ tutor }) {
+  const tableHeaders = ["Student", "Subject", "Date", "Time", "Action"]
+  return (
+    <>
+      <div>
+        <div className="w-full flex gap-3">
+          <div className="w-56 p-5 text-[10px] border rounded-md shadow-md">
+            <span className="flex justify-between mb-3">
+              <Users2 className="rounded-full p-1 bg-blue-300 text-blue-800" />
+              <ChevronRight className=" pb-3" />
+            </span>
+            <p>Total Students</p>
+            <p className="pt-1">0</p>
+          </div>
+          <div className="w-56 p-5 text-[10px] border rounded-md shadow-md">
+            <span className="flex justify-between mb-3">
+              <Calendar1Icon className="rounded-full p-1 bg-blue-300 text-blue-800" />
+              <ChevronRight className=" pb-3" />
+            </span>
+            <p>Weekly Sessions</p>
+            <p className="pt-1">0</p>
+          </div>
+          <div className="w-56 p-5 text-[10px] border rounded-md shadow-md">
+            <span className="flex justify-between mb-3">
+              <StarsIcon className="rounded-full p-1 bg-blue-300 text-blue-800" />
+              <ChevronRight className=" pb-3" />
+            </span>
+            <p>Ratings</p>
+            <p className="pt-1">0</p>
+          </div>
+        </div>
+
+        <div className="mt-3 p-2 border rounded-md shadow-sm">
+          <p className="p-2 font-bold">Booking Requests</p>
+          <div className="h-60 border rounded-md shadow-md flex flex-col">
+            <table>
+              <thead>
+                <tr>
+                  {tableHeaders.map((header, i) => (
+                    <th key={i} className="text-sm border-b px-4 py-3">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tutor.upcomingSessions.map((s, i) => (
+                  <tr key={i} className="text-center text-sm">
+                    <td>
+                      <div>
+                        <BookingCard key={i} {...s} />
+                      </div>
+                    </td>
+                    <td>{s.subject}</td>
+                    <td>{s.date}</td>
+                    <td>{s.timehrs}</td>
+                    <td>{s.action}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mt-3 p-2 border rounded-md shadow-sm">
+          <p className="p-2 font-bold">Recent Activity</p>
+          <div className="h-14 border rounded-md shadow-md flex gap-3 items-center pl-8">
+            <Check className="rounded-full p-1 bg-blue-200 text-blue-500" />
+            <div className="w-full text-[12px] ">
+              <p>Completed session with chima eke on integration and differentiation</p>
+              <p className="text-gray-500 text-[8px]">2 hours ago</p>
+            </div>
+          </div>
+
+          <div className="h-14 border rounded-md shadow-md flex gap-3 items-center pl-8">
+            <Calendar1 className="rounded-full p-1 bg-blue-200 text-blue-500" />
+            <div className="w-full text-[12px] ">
+              <p>New booking request from Yinka Doe</p>
+              <p className="text-gray-500 text-[8px]">2 hours ago</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function SessionCard({ name, subject, time, image }) {
+  return (
+    <div className="flex items-center justify-between border p-2 rounded-md w-full">
+      <img
+        src={image}
+        alt={`${name} profile`}
+        className="w-6 h-6 rounded-full"
+      />
+      <div className="text-left ml-1">
+        <p className="font-bold">{name}</p>
+        <p className="text-gray-500 text-[8px]">
+          {subject}
+        </p>
+        <p className="text-gray-500 text-[8px]">
+          {time}
+        </p>
+      </div>
+      <button className="ml-4 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-2 py-1 rounded-full text-[5px] font-semibold">
+        Confirmed
+      </button>
+    </div>
+  );
+}
+
+function BookingCard({ name, image, exam }) {
+  return (
+    <div className="flex items-center gap-3 p-2">
+      <img
+        src={image}
+        alt={`${name} profile`}
+        className="w-7 h-7 rounded-full"
+      />
+      <div className="text-left ml-1">
+        <p className="text-sm">{name}</p>
+        <p className="text-gray-500 text-sm">
+          {exam}
+        </p>
+      </div>
+    </div>
   );
 }
