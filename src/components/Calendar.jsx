@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg"; 
+import dayjs from "dayjs";
+import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg";
 
 // Helper functions to replace dayjs functionality
 const formatDate = (date, format) => {
@@ -64,16 +65,16 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
 
   const today = formatDate(new Date(), "YYYY-MM-DD");
 
-  const monthStart = startOfMonth(currentMonth);
-  const startDay = (monthStart.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
-  const daysInCurrentMonth = daysInMonth(currentMonth);
+  const startOfMonth = currentMonth.startOf("month");
+  const startDay = (startOfMonth.day() + 6) % 7;
+  const daysInMonth = currentMonth.daysInMonth();
   const days = [];
 
   // Add previous month's trailing days
   for (let i = 0; i < startDay; i++) {
-    days.push({ 
-      date: subtractDays(monthStart, startDay - i), 
-      isCurrentMonth: false 
+    days.push({
+      date: startOfMonth.subtract(startDay - i, "day"),
+      isCurrentMonth: false,
     });
   }
 
@@ -131,7 +132,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   const headerPadding = compact ? "mb-2" : "mb-3";
 
   return (
-    <div className="w-full">
+    <div className="p-2 sm:p-0 w-full">
       {/* Header */}
       <div className={`relative w-full ${headerPadding}`}>
         <div className="grid grid-cols-3 items-center">
@@ -158,7 +159,9 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
               <img
                 src={dropdownIcon}
                 alt="toggle months"
-                className={`w-4 h-4 transition-transform ${showDropdown ? "rotate-180" : ""}`}
+                className={`w-4 h-4 transition-transform ${
+                  showDropdown ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -166,11 +169,19 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white border rounded shadow-lg w-48 z-50 p-2">
                 {/* Year controls */}
                 <div className="flex items-center justify-between mb-2">
-                  <button onClick={handlePreviousYear} className="px-2">
+                  <button
+                    onClick={() =>
+                      setCurrentMonth((m) => m.subtract(1, "year"))
+                    }
+                    className="px-2"
+                  >
                     ◀
                   </button>
-                  <span className="font-semibold">{currentMonth.getFullYear()}</span>
-                  <button onClick={handleNextYear} className="px-2">
+                  <span className="font-semibold">{currentMonth.year()}</span>
+                  <button
+                    onClick={() => setCurrentMonth((m) => m.add(1, "year"))}
+                    className="px-2"
+                  >
                     ▶
                   </button>
                 </div>
@@ -184,8 +195,13 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
                       <button
                         key={i}
                         type="button"
-                        onClick={() => handleMonthSelect(i)}
-                        className={`px-2 py-1 rounded text-sm hover:bg-gray-100 ${isThisMonth ? "bg-gray-100" : ""}`}
+                        onClick={() => {
+                          setCurrentMonth(month);
+                          setShowDropdown(false);
+                        }}
+                        className={`px-2 py-1 rounded text-sm hover:bg-gray-100 ${
+                          isThisMonth ? "bg-gray-100" : ""
+                        }`}
                       >
                         {formatDate(monthDate, "MMM")}
                       </button>
@@ -210,8 +226,8 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
 
       {/* Weekday headers */}
       <div className="grid grid-cols-7 text-center text-xs gap-y-1 text-gray-500 mb-1">
-        {["M", "T", "W", "T", "F", "S", "S"].map((d, index) => (
-          <div key={`${d}-${index}`}>{d}</div>
+        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+          <div key={i}>{d}</div>
         ))}
       </div>
 

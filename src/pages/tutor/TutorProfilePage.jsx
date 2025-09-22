@@ -1,20 +1,17 @@
-import React, { useState } from "react";
-import { ChevronLeft, Star } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getTutorProfile } from "../../lib/api/tutor/tutorApi";
+import RatingSummary from "../../components/common/RatingSummary";
+import ReviewList from "../../components/common/ReviewList";
+import BackButton from "../../components/common/BackButton";
 
 const TutorProfilePage = () => {
-  // Simulated API data
-  const [tutor, setTutor] = useState({
-    name: "Mr. Daniel Ocholi",
-    subjects: "Maths. Further maths.",
-    bio: "Experienced tutor with a passion for helping students succeed",
-    schedule: "Today: 4pm-6pm .Usual: Mon-Fri, 4-7pm",
-    about:
-      "I'm a dedicated tutor with 5+ years of experience, specializing in Mathematics and Further Math. My goal is to make learning engaging and effective, helping students build confidence and achieve their academic goals.",
-    avatar:
-      "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
-  });
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [rating, setRating] = useState({
+  // Hardcoded placeholders
+  const schedule = "Today: 4pm-6pm · Usual: Mon-Fri, 4-7pm";
+  const rating = {
     average: 4.8,
     totalReviews: 125,
     breakdown: [
@@ -24,139 +21,110 @@ const TutorProfilePage = () => {
       { stars: 2, percent: 3 },
       { stars: 1, percent: 2 },
     ],
+  };
+  const reviews = [
+    {
+      name: "Eze Johnson",
+      date: "July 10, 2024",
+      avatar:
+        "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+      stars: 4,
+      text: "Mr. Daniel is an amazing tutor! He helped me understand complex math concepts with ease. Highly recommend!",
+    },
+    {
+      name: "Chioma Ade",
+      date: "August 5, 2024",
+      avatar:
+        "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+      stars: 5,
+      text: "Very patient and knowledgeable tutor. Always explains clearly!",
+    },
+  ];
+
+  const handleBookSession = () => {
+    navigate(`/student/booking/${id}`);
+  };
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["tutorProfile", id],
+    queryFn: () => getTutorProfile(id),
   });
 
-  const [reviews, setReviews] = useState([
-    {
-      name: "Eze Johnson",
-      date: "July 10, 2024",
-      avatar: tutor.avatar,
-      stars: 4,
-      text: "Mr. Daniel is an amazing tutor! He helped me understand complex math concepts with ease. Highly recommend!",
-    },
-    {
-      name: "Eze Johnson",
-      date: "July 10, 2024",
-      avatar: tutor.avatar,
-      stars: 4,
-      text: "Mr. Daniel is an amazing tutor! He helped me understand complex math concepts with ease. Highly recommend!",
-    },
-    {
-      name: "Eze Johnson",
-      date: "July 10, 2024",
-      avatar: tutor.avatar,
-      stars: 4,
-      text: "Mr. Daniel is an amazing tutor! He helped me understand complex math concepts with ease. Highly recommend!",
-    },
-    {
-      name: "Eze Johnson",
-      date: "July 10, 2024",
-      avatar: tutor.avatar,
-      stars: 4,
-      text: "Mr. Daniel is an amazing tutor! He helped me understand complex math concepts with ease. Highly recommend!",
-    },
-  ]);
+  if (isLoading) return <p>Loading tutor profile...</p>;
+  if (error)
+    return <p className="text-red-500">Failed to load tutor profile.</p>;
 
   return (
-    <>
-      <button className="btn btn-primary rounded-full bg-white text-primary border-none shadow-md hover:bg-primary hover:text-white">
-        <ChevronLeft />
-        Back
-      </button>
-      <div className="flex gap-10 items-start">
-        <div className="avatar avatar-online mt-8 shrink-0 !static">
-          <div className="w-24 rounded-full">
-            <img src={tutor.avatar} />
+    <div className="w-full overflow-x-hidden">
+      {/* Back Button */}
+      <div className="px-4 sm:px-8 py-4">
+        <BackButton to="/student/tutors" />
+      </div>
+
+      <div className="px-2 sm:px-8 md:pb-8">
+        {/* Tutor Header */}
+        <div className="flex flex-col md:flex-row gap-1 sm:gap-6 items-center">
+          {/* Avatar - centered on mobile */}
+          <div className="avatar avatar-online shrink-0 self-center">
+            <div className="w-20 sm:w-24 rounded-full">
+              <img
+                src={data?.user.profileImageUrl}
+                alt={`${data?.user.firstName} ${data?.user.lastName}`}
+                className="w-auto sm:w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Info section */}
+          <div className="flex-1 min-w-0 sm:w-full w-auto text-center sm:text-left">
+            <h1 className="font-bold text-xl sm:text-2xl break-words">
+              {data?.user.firstName} {data?.user.lastName}
+            </h1>
+
+            {/* Subjects - allow text wrapping */}
+            <div className="mt-2">
+              <p className="text-sm text-primary font-semibold break-words">
+                {data?.subjects?.map((s) => s.name).join(" · ")}
+              </p>
+            </div>
+
+            {/* Schedule - allow text wrapping */}
+            <div className="mt-2">
+              <p className="text-sm text-gray-500 break-words leading-relaxed">
+                {schedule}
+              </p>
+            </div>
+
+            {/* Book Session Button - full width on mobile */}
+            <button
+              onClick={handleBookSession}
+              className="btn btn-primary mt-2 md:mt-4 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary transition-colors duration-200 w-full sm:w-auto px-6"
+            >
+              Book Session
+            </button>
           </div>
         </div>
-        <div className="">
-          <h1 className="font-bold">{tutor.name}</h1>
-          <p className="text-sm mt-2 text-primary font-semibold">
-            {tutor.subjects}
+
+        {/* About */}
+        <div className="mt-6">
+          <h2 className="font-bold text-lg">About Me</h2>
+          <p className="text-sm mt-2 text-gray-500 leading-relaxed break-words">
+            {data?.bio}
           </p>
-          <p className="text-sm mt-2 text-gray-500">{tutor.bio}</p>
-          <p className="text-sm mt-2 text-gray-500">{tutor.schedule}</p>
+        </div>
 
-          <button className="btn btn-primary mt-2 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary">
-            Book Session
-          </button>
+        {/* Rating */}
+        <div className="mt-3 md:mt-6">
+          <RatingSummary rating={rating} />
+        </div>
+
+        {/* Reviews */}
+        <div className="mt-6 ">
+          <h2 className="font-bold text-lg mb-4">Reviews</h2>
+          <ReviewList reviews={reviews} />
         </div>
       </div>
-
-      <div>
-        <h1 className="font-bold">About Me</h1>
-        <p className="text-sm p-2 text-gray-500">{tutor.about}</p>
-      </div>
-      <h1 className="font-bold mt-4 mb-4">Reviews</h1>
-      <div className="bg-background">
-        <div className="flex p-5">
-          <div className="pl-3">
-            <h1 className="font-bold text-4xl">{rating.average}</h1>
-
-            <div className="flex w-1/2 mt-[-10px]">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={30}
-                  fill={
-                    i < Math.floor(rating.average) ? "currentColor" : "white"
-                  }
-                  className="text-primary"
-                  stroke={i < Math.floor(rating.average) ? "none" : "lightblue"}
-                />
-              ))}
-            </div>
-            <p className="text-sm">{rating.totalReviews} reviews</p>
-          </div>
-          <div className="ml-[-30px] w-full">
-            {rating.breakdown.map((item) => (
-              <div className="flex gap-2 mt-1" key={item.stars}>
-                <p>{item.stars}</p>
-                <progress
-                  className="progress text-primary w-1/3 mt-2"
-                  value={item.percent}
-                  max={100}
-                ></progress>
-                <p>{item.percent}%</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        {reviews.map((review, idx) => (
-          <React.Fragment key={idx}>
-            <div className="flex gap-2 items-start p-5 mt-[-18px]">
-              <div className="avatar avatar-online shrink-0 !static">
-                <div className="w-12 rounded-full">
-                  <img src={review.avatar} />
-                </div>
-              </div>
-              <div className="">
-                <h1 className="font-bold">{review.name}</h1>
-                <p className="text-sm mt-1">{review.date}</p>
-              </div>
-            </div>
-            <div className="flex w-1/2 mt-[-30px] p-5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={15}
-                  fill={i < review.stars ? "currentColor" : "white"}
-                  className="text-primary"
-                  stroke="none"
-                />
-              ))}
-            </div>
-            {review.text && (
-              <div>
-                <p className="text-sm p-5 mt-[-30px] text-text ">
-                  {review.text}
-                </p>
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </>
+    </div>
   );
 };
 
