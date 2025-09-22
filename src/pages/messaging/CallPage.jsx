@@ -18,7 +18,10 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 import PageLoader from "../../components/common/PageLoader";
 import { handleToastError } from "../../utils/toastDisplayHandler";
 import useAuthUser from "../../hooks/auth/useAuthUser";
-import trackEvent from "../../lib/api/analytics/trackEventApi"; // your backend API
+import {
+  trackSessionCompleted,
+  trackSessionStart,
+} from "../../lib/api/analytics/trackEventApi";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -58,13 +61,16 @@ const CallPage = () => {
         const callInstance = videoClient.call("default", callId);
         await callInstance.join({ create: true });
 
-        // Track session_started event
-        await trackEvent("session_started", {
-          session_id: callInstance.id,
-          user_id: authUser.id,
-          tutor_id: authUser.role === "tutor" ? authUser.id : null,
-          started_at: new Date().toISOString(),
-        });
+        try {
+          // Track session_started event
+          await trackSessionStart({
+            sessionId: callInstance.id,
+            studentId: authUser.role === "student" ? authUser.id : null,
+            tutorId: authUser.role === "tutor" ? authUser.id : null,
+          });
+        } catch (err) {
+          console.error("Failed to track session start:", err);
+        }
 
         setClient(videoClient);
         setCall(callInstance);
@@ -106,10 +112,11 @@ const CallPage = () => {
 const CallContent = ({ call, authUser, navigate, startTimeRef }) => {
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
+  const completedRef = useRef(false); // prevent duplicate tracking
 
   // Track call start
   useEffect(() => {
-    if (callingState === CallingState.CALLING && !startTimeRef.current) {
+    if (callingState === CallingState.JOINED && !startTimeRef.current) {
       startTimeRef.current = new Date();
     }
   }, [callingState, startTimeRef]);
@@ -117,19 +124,23 @@ const CallContent = ({ call, authUser, navigate, startTimeRef }) => {
   // Track call end & duration
   useEffect(() => {
     const handleCallEnd = async () => {
-      if (callingState === CallingState.LEFT && startTimeRef.current) {
-        const endTime = new Date();
-        const durationSecs = Math.round(
-          (endTime - startTimeRef.current) / 1000
-        );
+      if (
+        callingState === CallingState.LEFT &&
+        startTimeRef.current &&
+        !completedRef.current
+      ) {
+        completedRef.current = true;
 
-        await trackEvent("session_completed", {
-          session_id: call.id,
-          user_id: authUser.id,
-          tutor_id: authUser.role === "tutor" ? authUser.id : null,
-          ended_at: endTime.toISOString(),
-          duration_secs: durationSecs,
-        });
+        try {
+          await trackSessionCompleted({
+            sessionId: call.id,
+            studentId: authUser.role === "student" ? authUser.id : null,
+            tutorId: authUser.role === "tutor" ? authUser.id : null,
+            startedAt: startTimeRef.current,
+          });
+        } catch (err) {
+          console.error("Failed to track session completion:", err);
+        }
 
         // Navigate based on role
         if (authUser.role === "student") navigate("/student");
