@@ -1,22 +1,40 @@
 import React, { useState } from "react";
-import dayjs from "dayjs";
 import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg";
 
-// Helper functions to replace dayjs functionality
 const formatDate = (date, format) => {
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const shortMonths = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
   if (format === "YYYY-MM-DD") {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
   if (format === "MMMM YYYY") {
@@ -80,16 +98,20 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
 
   // Add current month's days
   for (let i = 1; i <= daysInCurrentMonth; i++) {
-    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
+    const date = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      i
+    );
     days.push({ date, isCurrentMonth: true });
   }
 
   // Add next month's leading days to fill the grid
   while (days.length < 42) {
     const lastDate = days[days.length - 1].date;
-    days.push({ 
-      date: addDays(lastDate, 1), 
-      isCurrentMonth: false 
+    days.push({
+      date: addDays(lastDate, 1),
+      isCurrentMonth: false,
     });
   }
 
@@ -98,15 +120,15 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   };
 
   const handlePreviousMonth = () => {
-    setCurrentMonth(prev => addMonths(prev, -1));
+    setCurrentMonth((prev) => addMonths(prev, -1));
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(prev => addMonths(prev, 1));
+    setCurrentMonth((prev) => addMonths(prev, 1));
   };
 
   const handlePreviousYear = () => {
-    setCurrentMonth(prev => {
+    setCurrentMonth((prev) => {
       const newDate = new Date(prev);
       newDate.setFullYear(newDate.getFullYear() - 1);
       return newDate;
@@ -114,7 +136,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   };
 
   const handleNextYear = () => {
-    setCurrentMonth(prev => {
+    setCurrentMonth((prev) => {
       const newDate = new Date(prev);
       newDate.setFullYear(newDate.getFullYear() + 1);
       return newDate;
@@ -189,7 +211,11 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
                 {/* Months */}
                 <div className="grid grid-cols-3 gap-1">
                   {Array.from({ length: 12 }).map((_, i) => {
-                    const monthDate = new Date(currentMonth.getFullYear(), i, 1);
+                    const monthDate = new Date(
+                      currentMonth.getFullYear(),
+                      i,
+                      1
+                    );
                     const isThisMonth = i === currentMonth.getMonth();
                     return (
                       <button
