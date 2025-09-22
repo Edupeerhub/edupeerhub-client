@@ -1,0 +1,222 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main      # production
+      - staging   # staging
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy_staging:
+    if: github.ref_name == 'staging'
+    name: Deploy staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Write .env
+        run: |
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
+          echo "VITE_STREAM_API_KEY=${{ secrets.VITE_STREAM_API_KEY }}" >> .env
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare target directory (staging)
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            DEPLOY_PATH="/var/www/staging-frontend"
+            mkdir -p "$DEPLOY_PATH"
+            # Clean directory safely
+            find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+      - name: Upload build (staging)
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "dist/*"
+          target: "/var/www/staging-frontend"
+          
+      - name: Install dependencies and configure Nginx (staging)
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # Install Node.js 20.x
+            curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt install -y nodejs
+            
+            # Install required packages
+            sudo apt-get update -y
+            sudo apt-get install -y git curl ca-certificates nginx certbot python3-certbot-nginx
+            
+            # Set proper permissions
+            sudo chown -R $USER:$USER /var/www/staging-frontend
+            
+            # Create Nginx configuration
+            sudo tee /etc/nginx/sites-available/staging-frontend > /dev/null << EOL
+            server {
+                listen 80;
+                server_name ${{ secrets.STAGING_DOMAIN }};
+                
+                root /var/www/staging-frontend;
+                index index.html;
+                
+                location / {
+                    try_files $uri $uri/ /index.html;
+                }
+                
+                location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+                    expires max;
+                    add_header Cache-Control "public, immutable";
+                }
+            }
+            EOL
+            
+            # Enable the site
+            sudo ln -sf /etc/nginx/sites-available/staging-frontend /etc/nginx/sites-enabled/
+            
+            # Test Nginx configuration
+            sudo nginx -t
+            
+            # Reload Nginx
+            sudo systemctl reload nginx
+            if ! sudo certbot certificates | grep -q "${{ secrets.STAGING_DOMAIN }}"; then
+              echo "Obtaining SSL certificate for ${{ secrets.STAGING_DOMAIN }}..."
+              sudo certbot --nginx -d "${{ secrets.STAGING_DOMAIN }}" --non-interactive --agree-tos -m "${{ secrets.SSL_EMAIL }}" --redirect
+            else
+              echo "SSL certificate for ${{ secrets.STAGING_DOMAIN }} already exists"
+            fi
+
+  deploy_production:
+    if: github.ref_name == 'main'
+    name: Deploy production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Write .env
+        run: |
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env
+          echo "VITE_STREAM_API_KEY=${{ secrets.VITE_STREAM_API_KEY }}" >> .env
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare target directory (production)
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            DEPLOY_PATH="/var/www/production-frontend"
+            mkdir -p "$DEPLOY_PATH"
+            # Clean directory safely
+            find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+      - name: Upload build (production)
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "dist/*"
+          target: "/var/www/production-frontend"
+          
+      - name: Install dependencies and configure Nginx (production)
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # Install Node.js 20.x
+            curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt install -y nodejs
+            
+            # Install required packages
+            sudo apt-get update -y
+            sudo apt-get install -y git curl ca-certificates nginx certbot python3-certbot-nginx
+            
+            # Set proper permissions
+            sudo chown -R $USER:$USER /var/www/production-frontend
+            
+            # Create Nginx configuration
+            sudo tee /etc/nginx/sites-available/production-frontend > /dev/null << EOL
+            server {
+                listen 80;
+                server_name ${{ secrets.PRODUCTION_DOMAIN }};
+                
+                root /var/www/production-frontend;
+                index index.html;
+                
+                location / {
+                    try_files $uri $uri/ /index.html;
+                }
+                
+                location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+                    expires max;
+                    add_header Cache-Control "public, immutable";
+                }
+            }
+            EOL
+            
+            # Enable the site
+            sudo ln -sf /etc/nginx/sites-available/production-frontend /etc/nginx/sites-enabled/
+            
+            # Test Nginx configuration
+            sudo nginx -t
+            
+            # Reload Nginx
+            sudo systemctl reload nginx
+            if ! sudo certbot certificates | grep -q "${{ secrets.PRODUCTION_DOMAIN }}"; then
+              echo "Obtaining SSL certificate for ${{ secrets.PRODUCTION_DOMAIN }}..."
+              sudo certbot --nginx -d "${{ secrets.PRODUCTION_DOMAIN }}" --non-interactive --agree-tos -m "${{ secrets.SSL_EMAIL }}" --redirect
+            else
+              echo "SSL certificate for ${{ secrets.PRODUCTION_DOMAIN }} already exists"
+            fi
