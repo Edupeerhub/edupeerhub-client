@@ -1,6 +1,16 @@
 import useAuthUser from "../../hooks/auth/useAuthUser";
 import {
-  Clock, Check, CalendarOffIcon, Hourglass, AlertCircle, CheckCircle2, Calendar1Icon, Users2, ChevronRight, StarsIcon, Calendar1, XIcon,
+  Clock,
+  Check,
+  CalendarOffIcon,
+  Hourglass,
+  AlertCircle,
+  CheckCircle2,
+  Calendar1Icon,
+  Users2,
+  ChevronRight,
+  StarsIcon,
+  Calendar1,
 } from "lucide-react";
 import Yinka from "../../assets/images/students-image/student-image-1.jpg";
 import Chima from "../../assets/images/students-image/student-image-2.jpg";
@@ -136,27 +146,29 @@ const TutorDashboardPage = () => {
 
   return (
     <>
-      <div className="mr-96">
+      <div className="mr-96 mb-4">
         <h1 className="font-bold">
           Welcome Back, {authUser?.firstName || "Tutor"}
         </h1>
         <p className="text-[12px]">Manage all your tutoring sessions here</p>
       </div>
 
-      <div className="flex gap-4 h-full ">
-        <div className="flex items-center">
+      <div className="flex gap-4 h-full">
+        {/* Left side (always 2/3 width) */}
+        <div className="w-2/3">
           {tutor.status === "pending" && <PendingLayout />}
           {tutor.status === "rejected" && <RejectedLayout />}
           {tutor.status === "approved" && <ApprovedLayout />}
           {tutor.status === "active" && <ActiveLayout tutor={tutor} handleView={handleView} />}
         </div>
 
-        <div className="mt-[-30px]">
+        {/* Right side (always 1/3 width) */}
+        <div className="w-1/3 mt-[-30px]">
           <div className="border rounded-md p-3 shadow-md text-sm">
             <p className="font-bold mb-2">Profile Status</p>
             <div
               className={`flex items-center text-nowrap text-[12px] 
-            gap-2 rounded-md p-2 ${bgColor}`}
+              gap-2 rounded-md p-2 ${bgColor}`}
             >
               {icon}
               <span>
@@ -164,18 +176,20 @@ const TutorDashboardPage = () => {
                 <p className="text-[8px]">{subtitle}</p>
               </span>
             </div>
+
             <p className="pt-2 text-[12px] mb-[-2px]">Profile Completion</p>
             <span className="flex gap-2">
               <progress
                 value={progress}
                 max={100}
                 className="w-4/5 pt-2.5 mb-1.5 text-primary 
-              [&::-webkit-progress-bar]:bg-gray-500
+                [&::-webkit-progress-bar]:bg-gray-500
                 [&::-webkit-progress-value]:bg-current
                 [&::-moz-progress-bar]:bg-current"
               ></progress>
               <p className="text-[10px] mt-1">{progress}%</p>
             </span>
+
             <span className="list-none flex gap-2 mt-1 text-[12px]">
               <Check className="w-4 pb-1" />
               <li>Identity Verified</li>
@@ -188,10 +202,12 @@ const TutorDashboardPage = () => {
               <Clock className="w-4 pb-1 text-red-500" />
               <li>Background Check</li>
             </span>
+
             <button className="mt-2 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full">
               {btnMessage}
             </button>
           </div>
+
           <div className="mt-3 border shadow-md rounded-md text-sm">
             <p className="font-bold m-2">Upcoming sessions</p>
             <span className="flex flex-col mt-7 m-2 text-center items-center">
