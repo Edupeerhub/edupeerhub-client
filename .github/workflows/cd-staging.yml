@@ -32,48 +32,7 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Write .env
-        run: |
-          echo "VITE_API_URL=${{ secrets.STAGING_VITE_API_URL }}" > .env
-          echo "VITE_STREAM_API_KEY=${{ secrets.STAGING_VITE_STREAM_API_KEY }}" >> .env
-
-      - name: Build
-        run: npm run build
-
-      - name: Prepare target directory (staging)
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            DEPLOY_PATH="${{ env.DEPLOY_DIR }}"
-            sudo mkdir -p "$DEPLOY_PATH"
-            sudo find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-
-      - name: Upload build (staging)
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "dist/*"
-          target: "${{ env.DEPLOY_DIR }}"
-
-      - name: Install dependencies and configure Nginx (staging)
+      - name: Build on server and configure Nginx (staging)
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -88,8 +47,45 @@ jobs:
             sudo apt-get update -y
             sudo apt-get install -y git curl ca-certificates nginx certbot python3-certbot-nginx
 
+            # Build workspace paths
+            BUILD_DIR="/tmp/${{ env.SERVICE_NAME }}-build"
+            DEPLOY_PATH="${{ env.DEPLOY_DIR }}"
+
+            set -e
+            # Prepare build and deploy directories
+            sudo mkdir -p "$BUILD_DIR" "$DEPLOY_PATH"
+
+            # Clone or update repository
+            if [ -d "$BUILD_DIR/.git" ]; then
+              cd "$BUILD_DIR"
+              git fetch origin
+              git checkout "${{ env.BRANCH }}"
+              git reset --hard "origin/${{ env.BRANCH }}"
+            else
+              sudo rm -rf "$BUILD_DIR"
+              git clone --depth 1 -b "${{ env.BRANCH }}" "${{ env.REPO_URL }}" "$BUILD_DIR"
+              cd "$BUILD_DIR"
+            fi
+
+            # Write environment variables for build
+            cat > .env << 'EOL_ENV'
+            VITE_API_URL=${{ secrets.STAGING_VITE_API_URL }}
+            VITE_STREAM_API_KEY=${{ secrets.STAGING_VITE_STREAM_API_KEY }}
+            EOL_ENV
+
+            # Install dependencies and build
+            if command -v npm >/dev/null 2>&1; then
+              echo "Using npm at $(command -v npm)"
+            fi
+            (npm ci || npm install)
+            npm run build
+
+            # Deploy built assets
+            sudo find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            sudo cp -r dist/* "$DEPLOY_PATH"/
+
             # Set proper permissions
-            sudo chown -R $USER:$USER "${{ env.DEPLOY_DIR }}"
+            sudo chown -R $USER:$USER "$DEPLOY_PATH"
 
             # Create Nginx configuration
             sudo tee "/etc/nginx/sites-available/${{ env.SERVICE_NAME }}" > /dev/null << EOL
