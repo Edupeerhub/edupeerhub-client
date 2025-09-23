@@ -56,8 +56,8 @@ jobs:
           script: |
             set -e
             DEPLOY_PATH="${{ env.DEPLOY_DIR }}"
-            mkdir -p "$DEPLOY_PATH"
-            find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            sudo mkdir -p "$DEPLOY_PATH"
+            sudo find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 
       - name: Upload build (production)
         uses: appleboy/scp-action@v1.0.0
