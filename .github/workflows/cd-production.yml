@@ -1,0 +1,140 @@
+name: CD Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  APP_NAME: "edupeerhub-client"
+  ENV_NAME: "production"
+  SERVICE_ENV: "production"
+  BRANCH: "main"
+  REPO_URL: "https://github.com/Edupeerhub/edupeerhub-client.git"
+  DEPLOY_DIR: "/var/www/edupeerhub-client-production"
+  SERVICE_NAME: "edeupeerhub-client-production"
+
+jobs:
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Write .env
+        run: |
+          echo "VITE_API_URL=${{ secrets.PRODUCTION_VITE_API_URL }}" > .env
+          echo "VITE_STREAM_API_KEY=${{ secrets.PROD_VITE_STREAM_API_KEY }}" >> .env
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare target directory (production)
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            DEPLOY_PATH="${{ env.DEPLOY_DIR }}"
+            mkdir -p "$DEPLOY_PATH"
+            find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+      - name: Upload build (production)
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*"
+          target: "${{ env.DEPLOY_DIR }}"
+
+      - name: Install dependencies and configure Nginx (production)
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Install Node.js 20.x
+            curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+            sudo apt install -y nodejs
+
+            # Install required packages
+            sudo apt-get update -y
+            sudo apt-get install -y git curl ca-certificates nginx certbot python3-certbot-nginx
+
+            # Set proper permissions
+            sudo chown -R $USER:$USER "${{ env.DEPLOY_DIR }}"
+
+            # Create Nginx configuration
+            sudo tee "/etc/nginx/sites-available/${{ env.SERVICE_NAME }}" > /dev/null << EOL
+            server {
+                listen 80;
+                server_name ${{ secrets.PRODUCTION_DOMAIN }};
+
+                root ${{ env.DEPLOY_DIR }};
+                index index.html;
+
+                location / {
+                    try_files $uri $uri/ /index.html;
+                }
+
+                location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+                    expires max;
+                    add_header Cache-Control "public, immutable";
+                }
+            }
+            EOL
+
+            # Enable the site (only if available)
+            SITE_AVAIL="/etc/nginx/sites-available/${{ env.SERVICE_NAME }}"
+            SITE_ENABLED="/etc/nginx/sites-enabled/${{ env.SERVICE_NAME }}"
+            if [ -f "$SITE_AVAIL" ]; then
+              if [ -L "$SITE_ENABLED" ]; then
+                CURRENT_TARGET=$(readlink -f "$SITE_ENABLED")
+                if [ "$CURRENT_TARGET" = "$SITE_AVAIL" ]; then
+                  echo "Nginx site ${{ env.SERVICE_NAME }} already enabled."
+                else
+                  echo "Updating Nginx site symlink to correct target."
+                  sudo ln -sfn "$SITE_AVAIL" "$SITE_ENABLED"
+                fi
+              else
+                echo "Enabling Nginx site ${{ env.SERVICE_NAME }}."
+                sudo ln -s "$SITE_AVAIL" "$SITE_ENABLED"
+              fi
+            else
+              echo "Nginx site config $SITE_AVAIL not found; cannot enable site." >&2
+              exit 1
+            fi
+
+            # Test Nginx configuration
+            sudo nginx -t
+
+            # Reload Nginx
+            sudo systemctl reload nginx
+            if ! sudo certbot certificates | grep -q "${{ secrets.PRODUCTION_DOMAIN }}"; then
+              echo "Obtaining SSL certificate for ${{ secrets.PRODUCTION_DOMAIN }}..."
+              sudo certbot --nginx -d "${{ secrets.PRODUCTION_DOMAIN }}" --non-interactive --agree-tos -m "${{ secrets.SSL_EMAIL }}" --redirect
+            else
+              echo "SSL certificate for ${{ secrets.PRODUCTION_DOMAIN }}" already exists
+            fi
