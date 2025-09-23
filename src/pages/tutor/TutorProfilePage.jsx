@@ -45,6 +45,10 @@ const TutorProfilePage = () => {
     navigate(`/student/booking/${id}`);
   };
 
+  const handleChatWithTutor = (tutorId) => {
+    navigate(`/student/chat/${tutorId}`);
+  };
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["tutorProfile", id],
     queryFn: () => getTutorProfile(id),
@@ -96,12 +100,20 @@ const TutorProfilePage = () => {
             </div>
 
             {/* Book Session Button - full width on mobile */}
-            <button
-              onClick={handleBookSession}
-              className="btn btn-primary mt-2 md:mt-4 mb-2 rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary transition-colors duration-200 w-full sm:w-auto px-6"
-            >
-              Book Session
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 md:mt-4 mb-2">
+              <button
+                onClick={handleBookSession}
+                className="btn btn-primary rounded-full bg-primary text-white border-none shadow-md hover:bg-white hover:text-primary transition-colors duration-200 w-full sm:w-auto px-6"
+              >
+                Book Session
+              </button>
+              <button
+                onClick={() => handleChatWithTutor(data.user.id)}
+                className="btn btn-primary rounded-full border-2 border-primary bg-white text-primary shadow-md hover:bg-primary hover:text-white transition-colors duration-200 w-full sm:w-auto px-6"
+              >
+                Message Tutor
+              </button>
+            </div>
           </div>
         </div>
 
