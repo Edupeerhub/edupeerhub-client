@@ -66,12 +66,6 @@ const addDays = (date, days) => {
   return newDate;
 };
 
-const subtractDays = (date, days) => {
-  const newDate = new Date(date);
-  newDate.setDate(newDate.getDate() - days);
-  return newDate;
-};
-
 const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -83,20 +77,21 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
 
   const today = formatDate(new Date(), "YYYY-MM-DD");
 
-  const startOfMonth = currentMonth.startOf("month");
-  const startDay = (startOfMonth.day() + 6) % 7;
-  const daysInMonth = currentMonth.daysInMonth();
+  // Build days grid
+  const monthStart = startOfMonth(currentMonth);
+  const startDay = (monthStart.getDay() + 6) % 7; // shift so week starts Monday
+  const daysInCurrentMonth = daysInMonth(currentMonth);
   const days = [];
 
-  // Add previous month's trailing days
+  // Previous month's trailing days
   for (let i = 0; i < startDay; i++) {
     days.push({
-      date: startOfMonth.subtract(startDay - i, "day"),
+      date: addDays(monthStart, i - startDay),
       isCurrentMonth: false,
     });
   }
 
-  // Add current month's days
+  // Current month days
   for (let i = 1; i <= daysInCurrentMonth; i++) {
     const date = new Date(
       currentMonth.getFullYear(),
@@ -106,7 +101,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
     days.push({ date, isCurrentMonth: true });
   }
 
-  // Add next month's leading days to fill the grid
+  // Next month's leading days
   while (days.length < 42) {
     const lastDate = days[days.length - 1].date;
     days.push({
@@ -191,19 +186,13 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white border rounded shadow-lg w-48 z-50 p-2">
                 {/* Year controls */}
                 <div className="flex items-center justify-between mb-2">
-                  <button
-                    onClick={() =>
-                      setCurrentMonth((m) => m.subtract(1, "year"))
-                    }
-                    className="px-2"
-                  >
+                  <button onClick={handlePreviousYear} className="px-2">
                     ◀
                   </button>
-                  <span className="font-semibold">{currentMonth.year()}</span>
-                  <button
-                    onClick={() => setCurrentMonth((m) => m.add(1, "year"))}
-                    className="px-2"
-                  >
+                  <span className="font-semibold">
+                    {currentMonth.getFullYear()}
+                  </span>
+                  <button onClick={handleNextYear} className="px-2">
                     ▶
                   </button>
                 </div>
@@ -221,10 +210,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
                       <button
                         key={i}
                         type="button"
-                        onClick={() => {
-                          setCurrentMonth(month);
-                          setShowDropdown(false);
-                        }}
+                        onClick={() => handleMonthSelect(i)}
                         className={`px-2 py-1 rounded text-sm hover:bg-gray-100 ${
                           isThisMonth ? "bg-gray-100" : ""
                         }`}
