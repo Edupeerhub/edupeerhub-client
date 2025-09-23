@@ -19,8 +19,8 @@ env:
   SERVICE_ENV: "production"
   BRANCH: "main"
   REPO_URL: "https://github.com/Edupeerhub/edupeerhub-client.git"
-  DEPLOY_DIR: "/var/www/${{ env.APP_NAME }}-${{ env.ENV_NAME }}"
-  SERVICE_NAME: "${{ env.APP_NAME }}-${{ env.ENV_NAME }}"
+  DEPLOY_DIR: "/var/www/edupeerhub-client-production"
+  SERVICE_NAME: "edeupeerhub-client-production"
 
 jobs:
   deploy:
