@@ -5,17 +5,17 @@ import "react-day-picker/dist/style.css";
 import TutorImage from "../../assets/booking/tutor.svg";
 import CheckIcon from "../../assets/booking/check.svg";
 
-// Tutor's subjects
+
 const subjects = ["Mathematics", "English", "Physics", "Chemistry"];
 
-// Available times per date (example mock data)
+
 const availableTimesByDate = {
   "2025-09-21": [
     "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM",
     "11:00 AM", "11:30 AM", "12:00 PM"
   ],
   "2025-09-22": [
-    "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
+    "12:00 AM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
     "3:00 PM", "3:30 PM"
   ],
   "2025-09-23": [
@@ -24,7 +24,7 @@ const availableTimesByDate = {
   ],  
 };
 
-// ✅ Helper function to calculate duration
+
 function calculateDuration(start, end) {
   if (!start || !end) return null;
 
@@ -37,7 +37,7 @@ function calculateDuration(start, end) {
     if (meridian === "PM" && hrs !== 12) hrs += 12;
     if (meridian === "AM" && hrs === 12) hrs = 0;
 
-    return hrs * 60 + mins; // total minutes
+    return hrs * 60 + mins; 
   };
 
   const startMinutes = parseTime(start);
@@ -63,7 +63,7 @@ export default function BookingSession() {
   const [subject, setSubject] = useState(""); 
   const [step, setStep] = useState(1);
 
-  // ✅ update available times based on selected date
+  // update available times based on selected date
   const formattedDate = date ? date.toISOString().split("T")[0] : null;
   const availableTimes = formattedDate
     ? availableTimesByDate[formattedDate] || []
@@ -76,7 +76,7 @@ export default function BookingSession() {
         <div className="w-full max-w-3xl flex flex-col">
           <h1 className="text-2xl font-bold mb-3">Select a Time</h1>
 
-          {/* Subject Dropdown */}
+          
           <div className="mb-4">
              <h3 className="text-lg font-medium mb-1">Select Subject</h3>
              <select
@@ -115,7 +115,7 @@ export default function BookingSession() {
                       <button
                         key={slot}
                         onClick={() => setTime(slot)}
-                        className={`px-3 py-2 rounded-lg border text-sm
+                        className={`px-3 py-2 rounded-lg border text-sm flex items-center gap-2
                           ${
                             time === slot
                               ? "bg-blue-600 text-white border-blue-600"
@@ -124,6 +124,9 @@ export default function BookingSession() {
                         `}
                       >
                         {slot}
+                        {time === slot && (
+                          <img src={CheckIcon} alt="Selected" className="w-4 h-4" />
+                        )}
                       </button>
                     ))}
                   </div>
@@ -137,7 +140,7 @@ export default function BookingSession() {
                       <button
                         key={slot}
                         onClick={() => setEndTime(slot)}
-                        className={`px-3 py-2 rounded-lg border text-sm
+                        className={`px-3 py-2 rounded-lg border text-sm flex items-center gap-2
                           ${
                             endTime === slot
                               ? "bg-blue-600 text-white border-blue-600"
@@ -146,6 +149,9 @@ export default function BookingSession() {
                         `}
                       >
                         {slot}
+                        {endTime === slot && (
+                          <img src={CheckIcon} alt="Selected" className="w-4 h-4" />
+                        )}
                       </button>
                     ))}
                   </div>
@@ -160,7 +166,7 @@ export default function BookingSession() {
             )}
           </div>
 
-          {/* Continue Button pinned bottom */}
+      
           <div className="flex justify-center md:justify-end mt-2 sm:mt-4 md:mt-2">
             <button
               disabled={!date || !time || !endTime || !subject}
