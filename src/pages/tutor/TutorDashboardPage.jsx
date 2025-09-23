@@ -125,15 +125,15 @@ const TutorDashboardPage = () => {
         <p className="text-[12px]">Manage all your tutoring sessions here</p>
       </div>
 
-      <div className="flex gap-2 h-full">
-        <div className="w-4/5 flex items-center">
+      <div className="flex gap-4 h-full ">
+        <div className="flex items-center">
           {tutor.status === "pending" && <PendingLayout />}
           {tutor.status === "rejected" && <RejectedLayout />}
           {tutor.status === "approved" && <ApprovedLayout />}
           {tutor.status === "active" && <ActiveLayout tutor={tutor}/>}
         </div>
 
-        <div className="w-1/5 mt-[-30px]">
+        <div className="mt-[-30px]">
           <div className="border rounded-md p-3 shadow-md text-sm">
             <p className="font-bold mb-2">Profile Status</p>
             <div
@@ -373,22 +373,20 @@ function ActiveLayout({ tutor }) {
 
 function SessionCard({ name, subject, time, image }) {
   return (
-    <div className="flex items-center justify-between border p-2 rounded-md w-full">
-      <img
-        src={image}
-        alt={`${name} profile`}
-        className="w-6 h-6 rounded-full"
-      />
-      <div className="text-left ml-1">
-        <p className="font-bold">{name}</p>
-        <p className="text-gray-500 text-[8px]">
-          {subject}
-        </p>
-        <p className="text-gray-500 text-[8px]">
-          {time}
-        </p>
+    <div className="flex items-center justify-center border p-2 rounded-md w-full">
+      <div className="flex items-center gap-1">
+        <img
+          src={image}
+          alt={`${name} profile`}
+          className="w-6 h-6 rounded-full shrink-0"
+        />
+        <div className="text-left ml-1 text-nowrap">
+          <p className="font-bold">{name}</p>
+          <p className="text-gray-500 text-[8px]">{subject}</p>
+          <p className="text-gray-500 text-[8px]">{time}</p>
+        </div>
       </div>
-      <button className="ml-4 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-2 py-1 rounded-full text-[5px] font-semibold">
+      <button className="ml-4 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-1 py-1 rounded-full text-[8px] font-semibold">
         Confirmed
       </button>
     </div>
