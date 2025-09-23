@@ -348,3 +348,134 @@ select {
     page-break-inside: avoid;
   }
 }
+
+/* Stream Chat Styles */
+
+/* Make Stream Chat components fill height properly */
+.str-chat {
+  height: 100% !important;
+}
+
+.str-chat__channel {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.str-chat__main-panel {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.str-chat__container {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Fixed header */
+.str-chat__header-livestream,
+.str-chat__channel-header {
+  flex-shrink: 0 !important;
+  /* border-bottom: 1px solid #e5e7eb; */
+}
+
+/* Scrollable message list */
+.str-chat__list {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  background-color: #ffffff;
+  /* padding: 12px; */
+}
+
+/* Fixed message input */
+.str-chat__message-input {
+  flex-shrink: 0 !important;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Ensure proper scrolling behavior */
+.str-chat__virtual-list {
+  height: 100% !important;
+}
+
+/* Thread panel adjustments if needed */
+.str-chat__thread {
+  height: 100% !important;
+}
+
+.str-chat__list-notifications {
+  display: none;
+}
+
+.channel-preview {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.channel-preview:hover {
+  background: #f5f5f5;
+}
+
+.channel-info {
+  margin-left: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.channel-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.channel-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #111;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.channel-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.last-message {
+  font-size: 0.875rem;
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unread-count {
+  background: #ff4d4f;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.loading-chats,
+.no-chats {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
