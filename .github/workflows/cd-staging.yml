@@ -23,8 +23,13 @@ env:
   SERVICE_NAME: "edupeerhub-client-staging"
 
 jobs:
+  ci:
+    name: CI (reused)
+    uses: ./.github/workflows/ci.yml
+
   deploy:
     name: Deploy staging
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
