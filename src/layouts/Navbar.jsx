@@ -1,18 +1,47 @@
-import { BellIcon, ChevronDown } from "lucide-react";
+import {
+  BellIcon,
+  ChevronDown,
+  User,
+  Settings,
+  HelpCircle,
+  LogOut,
+  CreditCard,
+  Shield,
+} from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import Logo from "../assets/images/edupeerhub-logo1.svg?react";
 import useAuthUser from "../hooks/auth/useAuthUser";
 
 const Navbar = ({ onToggleSidebar }) => {
   const { authUser } = useAuthUser();
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleProfileMenuClick = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const handleMenuItemClick = (action) => {
+    setIsProfileDropdownOpen(false);
+    // Handle the action here
+    console.log(`Clicked: ${action}`);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-20 bg-white shadow-md border-b border-gray-300">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-end sm::justify-between h-16">
-          {/* Left side: Logo */}
-          {/* <div className="flex items-center pl-3">
-            <Logo className="lg:hidden size-9 " />
-          </div> */}
           {/* Hamburger Menu Button - Only visible on mobile/tablet */}
           <button
             onClick={onToggleSidebar}
@@ -42,18 +71,95 @@ const Navbar = ({ onToggleSidebar }) => {
             </button>
 
             {/* User Profile Container */}
-            <div className="hidden sm:flex items-center gap-3 bg-gray-50 hover:bg-gray-100 rounded-full pl-1 pr-4 py-1 cursor-pointer transition-colors border border-gray-200">
-              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                <img
-                  src={authUser?.profileImageUrl}
-                  alt="User Avatar"
-                  className="w-full h-full object-cover"
+            <div className="hidden sm:block relative" ref={dropdownRef}>
+              <div
+                onClick={handleProfileMenuClick}
+                className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 rounded-full pl-1 pr-4 py-1 cursor-pointer transition-colors border border-gray-200"
+              >
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                  <img
+                    src={authUser?.profileImageUrl}
+                    alt="User Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-sm font-medium text-gray-800 max-w-32 truncate">
+                  {authUser?.firstName} {authUser?.lastName}
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 text-gray-600 transition-transform ${
+                    isProfileDropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
               </div>
-              <span className="text-sm font-medium text-gray-800 max-w-32 truncate">
-                {authUser?.firstName} {authUser?.lastName}
-              </span>
-              <ChevronDown className="h-4 w-4 text-gray-600" />
+
+              {/* Dropdown Menu */}
+              {isProfileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+                  {/* User Info Header */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">
+                      {authUser?.firstName} {authUser?.lastName}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">
+                      {authUser?.email}
+                    </p>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <button
+                      onClick={() => handleMenuItemClick("profile")}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <User className="h-4 w-4 mr-3" />
+                      View Profile
+                    </button>
+
+                    <button
+                      onClick={() => handleMenuItemClick("settings")}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Settings className="h-4 w-4 mr-3" />
+                      Account Settings
+                    </button>
+
+                    <button
+                      onClick={() => handleMenuItemClick("billing")}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <CreditCard className="h-4 w-4 mr-3" />
+                      Billing & Payments
+                    </button>
+
+                    <button
+                      onClick={() => handleMenuItemClick("privacy")}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Shield className="h-4 w-4 mr-3" />
+                      Privacy & Security
+                    </button>
+                  </div>
+
+                  <div className="border-t border-gray-100 py-1">
+                    <button
+                      onClick={() => handleMenuItemClick("help")}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <HelpCircle className="h-4 w-4 mr-3" />
+                      Help & Support
+                    </button>
+
+                    <button
+                      onClick={() => handleMenuItemClick("logout")}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4 mr-3" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Mobile Avatar (fallback for small screens) */}
