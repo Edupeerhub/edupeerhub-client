@@ -23,8 +23,13 @@ env:
   SERVICE_NAME: "edupeerhub-client-staging"
 
 jobs:
+  ci:
+    name: CI (reused)
+    uses: ./.github/workflows/ci.yml
+
   deploy:
     name: Deploy staging
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -56,8 +61,8 @@ jobs:
           script: |
             set -e
             DEPLOY_PATH="${{ env.DEPLOY_DIR }}"
-            mkdir -p "$DEPLOY_PATH"
-            find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            sudo mkdir -p "$DEPLOY_PATH"
+            sudo find "$DEPLOY_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 
       - name: Upload build (staging)
         uses: appleboy/scp-action@v1.0.0
