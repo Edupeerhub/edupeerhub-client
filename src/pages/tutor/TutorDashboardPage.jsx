@@ -1,13 +1,22 @@
 import useAuthUser from "../../hooks/auth/useAuthUser";
-import { Clock, Check, CalendarOffIcon, Hourglass, 
-  AlertCircle, CheckCircle2, Calendar1Icon, Users2, ChevronRight, StarsIcon,
-  Calendar1} from "lucide-react";
-import Yinka from "../../assets/images/students-image/student-image-1.jpg"
-import Chima from "../../assets/images/students-image/student-image-2.jpg"
-import Eze from "../../assets/images/students-image/student-image-3.jpg"
+import {
+  Clock, Check, CalendarOffIcon, Hourglass, AlertCircle, CheckCircle2, Calendar1Icon, Users2, ChevronRight, StarsIcon, Calendar1, XIcon,
+} from "lucide-react";
+import Yinka from "../../assets/images/students-image/student-image-1.jpg";
+import Chima from "../../assets/images/students-image/student-image-2.jpg";
+import Eze from "../../assets/images/students-image/student-image-3.jpg";
+import { useState } from "react";
 
 const TutorDashboardPage = () => {
   const { authUser } = useAuthUser();
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  //Modal for active state
+  const handleView = (session) => {
+    setSelectedSession(session);
+    setModalOpen(true);
+  };
 
   const tutor = {
     status: "active", // "pending" | "rejected" | "approved" | "active"
@@ -22,7 +31,6 @@ const TutorDashboardPage = () => {
         time: "2hrs, 30min",
         timehrs: "2:30pm",
         image: Yinka,
-        action: "View",
       },
       {
         name: "Chima Eke",
@@ -32,7 +40,6 @@ const TutorDashboardPage = () => {
         time: "2hrs",
         timehrs: "1:00pm",
         image: Chima,
-        action: "View",
       },
       {
         name: "Eze Victor",
@@ -42,9 +49,8 @@ const TutorDashboardPage = () => {
         timehrs: "1:30pm",
         date: "Sept. 16, 2025",
         image: Eze,
-        action: "View",
-      }
-    ]
+      },
+    ],
   };
 
   const profileStatus = {
@@ -57,7 +63,8 @@ const TutorDashboardPage = () => {
       color: "text-red-500",
       sessionMessage: (
         <p className="text-[11px] pt-3">
-          Sorry, there are no upcoming sessions yet until your verification is approved
+          Sorry, there are no upcoming sessions yet until your verification is
+          approved
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="text-accent" />,
@@ -72,11 +79,12 @@ const TutorDashboardPage = () => {
       color: "text-red-500",
       sessionMessage: (
         <p className="text-[11px] pt-3">
-          Sorry, there are no upcoming sessions yet until your verification is approved
+          Sorry, there are no upcoming sessions yet until your verification is
+          approved
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="text-accent" />,
-      progress: tutor.progress,    
+      progress: tutor.progress,
     },
     approved: {
       icon: <CheckCircle2 className="mt-2 text-green-900" />,
@@ -111,10 +119,20 @@ const TutorDashboardPage = () => {
         </div>
       ),
       progress: 100,
-    }
-  }
+    },
+  };
 
-  const { icon, title, subtitle, btnMessage, bgColor, color, sessionMessage, sessionIcon, progress } = profileStatus[tutor.status] || profileStatus.pending;
+  const {
+    icon,
+    title,
+    subtitle,
+    btnMessage,
+    bgColor,
+    color,
+    sessionMessage,
+    sessionIcon,
+    progress,
+  } = profileStatus[tutor.status] || profileStatus.pending;
 
   return (
     <>
@@ -130,7 +148,7 @@ const TutorDashboardPage = () => {
           {tutor.status === "pending" && <PendingLayout />}
           {tutor.status === "rejected" && <RejectedLayout />}
           {tutor.status === "approved" && <ApprovedLayout />}
-          {tutor.status === "active" && <ActiveLayout tutor={tutor}/>}
+          {tutor.status === "active" && <ActiveLayout tutor={tutor} handleView={handleView} />}
         </div>
 
         <div className="mt-[-30px]">
@@ -183,6 +201,11 @@ const TutorDashboardPage = () => {
           </div>
         </div>
       </div>
+      <ViewModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        session={selectedSession}
+      />
     </>
   );
 };
@@ -284,8 +307,8 @@ function ApprovedLayout() {
   );
 }
 
-function ActiveLayout({ tutor }) {
-  const tableHeaders = ["Student", "Subject", "Date", "Time", "Action"]
+function ActiveLayout({ tutor, handleView }) {
+  const tableHeaders = ["Student", "Subject", "Date", "Time", "Action"];
   return (
     <>
       <div>
@@ -340,7 +363,9 @@ function ActiveLayout({ tutor }) {
                     <td>{s.subject}</td>
                     <td>{s.date}</td>
                     <td>{s.timehrs}</td>
-                    <td>{s.action}</td>
+                    <td>
+                      <button onClick={() => handleView(s)}>View</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -353,7 +378,10 @@ function ActiveLayout({ tutor }) {
           <div className="h-14 border rounded-md shadow-md flex gap-3 items-center pl-8">
             <Check className="rounded-full p-1 bg-blue-200 text-blue-500" />
             <div className="w-full text-[12px] ">
-              <p>Completed session with chima eke on integration and differentiation</p>
+              <p>
+                Completed session with chima eke on integration and
+                differentiation
+              </p>
               <p className="text-gray-500 text-[8px]">2 hours ago</p>
             </div>
           </div>
@@ -403,9 +431,92 @@ function BookingCard({ name, image, exam }) {
       />
       <div className="text-left ml-1">
         <p className="text-sm">{name}</p>
-        <p className="text-gray-500 text-sm">
-          {exam}
-        </p>
+        <p className="text-gray-500 text-sm">{exam}</p>
+      </div>
+    </div>
+  );
+}
+
+function ViewModal({ isOpen, onClose, session }) {
+  const [status, setStatus] = useState(null);
+
+  const handleClose = () => {
+    setStatus(null);
+    onClose();
+  }
+
+  if (!isOpen || !session) return null;
+
+  return (
+    <div className="w-full fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white p-4 rounded-md shadow-lg w-96">
+        {status ? (
+          <>
+            {status === "accepted" && (
+              <div className="flex flex-col items-center gap-3 p-3">
+                <Check className="border w-8 h-8 rounded-full bg-green-500 text-white" />
+                <p className="text-lg font-bold mt-3">Request Accepted</p>
+                <p className="text-sm text-center">
+                  You've accepted a booking request from {session.name}. A
+                  notification has been sent
+                </p>
+                <button
+                  className="mt-4 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full"
+                  onClick={handleClose}
+                >
+                  Done
+                </button>
+              </div>
+            )}
+            {status === "rejected" && (
+              <div className="flex flex-col items-center gap-3 p-3">
+                <XIcon className="border w-8 h-8 rounded-full bg-red-500 text-white" />
+                <p className="text-lg font-bold mt-3">Request Declined</p>
+                <p className="text-sm text-center">
+                  You've declined the booking request from {session.name}.
+                </p>
+                <div className="flex flex-col gap-1 w-full">
+                  <button
+                    className="mt-4 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full"
+                    onClick={handleClose}
+                  >
+                    Undo
+                  </button>
+                  <button
+                    className="mt-4 shadow-md bg-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full"
+                  >
+                    Report a Problem
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <span className="flex items-center justify-between">
+              <BookingCard {...session} />
+              <XIcon className="cursor-pointer" onClick={onClose} />
+            </span>
+            <p className="mt-2 text-sm">Date & Time</p>
+            <p className="text-sm font-bold">Date: {session.date}</p>
+            <p className="text-sm">{session.timehrs}</p>
+
+            <div className="mt-4 flex justify-between ">
+              <button
+                onClick={() => setStatus("accepted")}
+                className="px-6 py-2 text-[12px] text-white bg-blue-500 hover:shadow-lg rounded-full"
+              >
+                Accept Request
+              </button>
+              <button
+                onClick={() => setStatus("rejected")}
+                className="px-7 py-2 border text-[12px] mr-10 bg-white hover:bg-blue-500 hover:text-white rounded-full"
+              >
+                Decline
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
