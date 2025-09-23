@@ -1,10 +1,20 @@
 import useAuthUser from "../../hooks/auth/useAuthUser";
-import { Clock, Check, CalendarOffIcon, Hourglass, 
-  AlertCircle, CheckCircle2, Calendar1Icon, Users2, ChevronRight, StarsIcon,
-  Calendar1} from "lucide-react";
-import Yinka from "../../assets/images/students-image/student-image-1.jpg"
-import Chima from "../../assets/images/students-image/student-image-2.jpg"
-import Eze from "../../assets/images/students-image/student-image-3.jpg"
+import {
+  Clock,
+  Check,
+  CalendarOffIcon,
+  Hourglass,
+  AlertCircle,
+  CheckCircle2,
+  Calendar1Icon,
+  Users2,
+  ChevronRight,
+  StarsIcon,
+  Calendar1,
+} from "lucide-react";
+import Yinka from "../../assets/images/students-image/student-image-1.jpg";
+import Chima from "../../assets/images/students-image/student-image-2.jpg";
+import Eze from "../../assets/images/students-image/student-image-3.jpg";
 
 const TutorDashboardPage = () => {
   const { authUser } = useAuthUser();
@@ -43,8 +53,8 @@ const TutorDashboardPage = () => {
         date: "Sept. 16, 2025",
         image: Eze,
         action: "View",
-      }
-    ]
+      },
+    ],
   };
 
   const profileStatus = {
@@ -57,7 +67,8 @@ const TutorDashboardPage = () => {
       color: "text-red-500",
       sessionMessage: (
         <p className="text-[11px] pt-3">
-          Sorry, there are no upcoming sessions yet until your verification is approved
+          Sorry, there are no upcoming sessions yet until your verification is
+          approved
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="text-accent" />,
@@ -72,11 +83,12 @@ const TutorDashboardPage = () => {
       color: "text-red-500",
       sessionMessage: (
         <p className="text-[11px] pt-3">
-          Sorry, there are no upcoming sessions yet until your verification is approved
+          Sorry, there are no upcoming sessions yet until your verification is
+          approved
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="text-accent" />,
-      progress: tutor.progress,    
+      progress: tutor.progress,
     },
     approved: {
       icon: <CheckCircle2 className="mt-2 text-green-900" />,
@@ -111,34 +123,46 @@ const TutorDashboardPage = () => {
         </div>
       ),
       progress: 100,
-    }
-  }
+    },
+  };
 
-  const { icon, title, subtitle, btnMessage, bgColor, color, sessionMessage, sessionIcon, progress } = profileStatus[tutor.status] || profileStatus.pending;
+  const {
+    icon,
+    title,
+    subtitle,
+    btnMessage,
+    bgColor,
+    color,
+    sessionMessage,
+    sessionIcon,
+    progress,
+  } = profileStatus[tutor.status] || profileStatus.pending;
 
   return (
     <>
-      <div className="mr-96">
+      <div className="mr-96 mb-4">
         <h1 className="font-bold">
           Welcome Back, {authUser?.firstName || "Tutor"}
         </h1>
         <p className="text-[12px]">Manage all your tutoring sessions here</p>
       </div>
 
-      <div className="flex gap-4 h-full ">
-        <div className="flex items-center">
+      <div className="flex gap-4 h-full">
+        {/* Left side (always 2/3 width) */}
+        <div className="w-2/3">
           {tutor.status === "pending" && <PendingLayout />}
           {tutor.status === "rejected" && <RejectedLayout />}
           {tutor.status === "approved" && <ApprovedLayout />}
-          {tutor.status === "active" && <ActiveLayout tutor={tutor}/>}
+          {tutor.status === "active" && <ActiveLayout tutor={tutor} />}
         </div>
 
-        <div className="mt-[-30px]">
+        {/* Right side (always 1/3 width) */}
+        <div className="w-1/3 mt-[-30px]">
           <div className="border rounded-md p-3 shadow-md text-sm">
             <p className="font-bold mb-2">Profile Status</p>
             <div
               className={`flex items-center text-nowrap text-[12px] 
-            gap-2 rounded-md p-2 ${bgColor}`}
+        gap-2 rounded-md p-2 ${bgColor}`}
             >
               {icon}
               <span>
@@ -146,18 +170,20 @@ const TutorDashboardPage = () => {
                 <p className="text-[8px]">{subtitle}</p>
               </span>
             </div>
+
             <p className="pt-2 text-[12px] mb-[-2px]">Profile Completion</p>
             <span className="flex gap-2">
               <progress
                 value={progress}
                 max={100}
                 className="w-4/5 pt-2.5 mb-1.5 text-primary 
-              [&::-webkit-progress-bar]:bg-gray-500
-                [&::-webkit-progress-value]:bg-current
-                [&::-moz-progress-bar]:bg-current"
+          [&::-webkit-progress-bar]:bg-gray-500
+          [&::-webkit-progress-value]:bg-current
+          [&::-moz-progress-bar]:bg-current"
               ></progress>
               <p className="text-[10px] mt-1">{progress}%</p>
             </span>
+
             <span className="list-none flex gap-2 mt-1 text-[12px]">
               <Check className="w-4 pb-1" />
               <li>Identity Verified</li>
@@ -170,10 +196,12 @@ const TutorDashboardPage = () => {
               <Clock className="w-4 pb-1 text-red-500" />
               <li>Background Check</li>
             </span>
+
             <button className="mt-2 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full">
               {btnMessage}
             </button>
           </div>
+
           <div className="mt-3 border shadow-md rounded-md text-sm">
             <p className="font-bold m-2">Upcoming sessions</p>
             <span className="flex flex-col mt-7 m-2 text-center items-center">
@@ -285,7 +313,7 @@ function ApprovedLayout() {
 }
 
 function ActiveLayout({ tutor }) {
-  const tableHeaders = ["Student", "Subject", "Date", "Time", "Action"]
+  const tableHeaders = ["Student", "Subject", "Date", "Time", "Action"];
   return (
     <>
       <div>
@@ -353,7 +381,10 @@ function ActiveLayout({ tutor }) {
           <div className="h-14 border rounded-md shadow-md flex gap-3 items-center pl-8">
             <Check className="rounded-full p-1 bg-blue-200 text-blue-500" />
             <div className="w-full text-[12px] ">
-              <p>Completed session with chima eke on integration and differentiation</p>
+              <p>
+                Completed session with chima eke on integration and
+                differentiation
+              </p>
               <p className="text-gray-500 text-[8px]">2 hours ago</p>
             </div>
           </div>
@@ -403,9 +434,7 @@ function BookingCard({ name, image, exam }) {
       />
       <div className="text-left ml-1">
         <p className="text-sm">{name}</p>
-        <p className="text-gray-500 text-sm">
-          {exam}
-        </p>
+        <p className="text-gray-500 text-sm">{exam}</p>
       </div>
     </div>
   );
