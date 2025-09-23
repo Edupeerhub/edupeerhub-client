@@ -13,6 +13,7 @@ export const studentSidebarLinks = [
   { path: "/student/dashboard", label: "Dashboard", icon: DashboardIcon },
   { path: "/student/library", label: "Library", icon: LibraryIcon },
   { path: "/student/tutors", label: "Tutors", icon: TutorIcon },
+  { path: "/student/chats", label: "Messages", icon: MessageIcon },
   { path: "/student/faq", label: "Ask Questions", icon: AskIcon },
   { path: "/student/settings", label: "Settings", icon: SettingsIcon },
 ];
@@ -25,7 +26,7 @@ export const tutorSidebarLinks = [
     label: "Availability",
     icon: AvailabilityIcon,
   },
-  { path: "/tutor/messages", label: "Messages", icon: MessageIcon },
+  { path: "/tutor/chats", label: "Messages", icon: MessageIcon },
   { path: "/tutor/settings", label: "Settings", icon: SettingsIcon },
 ];
 
