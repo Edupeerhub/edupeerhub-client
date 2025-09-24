@@ -46,90 +46,115 @@ export default function BookingSession() {
   )?.name;
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 py-4">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Step 1 */}
       {step === 1 && (
-        <div className="w-full max-w-3xl flex flex-col">
-          <h1 className="text-2xl font-bold mb-3">Select a Time</h1>
-          <div className="mb-4">
-            <h3 className="text-lg font-medium mb-1">Select Subject</h3>
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-2 py-2 border rounded-lg"
-            >
-              <option value="">-- Choose a subject --</option>
-              {tutorLoading && <option disabled>Loading subjects...</option>}
-              {tutorError && <option disabled>Failed to load subjects</option>}
-              {tutorProfile?.subjects?.map((subj) => (
-                <option key={subj.id} value={subj.id}>
-                  {subj.name}
-                </option>
-              ))}
-            </select>
+        <>
+          <div className="flex-shrink-0 mb-3">
+            <h1 className="text-xl font-bold">Select a Time</h1>
           </div>
 
-          <DayPicker
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            className="rounded-lg p-4"
-          />
+          <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
+            {/* Left side - Subject and Calendar */}
+            <div className="lg:w-1/2 flex flex-col min-h-0">
+              <div className="flex-shrink-0 mb-3">
+                <h3 className="text-sm font-medium mb-2">Select Subject</h3>
+                <select
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full px-2 py-1.5 text-sm border rounded"
+                >
+                  <option value="">-- Choose a subject --</option>
+                  {tutorLoading && (
+                    <option disabled>Loading subjects...</option>
+                  )}
+                  {tutorError && (
+                    <option disabled>Failed to load subjects</option>
+                  )}
+                  {tutorProfile?.subjects?.map((subj) => (
+                    <option key={subj.id} value={subj.id}>
+                      {subj.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="mb-4">
-            <h3 className="text-lg font-medium mb-1">Select Slot</h3>
-            {availableTimes.length === 0 && (
-              <p className="text-gray-500">No available times</p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {availableTimes.map((slot) => (
-                <SlotButton
-                  key={slot.id}
-                  slot={slot}
-                  selected={selectedSlotId === slot.id}
-                  onClick={setSelectedSlotId}
-                />
-              ))}
+              <div className="flex-1 flex justify-center items-start overflow-hidden">
+                <div className="scale-75 lg:scale-90">
+                  <DayPicker
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    className="rounded"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Time slots */}
+            <div className="lg:w-1/2 flex flex-col min-h-0">
+              <div className="flex-shrink-0 mb-2">
+                <h3 className="text-sm font-medium">Available Times</h3>
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                {availableTimes.length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center py-8">
+                    {date ? "No available times" : "Select a date first"}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                    {availableTimes.map((slot) => (
+                      <SlotButton
+                        key={slot.id}
+                        slot={slot}
+                        selected={selectedSlotId === slot.id}
+                        onClick={setSelectedSlotId}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-center md:justify-end mt-2 sm:mt-4">
+          <div className="flex-shrink-0 flex justify-center mt-3">
             <button
               disabled={!date || !subject || !selectedSlotId}
               onClick={() => setStep(2)}
-              className="px-5 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50"
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
             >
               Continue
             </button>
           </div>
-        </div>
+        </>
       )}
 
       {/* Step 2 */}
       {step === 2 && (
-        <div className="flex-1 flex flex-col w-full px-4 sm:px-6 lg:pl-20 lg:pr-10">
-          <header className="mb-6 sm:mb-10">
-            <h1 className="text-2xl font-semibold">Confirm Your Booking</h1>
-          </header>
+        <>
+          <div className="flex-shrink-0 mb-4">
+            <h1 className="text-xl font-bold text-center">
+              Confirm Your Booking
+            </h1>
+          </div>
 
-          <main className="space-y-10 w-full max-w-4xl">
-            <section className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white p-4 rounded-lg shadow-sm">
+          <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="flex gap-3 bg-white p-3 rounded border">
               <img
                 src={tutorProfile.user.profileImageUrl}
                 alt="Tutor"
-                className="w-16 h-16 rounded-full object-cover"
+                className="w-12 h-12 rounded-full object-cover"
               />
               <div>
-                <p className="font-semibold text-lg">
+                <p className="font-semibold text-sm">
                   {tutorProfile.user.firstName} {tutorProfile.user.lastName}
                 </p>
-                <p className="text-sm text-gray-500">{selectedSubjectName}</p>
+                <p className="text-xs text-gray-500">{selectedSubjectName}</p>
               </div>
-            </section>
+            </div>
 
-            <div className="w-full border-b border-gray-300"></div>
-
-            <section className="space-y-4">
+            <div className="space-y-2">
               <BookingDetailRow label="Date" value={date?.toDateString()} />
               <BookingDetailRow
                 label="Time"
@@ -143,15 +168,15 @@ export default function BookingSession() {
                 }
               />
               <BookingDetailRow label="Mode" value="Online Session" />
-            </section>
-          </main>
+            </div>
+          </div>
 
-          <footer className="mt-10 sm:mt-20 flex flex-col sm:flex-row w-full max-w-xl gap-4 sm:gap-0 sm:justify-between">
+          <div className="flex-shrink-0 flex justify-center gap-6 mt-4">
             <button
               onClick={() => setStep(1)}
-              className="w-full sm:w-auto px-6 py-2 border rounded-lg text-base bg-gray-100"
+              className="px-4 py-2 border rounded bg-gray-100"
             >
-              Cancel
+              Back
             </button>
             <button
               onClick={() =>
@@ -163,40 +188,40 @@ export default function BookingSession() {
               disabled={
                 !selectedSlotId || !subject || bookingMutation.isLoading
               }
-              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-base disabled:opacity-50"
+              className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
             >
               {bookingMutation.isLoading ? "Booking..." : "Confirm Booking"}
             </button>
-          </footer>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Step 3 */}
       {step === 3 && (
-        <div className="flex-1 flex flex-col px-4 md:px-20">
-          <header className="mb-10">
-            <h1 className="text-2xl font-semibold text-center">
+        <div className="px-3">
+          <div className="flex-shrink-0 mb-4 ">
+            <h1 className="text-xl font-bold text-center">
               Booking Confirmed!
             </h1>
-          </header>
+          </div>
 
-          <main className="space-y-10">
-            <section className="flex items-center gap-6">
+          <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="flex items-center gap-3 bg-white p-3 rounded border">
               <img
                 src={tutorProfile.user.profileImageUrl}
                 alt="Tutor"
-                className="w-20 h-20 rounded-full object-cover"
+                className="w-16 h-16 rounded-full object-cover"
               />
               <div>
-                <p className="font-semibold text-lg">Online Session</p>
+                <p className="font-semibold">Online Session</p>
                 <p className="text-sm text-gray-500">{selectedSubjectName}</p>
-                <span className="mt-1 inline-block px-2 py-0.5 text-xs bg-gray-100 rounded">
+                <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-gray-100 rounded">
                   {tutorProfile.user.firstName} {tutorProfile.user.lastName}
                 </span>
               </div>
-            </section>
+            </div>
 
-            <section className="space-y-8">
+            <div className="space-y-2">
               <BookingDetailRow label="Date" value={date?.toDateString()} />
               <BookingDetailRow
                 label="Time"
@@ -210,19 +235,21 @@ export default function BookingSession() {
                 }
               />
               <BookingDetailRow label="Mode" value="Online Session" />
-            </section>
+            </div>
 
-            <p className="text-sm text-gray-600">
-              Your booking session with {tutorProfile.user.firstName}{" "}
-              {tutorProfile.user.lastName} is confirmed. You will receive a
-              reminder 24 hours before the session.
-            </p>
-          </main>
+            <div className="bg-blue-50 p-3 rounded text-sm">
+              <p className="text-blue-800">
+                Your booking session with {tutorProfile.user.firstName}{" "}
+                {tutorProfile.user.lastName} is confirmed. You will receive a
+                reminder 24 hours before the session.
+              </p>
+            </div>
+          </div>
 
-          <footer className="mt-16 flex flex-col items-center gap-4 w-full">
+          <div className="flex-shrink-0 space-y-2 mt-4">
             <Link
               to="/student/dashboard"
-              className="w-full max-w-md px-5 py-2 bg-blue-600 text-white rounded-lg text-center"
+              className="block w-full px-4 py-2 bg-blue-600 text-white rounded text-center"
             >
               Go to My Dashboard
             </Link>
@@ -233,11 +260,11 @@ export default function BookingSession() {
                 setSelectedSlotId(null);
                 setStep(1);
               }}
-              className="w-full max-w-md px-5 py-2 border rounded-lg bg-gray-100"
+              className="w-full px-4 py-2 border rounded bg-gray-100"
             >
               Book Another Session
             </button>
-          </footer>
+          </div>
         </div>
       )}
     </div>

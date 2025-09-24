@@ -1,5 +1,5 @@
 const BookingDetailRow = ({ label, value }) => (
-  <div className="flex items-start gap-12">
+  <div className="flex items-center gap-12">
     <p className="text-sm text-gray-500 w-24">{label}</p>
     <p className="font-medium">{value || "-"}</p>
   </div>
