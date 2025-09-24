@@ -5,7 +5,12 @@ on:
     branches: ["**"]
   pull_request:
     branches: ["**"]
-  workflow_call: {}
+  workflow_call:
+    secrets:
+      VITE_API_URL:
+        required: false
+      VITE_STREAM_API_KEY:
+        required: false
 
 permissions:
   contents: read
@@ -29,6 +34,14 @@ jobs:
 
       # - name: Lint
       #   run: npm run lint
+
+      - name: Write environment file
+        if: ${{ secrets.VITE_API_URL != '' || secrets.VITE_STREAM_API_KEY != '' }}
+        run: |
+          cat > .env <<EOL
+          VITE_API_URL=${{ secrets.VITE_API_URL }}
+          VITE_STREAM_API_KEY=${{ secrets.VITE_STREAM_API_KEY }}
+          EOL
 
       - name: Build
         run: npm run build
