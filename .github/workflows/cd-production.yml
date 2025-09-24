@@ -77,7 +77,7 @@ jobs:
             if command -v npm >/dev/null 2>&1; then
               echo "Using npm at $(command -v npm)"
             fi
-            (npm ci || npm install)
+            npm install
             npm run build
 
             # Deploy built assets
