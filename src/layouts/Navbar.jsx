@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { BellIcon, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import useAuthUser from "../hooks/auth/useAuthUser";
 import ProfileDropdown from "../components/navbar/ProfileDropdown";
+import useLogout from "../hooks/auth/useLogout";
 
 const Navbar = ({ onToggleSidebar }) => {
   const { authUser } = useAuthUser();
@@ -23,10 +25,7 @@ const Navbar = ({ onToggleSidebar }) => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
 
-  const handleMenuItemClick = (action) => {
-    setIsProfileDropdownOpen(false);
-    console.log(`Clicked: ${action}`);
-  };
+  const { logoutMutation } = useLogout();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-20 bg-white shadow-md border-b border-gray-300">
@@ -85,7 +84,8 @@ const Navbar = ({ onToggleSidebar }) => {
               {isProfileDropdownOpen && (
                 <ProfileDropdown
                   authUser={authUser}
-                  onSelect={handleMenuItemClick}
+                  logoutMutation={logoutMutation}
+                  closeDropdown={() => setIsProfileDropdownOpen(false)}
                 />
               )}
             </div>

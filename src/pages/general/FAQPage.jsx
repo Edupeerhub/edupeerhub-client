@@ -57,7 +57,7 @@ const FAQPage = () => {
         </div>
 
         {/* FAQs */}
-        <div className="space-y-4">
+        <div className="space-y-1">
           {faqs.map((faq, index) => (
             <div
               key={index}
@@ -107,7 +107,7 @@ const FAQPage = () => {
         </span>
       </button>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;

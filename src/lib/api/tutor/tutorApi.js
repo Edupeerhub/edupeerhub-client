@@ -51,3 +51,13 @@ export const getTutorProfile = async (id) => {
   const response = await axiosInstance.get(`/tutor/${id}`);
   return response.data.data;
 };
+
+export const getTutorReviews = async (tutorId) => {
+  const response = await axiosInstance.get(`/reviews/tutor/${tutorId}`);
+  return response.data.data;
+};
+
+export const getTutorReviewSummary = async (userId) => {
+  const response = await axiosInstance.get(`/reviews/aggregates/${userId}`);
+  return response.data.data;
+};
