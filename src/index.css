@@ -8,6 +8,14 @@
   }
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Additional styles for TutorSearchPage */
 
 /* Line clamp utility for text truncation */
@@ -175,7 +183,7 @@
   .admin-table {
     font-size: 0.875rem;
   }
-  
+
   .admin-table th,
   .admin-table td {
     padding: 0.5rem 0.75rem;

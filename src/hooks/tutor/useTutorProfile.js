@@ -22,11 +22,11 @@ export function useTutorProfile(id) {
     queryKey: ["tutorReviewSummary", id],
     queryFn: () => getTutorReviewSummary(id),
     enabled: !!id,
-    initialData: {
-      totalReviews: 0,
-      averageRating: null,
-      breakdown: [5, 4, 3, 2, 1].map((stars) => ({ stars, percent: 0 })),
-    },
+    // initialData: {
+    //   totalReviews: 0,
+    //   averageRating: null,
+    //   breakdown: [5, 4, 3, 2, 1].map((stars) => ({ stars, percent: 0 })),
+    // },
   });
 
   return {
