@@ -26,31 +26,21 @@ const StudentLibraryPage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-4">
-        <button className="btn btn-primary rounded-full bg-white text-primary border-none shadow-md hover:bg-primary hover:text-white">
-          <ChevronLeft />
-          Back
-        </button>
-        <p className="font-bold">All Subjects</p>
-      </div>
-
-      <div className=" pt-2 flex flex-wrap justify-center gap-10 cursor-pointer">
+    <div className="flex justify-center items-center min-h-[80vh] md:px-6">
+      <div className="flex flex-wrap justify-center gap-10 cursor-pointer">
         {subjects.map((subj) => (
           <div
             key={subj.name}
-            className="card w-70 shadow-sm bg-gray-50"
+            className="card w-72 shadow-sm bg-gray-300 rounded-xl overflow-hidden transition transform hover:shadow-md hover:-translate-y-1 cursor-pointer"
             onClick={() => setEachSubject(subj)}
           >
-            <div>
-              <img
-                src={subj.image}
-                alt={subj.name}
-                className="rounded-xl h-48 w-full object-cover"
-              />
-            </div>
-            <div className="p-3">
-              <p>{subj.name}</p>
+            <img
+              src={subj.image}
+              alt={subj.name}
+              className="rounded-t-xl h-48 w-full object-cover"
+            />
+            <div className="p-3 text-center">
+              <p className="font-medium text-gray-700">{subj.name}</p>
             </div>
           </div>
         ))}
@@ -67,18 +57,32 @@ const StudentSubjectPage = ({ subject, setSubject }) => {
   };
   return (
     <>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mb-6">
         <button
           onClick={handleBack}
-          className="btn btn-primary rounded-full bg-white text-primary border-none shadow-md hover:bg-primary hover:text-white"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full 
+                  border border-[#0568FF] shadow-sm 
+                  bg-white text-primary font-semibold 
+                  hover:bg-primary hover:text-white hover:border-transparent 
+                  transition-colors duration-200"
         >
-          <ChevronLeft />
-          Back
+          <ChevronLeft size={18} />
+          <span className="hidden md:inline">Back</span>
         </button>
-        <p className="font-bold">{subject.name}</p>
+
+        {/* <p className="font-bold text-lg mx-auto text-center">{subject.name}</p> */}
       </div>
-      <div className="p-5">
-        <p className="font-bold">Check Back for {subject.name} content</p>
+
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="bg-gray-100 p-8 rounded-xl shadow-sm max-w-md">
+          <p className="text-xl font-semibold text-gray-700">
+            📚 Content Coming Soon
+          </p>
+          <p className="text-gray-500 mt-2">
+            Check back later for{" "}
+            <span className="font-medium">{subject.name}</span> resources.
+          </p>
+        </div>
       </div>
     </>
   );

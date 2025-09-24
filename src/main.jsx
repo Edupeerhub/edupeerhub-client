@@ -1,7 +1,8 @@
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
-import "./index.css"; // Tailwind styles
+import "./index.css";
+import "stream-chat-react/dist/css/v2/index.css";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 

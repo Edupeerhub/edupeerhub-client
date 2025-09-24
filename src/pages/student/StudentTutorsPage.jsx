@@ -1,561 +1,286 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Search, ChevronDown, X, SlidersHorizontal } from "lucide-react";
-import FilterPanel from "../../components/student/FilterPanel";
-import TutorCard from "../../components/student/TutorSearchCard";
+import React, { useState, useRef, useEffect } from "react";
+import { Search, ChevronDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getTutors } from "../../lib/api/tutor/tutorApi";
+import { Link } from "react-router-dom";
 
-// Mock data for tutors
-const mockTutors = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    avatar:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Mathematics", "Physics"],
-    rating: 4.9,
-    reviewCount: 127,
-    hourlyRate: 45,
-    location: "New York, NY",
-    experience: "5 years",
-    availability: "Available",
-    bio: "Experienced math and physics tutor with a passion for helping students excel.",
-    languages: ["English", "Spanish"],
-    education: "MIT - Mathematics",
-    responseTime: "Usually responds within 1 hour",
-    totalStudents: 89,
-    completedSessions: 1250,
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Computer Science", "Programming"],
-    rating: 4.8,
-    reviewCount: 95,
-    hourlyRate: 60,
-    location: "San Francisco, CA",
-    experience: "7 years",
-    availability: "Busy",
-    bio: "Software engineer turned educator, specializing in programming and computer science.",
-    languages: ["English", "Mandarin"],
-    education: "Stanford - Computer Science",
-    responseTime: "Usually responds within 2 hours",
-    totalStudents: 156,
-    completedSessions: 2100,
-  },
-  {
-    id: 3,
-    name: "Emily Rodriguez",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    subjects: ["English Literature", "Writing"],
-    rating: 4.7,
-    reviewCount: 203,
-    hourlyRate: 35,
-    location: "Austin, TX",
-    experience: "4 years",
-    availability: "Available",
-    bio: "Published author and literature enthusiast helping students master writing skills.",
-    languages: ["English"],
-    education: "University of Texas - English Literature",
-    responseTime: "Usually responds within 30 minutes",
-    totalStudents: 234,
-    completedSessions: 1800,
-  },
-  {
-    id: 4,
-    name: "David Kim",
-    avatar:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Chemistry", "Biology"],
-    rating: 4.9,
-    reviewCount: 156,
-    hourlyRate: 50,
-    location: "Boston, MA",
-    experience: "6 years",
-    availability: "Available",
-    bio: "PhD in Chemistry with extensive experience in both research and teaching.",
-    languages: ["English", "Korean"],
-    education: "Harvard - Chemistry PhD",
-    responseTime: "Usually responds within 1 hour",
-    totalStudents: 178,
-    completedSessions: 1950,
-  },
-  {
-    id: 5,
-    name: "Lisa Thompson",
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
-    subjects: ["History", "Social Studies"],
-    rating: 4.6,
-    reviewCount: 89,
-    hourlyRate: 40,
-    location: "Chicago, IL",
-    experience: "8 years",
-    availability: "Available",
-    bio: "Former high school teacher passionate about making history engaging and accessible.",
-    languages: ["English", "French"],
-    education: "Northwestern - History",
-    responseTime: "Usually responds within 45 minutes",
-    totalStudents: 145,
-    completedSessions: 1600,
-  },
-  {
-    id: 6,
-    name: "Ahmed Hassan",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Arabic", "Islamic Studies"],
-    rating: 4.8,
-    reviewCount: 67,
-    hourlyRate: 30,
-    location: "Detroit, MI",
-    experience: "3 years",
-    availability: "Available",
-    bio: "Native Arabic speaker with expertise in language instruction and cultural studies.",
-    languages: ["Arabic", "English"],
-    education: "University of Michigan - Middle Eastern Studies",
-    responseTime: "Usually responds within 2 hours",
-    totalStudents: 98,
-    completedSessions: 890,
-  },
-];
-
-// All available subjects for filtering
-const allSubjects = [
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "Computer Science",
-  "Programming",
-  "English Literature",
-  "Writing",
-  "History",
-  "Social Studies",
-  "Arabic",
-  "Islamic Studies",
-  "Spanish",
-  "French",
-  "Economics",
-  "Psychology",
-];
-
-// Sort options
-const sortOptions = [
-  { value: "rating", label: "Highest Rated" },
-  { value: "price-low", label: "Price: Low to High" },
-  { value: "price-high", label: "Price: High to Low" },
-  { value: "experience", label: "Most Experienced" },
-  { value: "reviews", label: "Most Reviews" },
-];
-
-// Main TutorSearchPage Component
 const StudentTutorsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("rating");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     subjects: [],
-    minRating: 0,
-    maxPrice: 100,
-    availability: "all",
+    availability: [],
+    ratings: [],
   });
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const tutorsPerPage = 6;
 
-  // Filter and sort tutors
-  const filteredAndSortedTutors = useMemo(() => {
-    let filtered = mockTutors.filter((tutor) => {
-      // Search query filter
-      const matchesSearch =
-        searchQuery === "" ||
-        tutor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tutor.subjects.some((subject) =>
-          subject.toLowerCase().includes(searchQuery.toLowerCase())
-        ) ||
-        tutor.bio.toLowerCase().includes(searchQuery.toLowerCase());
+  // Applied states - these trigger the actual API call
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState({
+    subjects: [],
+    availability: [],
+    ratings: [],
+  });
 
-      // Subject filter
-      const matchesSubjects =
-        filters.subjects.length === 0 ||
-        filters.subjects.some((subject) => tutor.subjects.includes(subject));
+  const filterRef = useRef(null);
 
-      // Rating filter
-      const matchesRating = tutor.rating >= filters.minRating;
-
-      // Price filter
-      const matchesPrice = tutor.hourlyRate <= filters.maxPrice;
-
-      // Availability filter
-      const matchesAvailability =
-        filters.availability === "all" ||
-        (filters.availability === "available" &&
-          tutor.availability === "Available") ||
-        (filters.availability === "busy" && tutor.availability === "Busy");
-
-      return (
-        matchesSearch &&
-        matchesSubjects &&
-        matchesRating &&
-        matchesPrice &&
-        matchesAvailability
-      );
-    });
-
-    // Sort tutors
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "rating":
-          return b.rating - a.rating;
-        case "price-low":
-          return a.hourlyRate - b.hourlyRate;
-        case "price-high":
-          return b.hourlyRate - a.hourlyRate;
-        case "experience":
-          return parseInt(b.experience) - parseInt(a.experience);
-        case "reviews":
-          return b.reviewCount - a.reviewCount;
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [searchQuery, filters, sortBy]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredAndSortedTutors.length / tutorsPerPage);
-  const startIndex = (currentPage - 1) * tutorsPerPage;
-  const paginatedTutors = filteredAndSortedTutors.slice(
-    startIndex,
-    startIndex + tutorsPerPage
-  );
-
-  // Reset page when filters change
+  // Close dropdown if clicked outside
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filters, sortBy]);
+    const handleClickOutside = (event) => {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  // Simulate loading for infinite scroll/pagination
-  const handleLoadMore = useCallback(() => {
-    if (currentPage < totalPages) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setCurrentPage((prev) => prev + 1);
-        setIsLoading(false);
-      }, 500);
-    }
-  }, [currentPage, totalPages]);
+  // Only triggers API call when appliedSearchQuery or appliedFilters change
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["tutors", appliedSearchQuery, appliedFilters],
+    queryFn: () =>
+      getTutors({
+        search: appliedSearchQuery,
+        subjects:
+          appliedFilters.subjects.length > 0
+            ? appliedFilters.subjects
+            : undefined,
+        availability:
+          appliedFilters.availability.length > 0
+            ? appliedFilters.availability
+            : undefined,
+        ratings:
+          appliedFilters.ratings.length > 0
+            ? appliedFilters.ratings
+            : undefined,
+      }),
+  });
 
-  const handleContactTutor = (tutor) => {
-    alert(`Contacting ${tutor.name}...`);
-    // Here you would implement the actual contact functionality
+  const handleFilterChange = (filterType, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterType]: prev[filterType].includes(value)
+        ? prev[filterType].filter((item) => item !== value)
+        : [...prev[filterType], value],
+    }));
   };
 
-  const handleClearFilters = () => {
+  const handleSearch = () => {
+    setAppliedSearchQuery(searchQuery);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(filters);
+    setIsFilterOpen(false);
+  };
+
+  const resetFilters = () => {
     setFilters({
       subjects: [],
-      minRating: 0,
-      maxPrice: 100,
-      availability: "all",
+      availability: [],
+      ratings: [],
+    });
+    setAppliedFilters({
+      subjects: [],
+      availability: [],
+      ratings: [],
     });
     setSearchQuery("");
+    setAppliedSearchQuery("");
   };
 
-  const activeFiltersCount =
-    filters.subjects.length +
-    (filters.minRating > 0 ? 1 : 0) +
-    (filters.maxPrice < 100 ? 1 : 0) +
-    (filters.availability !== "all" ? 1 : 0);
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const hasActiveFilters =
+    appliedFilters.subjects.length > 0 ||
+    appliedFilters.availability.length > 0 ||
+    appliedFilters.ratings.length > 0 ||
+    appliedSearchQuery.length > 0;
+
+  if (isLoading) return <p>Loading tutors...</p>;
+  if (error) return <p className="text-red-500">Failed to load tutors.</p>;
 
   return (
-    <div>
-      {/* Search and Filters */}
-      <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
-          {/* Search Bar */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search by name, subject, or keyword..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-bar w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-          </div>
-
-          {/* Filter Button (Mobile) */}
-          <button
-            onClick={() => setIsFilterOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            <span>Filters</span>
-            {activeFiltersCount > 0 && (
-              <span className="bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {activeFiltersCount}
-              </span>
-            )}
-          </button>
+    <div className="mx-auto px-1 sm:px-6 lg:px-8 md:py-6">
+      {/* Search + Filter */}
+      <div className="flex items-center gap-2 md:gap-4 mb-6 relative">
+        <div className="flex-1 relative ">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search for Tutor"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchKeyPress}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          />
         </div>
 
-        {/* Active Filters Display */}
-        {activeFiltersCount > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="text-sm text-gray-600">Active filters:</span>
-            {filters.subjects.map((subject) => (
-              <span
-                key={subject}
-                className="filter-badge px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-1"
-              >
-                {subject}
-                <button
-                  onClick={() =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      subjects: prev.subjects.filter((s) => s !== subject),
-                    }))
-                  }
-                  className="hover:bg-primary/20 rounded-full p-0.5"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-            {filters.minRating > 0 && (
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                {filters.minRating}+ stars
-              </span>
-            )}
-            {filters.maxPrice < 100 && (
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                Under ${filters.maxPrice}/hr
-              </span>
-            )}
-            {filters.availability !== "all" && (
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                {filters.availability === "available" ? "Available" : "Busy"}
-              </span>
-            )}
-            <button
-              onClick={handleClearFilters}
-              className="text-sm text-gray-500 hover:text-gray-700 underline"
-            >
-              Clear all
-            </button>
-          </div>
-        )}
+        {/* Search Button */}
+        <button
+          onClick={handleSearch}
+          className="px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/80 text-sm"
+        >
+          Search
+        </button>
 
-        <div className="flex gap-8">
-          {/* Desktop Filters Sidebar */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-heading font-semibold text-lg">Filters</h3>
-                {activeFiltersCount > 0 && (
-                  <button
-                    onClick={handleClearFilters}
-                    className="text-sm text-primary hover:text-primary/80"
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
+        {/* Filter dropdown button */}
+        <div className="relative" ref={filterRef}>
+          <button
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className={`flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm transition ${
+              hasActiveFilters
+                ? "bg-primary text-white hover:bg-primary/80"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
+          >
+            Filter
+            {hasActiveFilters && (
+              <span className="ml-1 px-2 py-0.5 bg-white text-primary text-xs rounded-full">
+                {appliedFilters.subjects.length +
+                  appliedFilters.availability.length +
+                  appliedFilters.ratings.length}
+              </span>
+            )}
+            <ChevronDown className="w-4 h-4" />
+          </button>
 
-              <div className="space-y-6">
-                {/* Subjects */}
-                <div>
-                  <h4 className="font-medium mb-3">Subjects</h4>
-                  <div className="filter-scroll space-y-2 max-h-48 overflow-y-auto">
-                    {allSubjects.map((subject) => (
-                      <label key={subject} className="flex items-center gap-2">
+          {/* Dropdown */}
+          {isFilterOpen && (
+            <div className="absolute right-0 mt-2 w-64 p-4 border border-gray-300 rounded-lg bg-white shadow-lg z-10">
+              <p className="text-sm font-medium text-gray-700 mb-3">
+                Filter Options
+              </p>
+
+              {/* Subjects Filter */}
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">Subjects</p>
+                <div className="space-y-1">
+                  {["Mathematics", "Physics", "Biology", "English"].map(
+                    (subject) => (
+                      <label
+                        key={subject}
+                        className="flex items-center text-sm"
+                      >
                         <input
                           type="checkbox"
                           checked={filters.subjects.includes(subject)}
-                          onChange={() => {
-                            setFilters((prev) => ({
-                              ...prev,
-                              subjects: prev.subjects.includes(subject)
-                                ? prev.subjects.filter((s) => s !== subject)
-                                : [...prev.subjects, subject],
-                            }));
-                          }}
-                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                          onChange={() =>
+                            handleFilterChange("subjects", subject)
+                          }
+                          className="mr-2 rounded"
                         />
-                        <span className="text-sm">{subject}</span>
+                        {subject}
                       </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Rating */}
-                <div>
-                  <h4 className="font-medium mb-3">Minimum Rating</h4>
-                  <select
-                    value={filters.minRating}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        minRating: Number(e.target.value),
-                      }))
-                    }
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  >
-                    <option value={0}>Any Rating</option>
-                    <option value={4}>4+ Stars</option>
-                    <option value={4.5}>4.5+ Stars</option>
-                    <option value={4.8}>4.8+ Stars</option>
-                  </select>
-                </div>
-
-                {/* Price Range */}
-                <div>
-                  <h4 className="font-medium mb-3">Max Price per Hour</h4>
-                  <input
-                    type="range"
-                    min="20"
-                    max="100"
-                    value={filters.maxPrice}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        maxPrice: Number(e.target.value),
-                      }))
-                    }
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-gray-600 mt-1">
-                    <span>$20</span>
-                    <span>${filters.maxPrice}</span>
-                    <span>$100+</span>
-                  </div>
-                </div>
-
-                {/* Availability */}
-                <div>
-                  <h4 className="font-medium mb-3">Availability</h4>
-                  <select
-                    value={filters.availability}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        availability: e.target.value,
-                      }))
-                    }
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  >
-                    <option value="all">All Tutors</option>
-                    <option value="available">Available Now</option>
-                    <option value="busy">Busy</option>
-                  </select>
+                    )
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="font-heading font-semibold text-xl text-accent">
-                  {filteredAndSortedTutors.length} Tutors Found
-                </h2>
-                {searchQuery && (
-                  <p className="text-gray-600 mt-1">
-                    Results for "{searchQuery}"
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Tutors Grid */}
-            {filteredAndSortedTutors.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Search className="w-12 h-12 text-gray-400" />
+              {/* Availability Filter */}
+              {/* <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">Availability</p>
+                <div className="space-y-1">
+                  {["Morning", "Afternoon", "Evening", "Weekend"].map(
+                    (time) => (
+                      <label key={time} className="flex items-center text-sm">
+                        <input
+                          type="checkbox"
+                          checked={filters.availability.includes(time)}
+                          onChange={() =>
+                            handleFilterChange("availability", time)
+                          }
+                          className="mr-2 rounded"
+                        />
+                        {time}
+                      </label>
+                    )
+                  )}
                 </div>
-                <h3 className="font-heading font-semibold text-xl text-accent mb-2">
-                  No tutors found
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Try adjusting your search criteria or filters
-                </p>
-                <button
-                  onClick={handleClearFilters}
-                  className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="tutor-grid grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  {paginatedTutors.map((tutor) => (
-                    <TutorCard
-                      key={tutor.id}
-                      tutor={tutor}
-                      onContact={handleContactTutor}
-                    />
+              </div> */}
+
+              {/* Rating Filter */}
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">Minimum Rating</p>
+                <div className="space-y-1">
+                  {["5", "4", "3"].map((rating) => (
+                    <label key={rating} className="flex items-center text-sm">
+                      <input
+                        type="checkbox"
+                        checked={filters.ratings.includes(rating)}
+                        onChange={() => handleFilterChange("ratings", rating)}
+                        className="mr-2 rounded"
+                      />
+                      {rating}+ Stars
+                    </label>
                   ))}
                 </div>
+              </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-4">
-                    {currentPage < totalPages && (
-                      <button
-                        onClick={handleLoadMore}
-                        disabled={isLoading}
-                        className="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isLoading ? "Loading..." : "Load More Tutors"}
-                      </button>
-                    )}
-                    <div className="text-sm text-gray-600">
-                      Showing{" "}
-                      {Math.min(
-                        currentPage * tutorsPerPage,
-                        filteredAndSortedTutors.length
-                      )}{" "}
-                      of {filteredAndSortedTutors.length} tutors
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+              <div className="flex gap-2 pt-2 border-t">
+                <button
+                  onClick={handleApplyFilters}
+                  className="flex-1 px-3 py-2 text-sm bg-primary text-white rounded hover:bg-primary/80"
+                >
+                  Apply Filters
+                </button>
+                <button
+                  onClick={resetFilters}
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded hover:bg-gray-100"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Mobile Filter Panel */}
-      <FilterPanel
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        filters={filters}
-        allSubjects={allSubjects}
-        onFiltersChange={setFilters}
-        onClearFilters={handleClearFilters}
-      />
+      {!data || data.rows?.length === 0 ? (
+        <p className="flex justify-center items-center font-bold">
+          No tutors found.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {data.rows.map((tutor) => (
+            <div
+              key={tutor.userId}
+              className="flex flex-col p-4 border border-gray-200 rounded-lg shadow-lg hover:shadow-2xl transition"
+            >
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+                  <img
+                    src={tutor.user.profileImageUrl}
+                    alt={`${tutor?.user.firstName} ${tutor?.user.lastName}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">
+                    {tutor?.user.firstName} {tutor?.user.lastName}
+                  </h3>
+                  <p className="text-sm text-primary mt-1">
+                    {tutor?.subjects?.map((s) => s.name).join(" • ")}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-3">
+                    {tutor.bio}
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                to={`/student/tutor-profile/${tutor.userId}`}
+                className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/80 text-center no-underline"
+              >
+                View Profile
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
