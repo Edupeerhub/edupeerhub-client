@@ -15,9 +15,18 @@ import {
 import Yinka from "../../assets/images/students-image/student-image-1.jpg";
 import Chima from "../../assets/images/students-image/student-image-2.jpg";
 import Eze from "../../assets/images/students-image/student-image-3.jpg";
+import { useState } from "react";
 
 const TutorDashboardPage = () => {
   const { authUser } = useAuthUser();
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  //Modal for active state
+  const handleView = (session) => {
+    setSelectedSession(session);
+    setModalOpen(true);
+  };
 
   const tutor = {
     status: "active", // "pending" | "rejected" | "approved" | "active"
@@ -32,7 +41,6 @@ const TutorDashboardPage = () => {
         time: "2hrs, 30min",
         timehrs: "2:30pm",
         image: Yinka,
-        action: "View",
       },
       {
         name: "Chima Eke",
@@ -42,7 +50,6 @@ const TutorDashboardPage = () => {
         time: "2hrs",
         timehrs: "1:00pm",
         image: Chima,
-        action: "View",
       },
       {
         name: "Eze Victor",
@@ -52,7 +59,6 @@ const TutorDashboardPage = () => {
         timehrs: "1:30pm",
         date: "Sept. 16, 2025",
         image: Eze,
-        action: "View",
       },
     ],
   };
@@ -153,7 +159,7 @@ const TutorDashboardPage = () => {
           {tutor.status === "pending" && <PendingLayout />}
           {tutor.status === "rejected" && <RejectedLayout />}
           {tutor.status === "approved" && <ApprovedLayout />}
-          {tutor.status === "active" && <ActiveLayout tutor={tutor} />}
+          {tutor.status === "active" && <ActiveLayout tutor={tutor} handleView={handleView} />}
         </div>
 
         {/* Right side (always 1/3 width) */}
@@ -162,7 +168,7 @@ const TutorDashboardPage = () => {
             <p className="font-bold mb-2">Profile Status</p>
             <div
               className={`flex items-center text-nowrap text-[12px] 
-        gap-2 rounded-md p-2 ${bgColor}`}
+              gap-2 rounded-md p-2 ${bgColor}`}
             >
               {icon}
               <span>
@@ -177,9 +183,9 @@ const TutorDashboardPage = () => {
                 value={progress}
                 max={100}
                 className="w-4/5 pt-2.5 mb-1.5 text-primary 
-          [&::-webkit-progress-bar]:bg-gray-500
-          [&::-webkit-progress-value]:bg-current
-          [&::-moz-progress-bar]:bg-current"
+                [&::-webkit-progress-bar]:bg-gray-500
+                [&::-webkit-progress-value]:bg-current
+                [&::-moz-progress-bar]:bg-current"
               ></progress>
               <p className="text-[10px] mt-1">{progress}%</p>
             </span>
@@ -211,6 +217,11 @@ const TutorDashboardPage = () => {
           </div>
         </div>
       </div>
+      <ViewModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        session={selectedSession}
+      />
     </>
   );
 };
@@ -312,7 +323,7 @@ function ApprovedLayout() {
   );
 }
 
-function ActiveLayout({ tutor }) {
+function ActiveLayout({ tutor, handleView }) {
   const tableHeaders = ["Student", "Subject", "Date", "Time", "Action"];
   return (
     <>
@@ -368,7 +379,9 @@ function ActiveLayout({ tutor }) {
                     <td>{s.subject}</td>
                     <td>{s.date}</td>
                     <td>{s.timehrs}</td>
-                    <td>{s.action}</td>
+                    <td>
+                      <button onClick={() => handleView(s)}>View</button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -435,6 +448,91 @@ function BookingCard({ name, image, exam }) {
       <div className="text-left ml-1">
         <p className="text-sm">{name}</p>
         <p className="text-gray-500 text-sm">{exam}</p>
+      </div>
+    </div>
+  );
+}
+
+function ViewModal({ isOpen, onClose, session }) {
+  const [status, setStatus] = useState(null);
+
+  const handleClose = () => {
+    setStatus(null);
+    onClose();
+  }
+
+  if (!isOpen || !session) return null;
+
+  return (
+    <div className="w-full fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white p-4 rounded-md shadow-lg w-96">
+        {status ? (
+          <>
+            {status === "accepted" && (
+              <div className="flex flex-col items-center gap-3 p-3">
+                <Check className="border w-8 h-8 rounded-full bg-green-500 text-white" />
+                <p className="text-lg font-bold mt-3">Request Accepted</p>
+                <p className="text-sm text-center">
+                  You've accepted a booking request from {session.name}. A
+                  notification has been sent
+                </p>
+                <button
+                  className="mt-4 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full"
+                  onClick={handleClose}
+                >
+                  Done
+                </button>
+              </div>
+            )}
+            {status === "rejected" && (
+              <div className="flex flex-col items-center gap-3 p-3">
+                <XIcon className="border w-8 h-8 rounded-full bg-red-500 text-white" />
+                <p className="text-lg font-bold mt-3">Request Declined</p>
+                <p className="text-sm text-center">
+                  You've declined the booking request from {session.name}.
+                </p>
+                <div className="flex flex-col gap-1 w-full">
+                  <button
+                    className="mt-4 shadow-md bg-blue-600 text-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full"
+                    onClick={handleClose}
+                  >
+                    Undo
+                  </button>
+                  <button
+                    className="mt-4 shadow-md bg-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full font-semibold w-full"
+                  >
+                    Report a Problem
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <span className="flex items-center justify-between">
+              <BookingCard {...session} />
+              <XIcon className="cursor-pointer" onClick={onClose} />
+            </span>
+            <p className="mt-2 text-sm">Date & Time</p>
+            <p className="text-sm font-bold">Date: {session.date}</p>
+            <p className="text-sm">{session.timehrs}</p>
+
+            <div className="mt-4 flex justify-between ">
+              <button
+                onClick={() => setStatus("accepted")}
+                className="px-6 py-2 text-[12px] text-white bg-blue-500 hover:shadow-lg rounded-full"
+              >
+                Accept Request
+              </button>
+              <button
+                onClick={() => setStatus("rejected")}
+                className="px-7 py-2 border text-[12px] mr-10 bg-white hover:bg-blue-500 hover:text-white rounded-full"
+              >
+                Decline
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
