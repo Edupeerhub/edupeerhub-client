@@ -28,9 +28,8 @@ const StudentDashboardPage = () => {
     queryFn: () => getUpcomingSession(),
   });
 
-  console.log(upcomingSessions);
   return (
-    <div className="p-2 md:p-2 space-y-4 max-w-xs md:max-w-6xl mx-auto">
+    <div className="md:p-2 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-2 md:space-y-6">
@@ -94,7 +93,7 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* ===== Recommended Tutors ===== */}
-      <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4  max-w-80 sm:max-w-4xl mx-auto border shadow-md overflow-x-hidden scrollbar-hide">
+      <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full max-w-80 sm:max-w-4xl mx-auto border shadow-md overflow-x-hidden">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg px-2 md:px-0">
             Recommended Tutors

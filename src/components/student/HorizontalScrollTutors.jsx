@@ -39,7 +39,7 @@ const HorizontalScrollTutors = ({ tutors }) => {
   }, []);
 
   return (
-    <div className="relative overflow-hidden group scrollbar-hide">
+    <div className="relative overflow-hidden group">
       {showLeftButton && (
         <button
           onClick={() => scroll("left")}
@@ -67,7 +67,7 @@ const HorizontalScrollTutors = ({ tutors }) => {
 
       <div
         ref={containerRef}
-        className="flex gap-4 overflow-x-auto py-4 px-2 scroll-smooth w-full flex-nowrap"
+        className="flex gap-4 overflow-x-auto py-4 px-2 scroll-smooth w-full flex-nowrap scrollbar-hide"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {tutors.map((tutor, index) => (
