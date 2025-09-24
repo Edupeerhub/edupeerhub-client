@@ -26,8 +26,8 @@ const StudentLibraryPage = () => {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-[80vh] md:px-6">
-      <div className="flex flex-wrap justify-center gap-10 cursor-pointer">
+    <div className="flex justify-center items-center min-h-[80vh]">
+      <div className="flex flex-wrap justify-center gap-3 cursor-pointer">
         {subjects.map((subj) => (
           <div
             key={subj.name}

@@ -64,7 +64,7 @@
 /* Loading animation */
 .loading-spinner {
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #4ca1f0;
+  /* border-top: 2px solid #4ca1f0; */
   border-radius: 50%;
   width: 20px;
   height: 20px;
