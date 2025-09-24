@@ -30,7 +30,7 @@ const StudentDashboardPage = () => {
 
   console.log(upcomingSessions);
   return (
-    <div className="p-2 md:p-4 space-y-4 md:max-w-8xl mx-auto">
+    <div className="p-2 md:p-2 space-y-4 max-w-xs md:max-w-6xl mx-auto">
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-2 md:space-y-6">
@@ -94,78 +94,7 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* ===== Recommended Tutors ===== */}
-      {/* <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full border shadow-md">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg px-2 md:px-0">
-            Recommended Tutors
-          </h3>
-          <Link
-            to="/student/tutors"
-            className="text-blue-600 text-sm font-medium hover:underline"
-          >
-            View All
-          </Link>
-        </div>
-        {isLoading ? (
-          <div className="flex flex-col justify-center items-center py-8">
-            <Spinner />
-            <p className="text-gray-600">Loading tutors...</p>
-          </div>
-        ) : error ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="flex flex-col items-center gap-3 text-center">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-red-600">
-                  Error loading tutors
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  Please try again later
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : !data || data.rows?.length === 0 ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="flex flex-col items-center gap-3 text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <p className="font-bold text-gray-600">No tutors found.</p>
-            </div>
-          </div>
-        ) : (
-          <HorizontalScrollTutors tutors={data.rows} />
-        )}
-      </div> */}
-      {/* ===== Recommended Tutors ===== */}
-      <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full border shadow-md">
+      <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4  max-w-80 sm:max-w-4xl mx-auto border shadow-md overflow-x-hidden scrollbar-hide">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg px-2 md:px-0">
             Recommended Tutors
@@ -212,7 +141,34 @@ const StudentDashboardPage = () => {
             </div>
           </div>
         )}
-        <HorizontalScrollTutors tutors={data?.rows || []} />
+        {/* Empty state */}
+        {!isLoading && !error && data?.rows?.length === 0 && (
+          <div className="flex justify-center items-center py-8">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <p className="font-bold text-gray-600">No tutors found.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Success state */}
+        {!isLoading && !error && data?.rows?.length > 0 && (
+          <HorizontalScrollTutors tutors={data.rows} />
+        )}
       </div>
     </div>
   );
