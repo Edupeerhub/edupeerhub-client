@@ -5,8 +5,40 @@ export const createTutor = async (data) => {
   return response.data.data;
 };
 
-export const getTutors = async () => {
-  const response = await axiosInstance.get(`/tutor`);
+export const getTutors = async (params = {}) => {
+  const queryParams = new URLSearchParams();
+
+  // Add search parameter
+  if (params.search) {
+    queryParams.append("search", params.search);
+  }
+
+  // Add filter parameters as comma-separated strings
+  if (params.subjects && params.subjects.length > 0) {
+    queryParams.append("subjects", params.subjects.join(","));
+  }
+
+  if (params.availability && params.availability.length > 0) {
+    queryParams.append("availability", params.availability.join(","));
+  }
+
+  if (params.ratings && params.ratings.length > 0) {
+    queryParams.append("rating", params.ratings.join(","));
+  }
+
+  // Add pagination parameters if provided
+  if (params.page) {
+    queryParams.append("page", params.page);
+  }
+
+  if (params.limit) {
+    queryParams.append("limit", params.limit);
+  }
+
+  const queryString = queryParams.toString();
+  const url = queryString ? `/tutor?${queryString}` : "/tutor";
+
+  const response = await axiosInstance.get(url);
   return response.data.data;
 };
 

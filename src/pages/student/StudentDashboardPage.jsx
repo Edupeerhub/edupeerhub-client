@@ -1,13 +1,10 @@
 import useAuthUser from "../../hooks/auth/useAuthUser";
 import Calendar from "../../components/Calendar";
 import streakIcon from "../../assets/Student-icon/streak.svg";
-import quizIcon from "../../assets/Student-icon/score.svg";
+import quizIcon from "../../assets/Student-icon/quiz.svg";
 import scoreIcon from "../../assets/Student-icon/score.svg";
 import greaterThanIcon from "../../assets/Student-icon/greater-than.svg";
 import Upcoming from "../../assets/Student-icon/upcoming.svg";
-import tutorImageA from "../../assets/Student-icon/tutor-image-A.svg";
-import tutorImageB from "../../assets/Student-icon/tutor-image-B.svg";
-import tutorImageC from "../../assets/Student-icon/tutor-image-C.svg";
 import clockIcon from "../../assets/Student-icon/clock.svg";
 import { useQuery } from "@tanstack/react-query";
 import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
@@ -17,39 +14,25 @@ import OverviewPanel from "../../components/student/OverviewPanel";
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
 
-  const tutors = [
-    {
-      name: "Mr. Ola Williams",
-      subjects: ["Maths", "Chemistry", "Physics"],
-      image: tutorImageA,
-    },
-    {
-      name: "Ms. Nkechi Onu",
-      subjects: ["English", "Eng Literature"],
-      image: tutorImageB,
-    },
-    { name: "Mr. Wale Ola", subjects: ["Biology"], image: tutorImageC },
-  ];
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["recommendedTutors"],
     queryFn: () => getRecommendedTutors(),
   });
   return (
-    <div className="md:p-4 space-y-4 md:max-w-8xl mx-auto">
+    <div className="p-2 md:p-4 space-y-4 md:max-w-8xl mx-auto">
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-2 md:space-y-6">
-          <h1 className="text-2xl md:mb-4 p-2 sm:p-0 font-semibold">
+          <h1 className="text-2xl md:mb-4 font-semibold">
             Welcome back, {authUser?.firstName || "Student"}
           </h1>
 
           {/* Overview */}
           <div className="bg-white rounded-lg border shadow p-2 sm:p-4">
             <h2 className="text-lg font-semibold mb-4 ">Overview</h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <OverviewPanel icon={streakIcon} text="Daily Streak" />
-              <OverviewPanel icon={quizIcon} text="Quizzes Completed" />
+              <OverviewPanel icon={quizIcon} text="Quizzes" />
               <OverviewPanel icon={scoreIcon} text="Average Score" />
             </div>
           </div>
@@ -85,7 +68,7 @@ const StudentDashboardPage = () => {
           </div>
         </div>
 
-        <div className="bg-[#F9FAFB] border rounded-lg shadow md:p-4 space-y-4 flex flex-col self-start ">
+        <div className="bg-[#F9FAFB] border rounded-lg shadow p-2 md:p-4 space-y-4 flex flex-col self-start ">
           {/* Calendar */}
           <div className="flex-none">
             <Calendar
@@ -109,7 +92,7 @@ const StudentDashboardPage = () => {
             </div>
 
             <p className="text-sm text-gray-500 mt-1">Progress 0%</p>
-            <div className="w-80 max-w-full bg-gray-200 rounded-full h-2 mt-1">
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
               <div className="bg-blue-600 h-2 rounded-full w-0"></div>
             </div>
             <div className="flex justify-center mt-4">
@@ -125,9 +108,11 @@ const StudentDashboardPage = () => {
       </div>
 
       {/* ===== Recommended Tutors ===== */}
-      <div className="bg-[#F9FAFB] rounded-lg md:p-4 w-full border shadow-md">
+      <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full border shadow-md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg px-2">Recommended Tutors</h3>
+          <h3 className="font-semibold text-lg px-2 md:px-0">
+            Recommended Tutors
+          </h3>
           <Link
             to="/student/tutors"
             className="text-blue-600 text-sm font-medium hover:underline"
@@ -135,11 +120,62 @@ const StudentDashboardPage = () => {
             View All
           </Link>
         </div>
-
-        {!data || data.rows?.length === 0 ? (
-          <p className="flex justify-center items-center font-bold">
-            No tutors found.
-          </p>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-primary rounded-full animate-spin"></div>
+              <p className="text-gray-600">Loading tutors...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-red-600">
+                  Error loading tutors
+                </p>
+                <p className="text-gray-600 text-sm mt-1">
+                  Please try again later
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : !data || data.rows?.length === 0 ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <p className="font-bold text-gray-600">No tutors found.</p>
+            </div>
+          </div>
         ) : (
           <div className="">
             <div className="flex gap-4 pb-2" style={{ width: "max-content" }}>
