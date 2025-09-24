@@ -23,7 +23,9 @@ export const fetchStudentTutorAvailability = async ({
   return response.data.data;
 };
 
-export const bookSession = async (bookingId) => {
-  const response = await axiosInstance.post(`/booking${bookingId}`);
+export const bookSession = async ({ bookingId, subjectId }) => {
+  const response = await axiosInstance.post(`/booking/${bookingId}`, {
+    subjectId,
+  });
   return response.data.data;
 };
