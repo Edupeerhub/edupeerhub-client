@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
 import { Link } from "react-router-dom";
 import OverviewPanel from "../../components/student/OverviewPanel";
+import { getUpcomingSession } from "../../lib/api/common/bookingApi";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
@@ -18,6 +19,13 @@ const StudentDashboardPage = () => {
     queryKey: ["recommendedTutors"],
     queryFn: () => getRecommendedTutors(),
   });
+
+  const { data: upcomingSessions } = useQuery({
+    queryKey: ["upcomingSessions"],
+    queryFn: () => getUpcomingSession(),
+  });
+
+  console.log(upcomingSessions);
   return (
     <div className="p-2 md:p-4 space-y-4 md:max-w-8xl mx-auto">
       {/* Grid Layout */}
