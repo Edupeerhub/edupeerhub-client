@@ -33,10 +33,16 @@ export function useTutorProfile(id) {
     profile: profileQuery.data,
     reviews: reviewsQuery.data,
     reviewSummary: reviewSummaryQuery.data,
+    isLoadingProfileQuery: profileQuery.isLoading,
+    isLoadingReviewsQuery: reviewsQuery.isLoading,
+    isLoadingReviewSummaryQuery: reviewSummaryQuery.isLoading,
     isLoading:
       profileQuery.isLoading ||
       reviewsQuery.isLoading ||
       reviewSummaryQuery.isLoading,
-    // error: profileQuery.error || reviewsQuery.error || reviewSummaryQuery.error,
+    error: profileQuery.error || reviewsQuery.error || reviewSummaryQuery.error,
+    errorProfileQuery: profileQuery.error,
+    errorReviewsQuery: reviewsQuery.error,
+    errorReviewSummaryQuery: reviewSummaryQuery.error,
   };
 }
