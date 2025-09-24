@@ -29,3 +29,8 @@ export const bookSession = async ({ bookingId, subjectId }) => {
   });
   return response.data.data;
 };
+
+export const getConfirmedUpcomingSessions = async () => {
+    const response = await axiosInstance.get("/booking/availability?status=confirmed");
+    return response.data.data;
+};

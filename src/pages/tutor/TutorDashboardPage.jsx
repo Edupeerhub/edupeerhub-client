@@ -16,10 +16,11 @@ import {
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
-import { getUpcomingSession } from "../../lib/api/common/bookingApi";
+import { getConfirmedUpcomingSessions } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { formatDate, formatDuration, formatTimeRange } from "../../utils/time";
+import { Link } from "react-router-dom";
 
 const TutorDashboardPage = () => {
   const { authUser } = useAuthUser();
@@ -33,7 +34,7 @@ const TutorDashboardPage = () => {
 
   const { data: upcomingSessionsData, isLoading: isLoadingSessions, isError: isErrorSessions, error: errorSessions } = useQuery({
     queryKey: ["upcomingSessions"],
-    queryFn: getUpcomingSession,
+    queryFn: getConfirmedUpcomingSessions,
     enabled: !!user,
   });
 
@@ -59,12 +60,12 @@ const TutorDashboardPage = () => {
 
   const profileStatus = {
     pending: {
-      icon: <Clock className="w-5 h-5 text-red-500" />,
+      icon: <Clock className="w-5 h-5" style={{ color: '#BB6927' }} />,
       title: "Pending Approval",
       subtitle: "Awaiting Verification",
       btnMessage: "Check Status",
-      bgColor: "bg-red-100",
-      color: "text-red-500",
+      bgColor: "#F9E5D5",
+      color: "#BB6927",
       sessionMessage: (
         <p className="text-sm text-gray-600">
           Sorry, there are no upcoming sessions yet until your verification is
@@ -72,6 +73,7 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="w-12 h-12 text-gray-400" />,
+      progress: 0,
     },
     rejected: {
       icon: <AlertCircle className="w-5 h-5 text-red-500" />,
@@ -87,6 +89,7 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="w-12 h-12 text-gray-400" />,
+      progress: 0,
     },
     approved: {
       icon: <CheckCircle2 className="w-5 h-5 text-green-900" />,
@@ -101,6 +104,7 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <Calendar1Icon className="w-12 h-12 text-gray-400" />,
+      progress: 100,
     },
     active: {
       icon: <CheckCircle2 className="w-5 h-5 text-green-900" />,
@@ -114,11 +118,12 @@ const TutorDashboardPage = () => {
           {upcomingSessions?.map((session, i) => (
             <SessionCard key={i} session={session} />
           ))}
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full">
+          <Link to="/tutor/availability" className="btn btn-primary w-full" style={{ backgroundColor: '#4CA1F0', color: 'white' }}>
             Manage Schedule
-          </button>
+          </Link>
         </div>
       ),
+      progress: 100,
     },
   };
 
@@ -147,6 +152,7 @@ const TutorDashboardPage = () => {
     color,
     sessionMessage,
     sessionIcon,
+    progress,
   } = profileStatus[tutorStatus] || profileStatus.pending;
 
   return (
@@ -174,16 +180,28 @@ const TutorDashboardPage = () => {
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Profile Status</h2>
               <div
-                className={`flex items-center gap-3 rounded-lg p-3 ${bgColor}`}
+                className={`flex items-center gap-3 rounded-lg p-3 ${tutorStatus === 'approved' || tutorStatus === 'active' ? 'bg-green-100' : ''}`}
+                style={tutorStatus === 'pending' ? { backgroundColor: bgColor, color: color } : {}}
               >
                 {icon}
                 <div>
-                  <p className={`font-semibold ${color}`}>{title}</p>
+                  <p className={`font-semibold ${tutorStatus === 'approved' || tutorStatus === 'active' ? 'text-green-900' : ''}`}>{title}</p>
                   <p className="text-xs text-gray-600">{subtitle}</p>
                 </div>
               </div>
 
               <div className="mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-sm font-medium">Profile Completion</p>
+                  <span className="text-sm text-gray-600">{progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                  <div
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%`, backgroundColor: '#4CA1F0' }}
+                  ></div>
+                </div>
+
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-green-500" />
@@ -194,14 +212,18 @@ const TutorDashboardPage = () => {
                     <span>Education Verified</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4 text-red-500" />
+                    {tutorStatus === 'approved' || tutorStatus === 'active' ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-red-500" />
+                    )}
                     <span>Background Check</span>
                   </div>
                 </div>
 
-                <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full">
+                <Link to="/tutor/profile" className="btn btn-primary w-full mt-4" style={{ backgroundColor: '#4CA1F0', color: 'white' }}>
                   {btnMessage}
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -276,8 +298,8 @@ function ApprovedLayout() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Users2 className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users2 className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -287,8 +309,8 @@ function ApprovedLayout() {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Calendar1Icon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Calendar1Icon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -298,8 +320,8 @@ function ApprovedLayout() {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <StarsIcon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <StarsIcon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -312,8 +334,8 @@ function ApprovedLayout() {
       <div className="bg-white rounded-lg border shadow p-4">
         <h2 className="text-lg font-semibold mb-4">Booking Requests</h2>
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-6">
-            <Calendar1Icon className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <Calendar1Icon className="w-8 h-8 text-primary" />
           </div>
           <div className="text-center max-w-md">
             <h3 className="text-lg font-semibold mb-2">
@@ -331,8 +353,8 @@ function ApprovedLayout() {
       <div className="bg-white rounded-lg border shadow p-4">
         <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
         <div className="flex items-center gap-3 p-3 border rounded-lg">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <AlertCircle className="w-5 h-5 text-blue-600" />
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <AlertCircle className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1">
             <p className="text-sm">You do not have any recent activities</p>
@@ -350,8 +372,8 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Users2 className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users2 className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -361,8 +383,8 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Calendar1Icon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Calendar1Icon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -372,8 +394,8 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <StarsIcon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <StarsIcon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -384,7 +406,12 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
 
       {/* Booking Requests */}
       <div className="bg-white rounded-lg border shadow p-4">
-        <h2 className="text-lg font-semibold mb-4">Booking Requests</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Booking Requests</h2>
+          <Link to="/tutor/sessions" className="text-primary text-sm font-medium hover:underline">
+            View All
+          </Link>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -424,7 +451,7 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
                   <td className="py-3 px-2">
                     <button
                       onClick={() => handleView(session)}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                      className="text-primary hover:underline font-medium text-sm"
                     >
                       View
                     </button>
@@ -454,8 +481,8 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
           </div>
 
           <div className="flex items-center gap-3 p-3 border rounded-lg">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Calendar1 className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Calendar1 className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-sm">New booking request from Yinka Doe</p>
@@ -483,7 +510,7 @@ function SessionCard({ session }) {
           <p className="text-xs text-gray-500">{formatDuration(session.scheduledStart, session.scheduledEnd)}</p>
         </div>
       </div>
-      <button className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-700 transition-colors">
+      <button className="btn btn-sm rounded-full" style={{ backgroundColor: '#E6F4EA', color: '#34A853' }}>
         Confirmed
       </button>
     </div>
@@ -535,8 +562,9 @@ function ViewModal({ isOpen, onClose, session }) {
                   </p>
                 </div>
                 <button
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full"
+                  className="btn btn-primary w-full"
                   onClick={handleClose}
+                  style={{ backgroundColor: '#4CA1F0', color: 'white' }}
                 >
                   Done
                 </button>
@@ -557,12 +585,13 @@ function ViewModal({ isOpen, onClose, session }) {
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <button
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="btn btn-primary w-full"
                     onClick={handleClose}
+                    style={{ backgroundColor: '#4CA1F0', color: 'white' }}
                   >
                     Undo
                   </button>
-                  <button className="border border-gray-300 px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                  <button className="btn btn-outline w-full">
                     Report a Problem
                   </button>
                 </div>
@@ -590,13 +619,14 @@ function ViewModal({ isOpen, onClose, session }) {
             <div className="flex gap-3">
               <button
                 onClick={() => setStatus("accepted")}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="btn btn-primary flex-1"
+                style={{ backgroundColor: '#4CA1F0', color: 'white' }}
               >
                 Accept Request
               </button>
               <button
                 onClick={() => setStatus("rejected")}
-                className="flex-1 border border-gray-300 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                className="btn btn-outline flex-1"
               >
                 Decline
               </button>
