@@ -30,6 +30,7 @@ const TutorProfilePage = () => {
     useAvailability({
       start: new Date().toISOString().split("T")[0],
       end: new Date().toISOString().split("T")[0],
+      tutorId: id,
     });
 
   // if (isLoading) return <Spinner />;

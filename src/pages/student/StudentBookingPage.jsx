@@ -4,26 +4,10 @@ import "react-day-picker/dist/style.css";
 
 import TutorImage from "../../assets/booking/tutor.svg";
 import CheckIcon from "../../assets/booking/check.svg";
-
-
-const subjects = ["Mathematics", "English", "Physics", "Chemistry"];
-
-
-const availableTimesByDate = {
-  "2025-09-21": [
-    "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM",
-    "11:00 AM", "11:30 AM", "12:00 PM"
-  ],
-  "2025-09-22": [
-    "12:00 AM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
-    "3:00 PM", "3:30 PM"
-  ],
-  "2025-09-23": [
-    "2:30 PM","4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM",
-    "6:00 PM", "6:30 PM", 
-  ],  
-};
-
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { getTutorProfile } from "../../lib/api/tutor/tutorApi";
+import { fetchStudentTutorAvailability } from "../../lib/api/common/bookingApi";
 
 function calculateDuration(start, end) {
   if (!start || !end) return null;
@@ -37,7 +21,7 @@ function calculateDuration(start, end) {
     if (meridian === "PM" && hrs !== 12) hrs += 12;
     if (meridian === "AM" && hrs === 12) hrs = 0;
 
-    return hrs * 60 + mins; 
+    return hrs * 60 + mins;
   };
 
   const startMinutes = parseTime(start);
@@ -57,17 +41,76 @@ function calculateDuration(start, end) {
 }
 
 export default function BookingSession() {
+  const { id } = useParams();
+
   const [date, setDate] = useState(null);
   const [time, setTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [subject, setSubject] = useState(""); 
+  const [subject, setSubject] = useState("");
   const [step, setStep] = useState(1);
+  // state should store the ID, not just the time string
+  const [selectedStartId, setSelectedStartId] = useState(null);
+  const [selectedEndId, setSelectedEndId] = useState(null);
 
-  // update available times based on selected date
-  const formattedDate = date ? date.toISOString().split("T")[0] : null;
-  const availableTimes = formattedDate
-    ? availableTimesByDate[formattedDate] || []
-    : [];
+  const {
+    data: tutorProfile,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["tutorProfile", id],
+    queryFn: () => getTutorProfile(id),
+    enabled: !!id,
+  });
+
+  let start = null;
+  let end = null;
+
+  if (date) {
+    // Start of day UTC
+    start = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+    ).toISOString();
+
+    // End of day UTC
+    end = new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        23,
+        59,
+        59,
+        999
+      )
+    ).toISOString();
+  }
+
+  const { data: availabilityData, isLoading: availabilityLoading } = useQuery({
+    queryKey: ["availability", id, start, end],
+    queryFn: () =>
+      fetchStudentTutorAvailability({
+        tutorId: id,
+        start,
+        end,
+      }),
+    enabled: !!id && !!start && !!end, // only run if tutorId & date are set
+  });
+
+  // Process available slots
+  const availableTimes =
+    availabilityData?.map((slot) => ({
+      id: slot.id, // safe fallback
+      start: slot.scheduledStart, // raw ISO
+      end: slot.scheduledEnd, // raw ISO
+      startLabel: new Date(slot.scheduledStart).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+      endLabel: new Date(slot.scheduledEnd).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+    })) || [];
 
   return (
     <div className="flex flex-col items-center justify-center gap-6 py-4">
@@ -76,21 +119,30 @@ export default function BookingSession() {
         <div className="w-full max-w-3xl flex flex-col">
           <h1 className="text-2xl font-bold mb-3">Select a Time</h1>
 
-          
+          {/* Subject Dropdown */}
           <div className="mb-4">
-             <h3 className="text-lg font-medium mb-1">Select Subject</h3>
-             <select
-               value={subject}
-               onChange={(e) => setSubject(e.target.value)}
-               className="w-full px-2 py-2 border rounded-lg"
-             >
-               <option value="">-- Choose a subject --</option>
-               {subjects.map((subj) => (
-                 <option key={subj} value={subj}>
-                   {subj}
-                 </option>
-               ))}
-              </select>
+            <h3 className="text-lg font-medium mb-1">Select Subject</h3>
+            <select
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="w-full px-2 py-2 border rounded-lg"
+            >
+              <option value="">-- Choose a subject --</option>
+
+              {/* Loading state */}
+              {isLoading && <option disabled>Loading subjects...</option>}
+
+              {/* Error state */}
+              {error && <option disabled>Failed to load subjects</option>}
+
+              {/* Fetched subjects */}
+              {tutorProfile?.subjects &&
+                tutorProfile?.subjects.map((subj) => (
+                  <option key={subj.id} value={subj.id}>
+                    {subj.name}
+                  </option>
+                ))}
+            </select>
           </div>
 
           {/* Calendar */}
@@ -103,70 +155,60 @@ export default function BookingSession() {
             />
           </div>
 
-          {/* Times Section */}
-          <div className="flex-1">
-            {availableTimes.length > 0 ? (
-              <div className="space-y-6">
+          {/* Time Selection */}
+          <div className="mb-4">
+            <h3 className="text-lg font-medium mb-1">Select Time</h3>
+
+            {availabilityLoading && <p>Loading available times...</p>}
+            {!availabilityLoading && availableTimes.length === 0 && (
+              <p className="text-gray-500">No available times for this date</p>
+            )}
+
+            {availableTimes.length > 0 && (
+              <div className="flex gap-4">
                 {/* Start Time */}
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Start Time</h3>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">Start Time</p>
                   <div className="flex flex-wrap gap-2">
                     {availableTimes.map((slot) => (
                       <button
-                        key={slot}
-                        onClick={() => setTime(slot)}
-                        className={`px-3 py-2 rounded-lg border text-sm flex items-center gap-2
-                          ${
-                            time === slot
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-white text-gray-700"
-                          }
-                        `}
+                        key={slot.id}
+                        onClick={() => setSelectedStartId(slot.id)}
+                        className={`px-3 py-1 rounded-lg border ${
+                          selectedStartId === slot.id
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100"
+                        }`}
                       >
-                        {slot}
-                        {time === slot && (
-                          <img src={CheckIcon} alt="Selected" className="w-4 h-4" />
-                        )}
+                        {slot.startLabel}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* End Time */}
-                <div>
-                  <h3 className="text-lg font-medium mb-2">End Time</h3>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500">End Time</p>
                   <div className="flex flex-wrap gap-2">
                     {availableTimes.map((slot) => (
                       <button
-                        key={slot}
-                        onClick={() => setEndTime(slot)}
-                        className={`px-3 py-2 rounded-lg border text-sm flex items-center gap-2
-                          ${
-                            endTime === slot
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-white text-gray-700"
-                          }
-                        `}
+                        key={slot.id + "-end"}
+                        onClick={() => setSelectedEndId(slot.id)}
+                        className={`px-3 py-1 rounded-lg border ${
+                          selectedEndId === slot.id
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100"
+                        }`}
                       >
-                        {slot}
-                        {endTime === slot && (
-                          <img src={CheckIcon} alt="Selected" className="w-4 h-4" />
-                        )}
+                        {slot.endLabel}
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
-            ) : (
-              date && (
-                <p className="text-center text-gray-500">
-                  No available times for this date.
-                </p>
-              )
             )}
           </div>
 
-      
           <div className="flex justify-center md:justify-end mt-2 sm:mt-4 md:mt-2">
             <button
               disabled={!date || !time || !endTime || !subject}

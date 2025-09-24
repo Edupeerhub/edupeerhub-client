@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchAvailability } from "../../lib/api/common/bookingApi";
+import { fetchStudentTutorAvailability } from "../../lib/api/common/bookingApi";
 
 const getTodayDate = () => {
   const today = new Date();
@@ -9,11 +9,11 @@ const getTodayDate = () => {
 export function useAvailability({
   start = getTodayDate(),
   end = getTodayDate(),
-  status = "open",
+  tutorId,
 } = {}) {
   return useQuery({
-    queryKey: ["availability", { start, end, status }],
-    queryFn: () => fetchAvailability({ start, end, status }),
+    queryKey: ["availability", { start, end }],
+    queryFn: () => fetchStudentTutorAvailability({ start, end, tutorId }),
     enabled: !!start && !!end,
   });
 }
