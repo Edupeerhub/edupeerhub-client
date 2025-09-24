@@ -133,9 +133,6 @@ jobs:
 
             # Reload Nginx
             sudo systemctl reload nginx
-            if ! sudo certbot certificates | grep -q "${{ secrets.STAGING_DOMAIN }}"; then
-              echo "Obtaining SSL certificate for ${{ secrets.STAGING_DOMAIN }}..."
-              sudo certbot --nginx -d "${{ secrets.STAGING_DOMAIN }}" --non-interactive --agree-tos -m "${{ secrets.SSL_EMAIL }}" --redirect
-            else
-              echo "SSL certificate for ${{ secrets.STAGING_DOMAIN }} already exists"
-            fi
+            echo "Obtaining SSL certificate for ${{ secrets.STAGING_DOMAIN }}..."
+            sudo certbot --nginx -d "${{ secrets.STAGING_DOMAIN }}" --non-interactive --agree-tos -m "${{ secrets.SSL_EMAIL }}" --redirect
+            
