@@ -36,12 +36,15 @@ jobs:
       #   run: npm run lint
 
       - name: Write environment file
-        if: ${{ secrets.VITE_API_URL != '' || secrets.VITE_STREAM_API_KEY != '' }}
         run: |
-          cat > .env <<EOL
-          VITE_API_URL=${{ secrets.VITE_API_URL }}
-          VITE_STREAM_API_KEY=${{ secrets.VITE_STREAM_API_KEY }}
-          EOL
+          echo "Creating .env file"
+          touch .env
+          if [[ -n "${{ secrets.VITE_API_URL }}" ]]; then
+            echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
+          fi
+          if [[ -n "${{ secrets.VITE_STREAM_API_KEY }}" ]]; then
+            echo "VITE_STREAM_API_KEY=${{ secrets.VITE_STREAM_API_KEY }}" >> .env
+          fi
 
       - name: Build
         run: npm run build
