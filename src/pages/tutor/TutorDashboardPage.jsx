@@ -13,15 +13,33 @@ import {
   Calendar1,
   X,
 } from "lucide-react";
-import Yinka from "../../assets/images/students-image/student-image-1.jpg";
-import Chima from "../../assets/images/students-image/student-image-2.jpg";
-import Eze from "../../assets/images/students-image/student-image-3.jpg";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getUserProfile } from "../../lib/api/user/userApi";
+import { getUpcomingSession } from "../../lib/api/common/bookingApi";
+import Spinner from "../../components/common/Spinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import { formatDate, formatDuration, formatTimeRange } from "../../utils/time";
 
 const TutorDashboardPage = () => {
   const { authUser } = useAuthUser();
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+  const { data: user, isLoading: isLoadingUser, isError: isErrorUser, error: errorUser } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: getUserProfile,
+  });
+
+  const { data: upcomingSessionsData, isLoading: isLoadingSessions, isError: isErrorSessions, error: errorSessions } = useQuery({
+    queryKey: ["upcomingSessions"],
+    queryFn: getUpcomingSession,
+    enabled: !!user,
+  });
+
+  const upcomingSessions = upcomingSessionsData ? (Array.isArray(upcomingSessionsData) ? upcomingSessionsData : [upcomingSessionsData]) : [];
+
+  const tutor = user?.tutor;
 
   //Modal for active state
   const handleView = (session) => {
@@ -29,40 +47,15 @@ const TutorDashboardPage = () => {
     setModalOpen(true);
   };
 
-  const tutor = {
-    status: "active", // "pending" | "rejected" | "approved" | "active"
-    progress: 82,
-    bookings: [],
-    upcomingSessions: [
-      {
-        name: "Yinka Doe",
-        subject: "Mathematics",
-        exam: "SS3/UTME",
-        date: "Sept. 10, 2025",
-        time: "2hrs, 30min",
-        timehrs: "2:30pm",
-        image: Yinka,
-      },
-      {
-        name: "Chima Eke",
-        subject: "English",
-        exam: "SS3/UTME",
-        date: "Sept. 15, 2025",
-        time: "2hrs",
-        timehrs: "1:00pm",
-        image: Chima,
-      },
-      {
-        name: "Eze Victor",
-        subject: "Government",
-        exam: "SS3/UTME",
-        time: "1hr, 30min",
-        timehrs: "1:30pm",
-        date: "Sept. 16, 2025",
-        image: Eze,
-      },
-    ],
-  };
+  const getTutorStatus = () => {
+    if (!tutor) return 'pending';
+    if (tutor.approvalStatus === 'approved' && user.accountStatus === 'active') {
+      return 'active';
+    }
+    return tutor.approvalStatus;
+  }
+
+  const tutorStatus = getTutorStatus();
 
   const profileStatus = {
     pending: {
@@ -79,7 +72,6 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="w-12 h-12 text-gray-400" />,
-      progress: tutor.progress,
     },
     rejected: {
       icon: <AlertCircle className="w-5 h-5 text-red-500" />,
@@ -95,7 +87,6 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="w-12 h-12 text-gray-400" />,
-      progress: tutor.progress,
     },
     approved: {
       icon: <CheckCircle2 className="w-5 h-5 text-green-900" />,
@@ -110,7 +101,6 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <Calendar1Icon className="w-12 h-12 text-gray-400" />,
-      progress: 100,
     },
     active: {
       icon: <CheckCircle2 className="w-5 h-5 text-green-900" />,
@@ -121,17 +111,32 @@ const TutorDashboardPage = () => {
       color: "text-green-900",
       sessionMessage: (
         <div className="w-full space-y-3">
-          {tutor.upcomingSessions.map((session, i) => (
-            <SessionCard key={i} {...session} />
+          {upcomingSessions?.map((session, i) => (
+            <SessionCard key={i} session={session} />
           ))}
           <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full">
             Manage Schedule
           </button>
         </div>
       ),
-      progress: 100,
     },
   };
+
+  if (isLoadingUser || isLoadingSessions) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  if (isErrorUser) {
+    return <ErrorAlert message={errorUser.message} />;
+  }
+
+  if (isErrorSessions) {
+    return <ErrorAlert message={errorSessions.message} />;
+  }
 
   const {
     icon,
@@ -142,8 +147,7 @@ const TutorDashboardPage = () => {
     color,
     sessionMessage,
     sessionIcon,
-    progress,
-  } = profileStatus[tutor.status] || profileStatus.pending;
+  } = profileStatus[tutorStatus] || profileStatus.pending;
 
   return (
     <>
@@ -152,15 +156,15 @@ const TutorDashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-2 md:space-y-6">
             <h1 className="text-2xl md:mb-4 font-semibold">
-              Welcome back, {authUser?.firstName || "Tutor"}
+              Welcome back, {user?.firstName || "Tutor"}
             </h1>
 
             {/* Status-specific Layout */}
-            {tutor.status === "pending" && <PendingLayout />}
-            {tutor.status === "rejected" && <RejectedLayout />}
-            {tutor.status === "approved" && <ApprovedLayout />}
-            {tutor.status === "active" && (
-              <ActiveLayout tutor={tutor} handleView={handleView} />
+            {tutorStatus === "pending" && <PendingLayout />}
+            {tutorStatus === "rejected" && <RejectedLayout />}
+            {tutorStatus === "approved" && <ApprovedLayout />}
+            {tutorStatus === "active" && (
+              <ActiveLayout tutor={tutor} upcomingSessions={upcomingSessions} handleView={handleView} />
             )}
           </div>
 
@@ -180,17 +184,6 @@ const TutorDashboardPage = () => {
               </div>
 
               <div className="mt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="text-sm font-medium">Profile Completion</p>
-                  <span className="text-sm text-gray-600">{progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-green-500" />
@@ -215,8 +208,8 @@ const TutorDashboardPage = () => {
             {/* Upcoming Sessions */}
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Upcoming Sessions</h2>
-              {tutor.status === "active" &&
-              tutor.upcomingSessions.length > 0 ? (
+              {tutorStatus === "active" &&
+              upcomingSessions.length > 0 ? (
                 sessionMessage
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -350,7 +343,7 @@ function ApprovedLayout() {
   );
 }
 
-function ActiveLayout({ tutor, handleView }) {
+function ActiveLayout({ tutor, upcomingSessions, handleView }) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -363,7 +356,7 @@ function ActiveLayout({ tutor, handleView }) {
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Total Students</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{tutor?.students?.length || 0}</p>
         </div>
 
         <div className="bg-white rounded-lg border shadow p-4">
@@ -374,7 +367,7 @@ function ActiveLayout({ tutor, handleView }) {
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Weekly Sessions</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{tutor?.weeklySessions || 0}</p>
         </div>
 
         <div className="bg-white rounded-lg border shadow p-4">
@@ -385,7 +378,7 @@ function ActiveLayout({ tutor, handleView }) {
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Ratings</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{tutor?.rating || 0}</p>
         </div>
       </div>
 
@@ -414,19 +407,19 @@ function ActiveLayout({ tutor, handleView }) {
               </tr>
             </thead>
             <tbody>
-              {tutor.upcomingSessions.map((session, i) => (
+              {upcomingSessions?.map((session, i) => (
                 <tr key={i} className="border-b">
                   <td className="py-3 px-2">
-                    <BookingCard {...session} />
+                    <BookingCard session={session} />
                   </td>
                   <td className="py-3 px-2 text-sm hidden sm:table-cell">
-                    {session.subject}
+                    {session.subject.name}
                   </td>
                   <td className="py-3 px-2 text-sm hidden md:table-cell">
-                    {session.date}
+                    {formatDate(session.scheduledStart)}
                   </td>
                   <td className="py-3 px-2 text-sm hidden md:table-cell">
-                    {session.timehrs}
+                    {formatTimeRange(session.scheduledStart, session.scheduledEnd)}
                   </td>
                   <td className="py-3 px-2">
                     <button
@@ -475,19 +468,19 @@ function ActiveLayout({ tutor, handleView }) {
   );
 }
 
-function SessionCard({ name, subject, time, image }) {
+function SessionCard({ session }) {
   return (
     <div className="flex items-center justify-between border rounded-lg p-3 w-full">
       <div className="flex items-center gap-3">
         <img
-          src={image}
-          alt={`${name} profile`}
+          src={session.student.user.profileImageUrl}
+          alt={`${session.student.user.firstName} profile`}
           className="w-8 h-8 rounded-full"
         />
         <div>
-          <p className="font-medium text-sm">{name}</p>
-          <p className="text-xs text-gray-500">{subject}</p>
-          <p className="text-xs text-gray-500">{time}</p>
+          <p className="font-medium text-sm">{`${session.student.user.firstName} ${session.student.user.lastName}`}</p>
+          <p className="text-xs text-gray-500">{session.subject.name}</p>
+          <p className="text-xs text-gray-500">{formatDuration(session.scheduledStart, session.scheduledEnd)}</p>
         </div>
       </div>
       <button className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-700 transition-colors">
@@ -497,17 +490,16 @@ function SessionCard({ name, subject, time, image }) {
   );
 }
 
-function BookingCard({ name, image, exam }) {
+function BookingCard({ session }) {
   return (
     <div className="flex items-center gap-3">
       <img
-        src={image}
-        alt={`${name} profile`}
+        src={session.student.user.profileImageUrl}
+        alt={`${session.student.user.firstName} profile`}
         className="w-8 h-8 rounded-full"
       />
       <div>
-        <p className="text-sm font-medium">{name}</p>
-        <p className="text-xs text-gray-500">{exam}</p>
+        <p className="text-sm font-medium">{`${session.student.user.firstName} ${session.student.user.lastName}`}</p>
       </div>
     </div>
   );
@@ -538,7 +530,7 @@ function ViewModal({ isOpen, onClose, session }) {
                     Request Accepted
                   </h3>
                   <p className="text-sm text-gray-600">
-                    You've accepted a booking request from {session.name}. A
+                    You've accepted a booking request from {`${session.student.user.firstName} ${session.student.user.lastName}`}. A
                     notification has been sent.
                   </p>
                 </div>
@@ -560,7 +552,7 @@ function ViewModal({ isOpen, onClose, session }) {
                     Request Declined
                   </h3>
                   <p className="text-sm text-gray-600">
-                    You've declined the booking request from {session.name}.
+                    You've declined the booking request from {`${session.student.user.firstName} ${session.student.user.lastName}`}.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
@@ -580,7 +572,7 @@ function ViewModal({ isOpen, onClose, session }) {
         ) : (
           <>
             <div className="flex items-center justify-between mb-6">
-              <BookingCard {...session} />
+              <BookingCard session={session} />
               <button
                 onClick={onClose}
                 className="p-1 hover:bg-gray-100 rounded-full"
@@ -591,8 +583,8 @@ function ViewModal({ isOpen, onClose, session }) {
 
             <div className="mb-6">
               <h4 className="text-sm font-medium mb-2">Date & Time</h4>
-              <p className="text-sm font-semibold">Date: {session.date}</p>
-              <p className="text-sm text-gray-600">{session.timehrs}</p>
+              <p className="text-sm font-semibold">Date: {formatDate(session.scheduledStart)}</p>
+              <p className="text-sm text-gray-600">{formatTimeRange(session.scheduledStart, session.scheduledEnd)}</p>
             </div>
 
             <div className="flex gap-3">
