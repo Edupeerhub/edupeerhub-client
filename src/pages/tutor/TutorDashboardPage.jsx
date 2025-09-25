@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
-import { getConfirmedUpcomingSessions } from "../../lib/api/common/bookingApi";
+import { getConfirmedUpcomingSessions, getPendingBookingRequests } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { formatDate, formatDuration, formatTimeRange } from "../../utils/time";
@@ -45,6 +45,17 @@ const TutorDashboardPage = () => {
   } = useQuery({
     queryKey: ["upcomingSessions"],
     queryFn: getConfirmedUpcomingSessions,
+    enabled: !!user,
+  });
+
+  const {
+    data: pendingBookingRequestsData,
+    isLoading: isLoadingPendingRequests,
+    isError: isErrorPendingRequests,
+    error: errorPendingRequests,
+  } = useQuery({
+    queryKey: ["pendingBookingRequests"],
+    queryFn: getPendingBookingRequests,
     enabled: !!user,
   });
 
@@ -226,6 +237,7 @@ const TutorDashboardPage = () => {
               <ActiveLayout
                 tutor={tutor}
                 upcomingSessions={upcomingSessions}
+                pendingRequests={pendingBookingRequestsData}
                 handleView={handleView}
               />
             )}
@@ -438,7 +450,13 @@ function ApprovedLayout() {
   );
 }
 
-function ActiveLayout({ tutor, upcomingSessions, handleView }) {
+function ActiveLayout({ tutor, upcomingSessions, pendingRequests, handleView }) {
+  const pendingBookingRequests = pendingRequests
+    ? Array.isArray(pendingRequests)
+      ? pendingRequests
+      : [pendingRequests]
+    : [];
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -510,7 +528,7 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
               </tr>
             </thead>
             <tbody>
-              {upcomingSessions?.map((session, i) => (
+              {pendingBookingRequests?.map((session, i) => (
                 <tr key={i} className="border-b">
                   <td className="py-3 px-2">
                     <BookingCard session={session} />
