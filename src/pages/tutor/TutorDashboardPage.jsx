@@ -1,4 +1,3 @@
-import useAuthUser from "../../hooks/auth/useAuthUser";
 import {
   Clock,
   Check,
@@ -13,15 +12,79 @@ import {
   Calendar1,
   X,
 } from "lucide-react";
-import Yinka from "../../assets/images/students-image/student-image-1.jpg";
-import Chima from "../../assets/images/students-image/student-image-2.jpg";
-import Eze from "../../assets/images/students-image/student-image-3.jpg";
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUserProfile } from "../../lib/api/user/userApi";
+import {
+  getConfirmedUpcomingSessions,
+  getPendingBookingRequests,
+  updateBookingAvailabilityStatus,
+} from "../../lib/api/common/bookingApi";
+import Spinner from "../../components/common/Spinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import { formatDate, formatDuration, formatTimeRange } from "../../utils/time";
+import { Link } from "react-router-dom";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
 
 const TutorDashboardPage = () => {
-  const { authUser } = useAuthUser();
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const {
+    data: user,
+    isLoading: isLoadingUser,
+    isError: isErrorUser,
+    error: errorUser,
+  } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: getUserProfile,
+  });
+
+  const {
+    data: upcomingSessionsData,
+    isLoading: isLoadingSessions,
+    isError: isErrorSessions,
+    error: errorSessions,
+  } = useQuery({
+    queryKey: ["upcomingSessions"],
+    queryFn: getConfirmedUpcomingSessions,
+    enabled: !!user,
+  });
+
+  const {
+    data: pendingBookingRequestsData,
+    isLoading: isLoadingPendingRequests,
+    isError: isErrorPendingRequests,
+    error: errorPendingRequests,
+  } = useQuery({
+    queryKey: ["pendingBookingRequests"],
+    queryFn: getPendingBookingRequests,
+    enabled: !!user,
+  });
+
+  const updateBookingStatusMutation = useMutation({
+    mutationFn: ({ availabilityId, status }) =>
+      updateBookingAvailabilityStatus(availabilityId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bookingRequests"]);
+      handleToastSuccess("Booking request updated successfully!");
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to update booking request.");
+    },
+  });
+
+  const upcomingSessions = upcomingSessionsData
+    ? Array.isArray(upcomingSessionsData)
+      ? upcomingSessionsData
+      : [upcomingSessionsData]
+    : [];
+
+  const tutor = user?.tutor;
 
   //Modal for active state
   const handleView = (session) => {
@@ -29,49 +92,27 @@ const TutorDashboardPage = () => {
     setModalOpen(true);
   };
 
-  const tutor = {
-    status: "active", // "pending" | "rejected" | "approved" | "active"
-    progress: 82,
-    bookings: [],
-    upcomingSessions: [
-      {
-        name: "Yinka Doe",
-        subject: "Mathematics",
-        exam: "SS3/UTME",
-        date: "Sept. 10, 2025",
-        time: "2hrs, 30min",
-        timehrs: "2:30pm",
-        image: Yinka,
-      },
-      {
-        name: "Chima Eke",
-        subject: "English",
-        exam: "SS3/UTME",
-        date: "Sept. 15, 2025",
-        time: "2hrs",
-        timehrs: "1:00pm",
-        image: Chima,
-      },
-      {
-        name: "Eze Victor",
-        subject: "Government",
-        exam: "SS3/UTME",
-        time: "1hr, 30min",
-        timehrs: "1:30pm",
-        date: "Sept. 16, 2025",
-        image: Eze,
-      },
-    ],
+  const getTutorStatus = () => {
+    if (!tutor) return "pending";
+    if (
+      tutor.approvalStatus === "approved" &&
+      user.accountStatus === "active"
+    ) {
+      return "active";
+    }
+    return tutor.approvalStatus;
   };
+
+  const tutorStatus = getTutorStatus();
 
   const profileStatus = {
     pending: {
-      icon: <Clock className="w-5 h-5 text-red-500" />,
+      icon: <Clock className="w-5 h-5" style={{ color: "#BB6927" }} />,
       title: "Pending Approval",
       subtitle: "Awaiting Verification",
       btnMessage: "Check Status",
-      bgColor: "bg-red-100",
-      color: "text-red-500",
+      bgColor: "#F9E5D5",
+      color: "#BB6927",
       sessionMessage: (
         <p className="text-sm text-gray-600">
           Sorry, there are no upcoming sessions yet until your verification is
@@ -79,7 +120,7 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="w-12 h-12 text-gray-400" />,
-      progress: tutor.progress,
+      progress: 0,
     },
     rejected: {
       icon: <AlertCircle className="w-5 h-5 text-red-500" />,
@@ -95,7 +136,7 @@ const TutorDashboardPage = () => {
         </p>
       ),
       sessionIcon: <CalendarOffIcon className="w-12 h-12 text-gray-400" />,
-      progress: tutor.progress,
+      progress: 0,
     },
     approved: {
       icon: <CheckCircle2 className="w-5 h-5 text-green-900" />,
@@ -121,17 +162,37 @@ const TutorDashboardPage = () => {
       color: "text-green-900",
       sessionMessage: (
         <div className="w-full space-y-3">
-          {tutor.upcomingSessions.map((session, i) => (
-            <SessionCard key={i} {...session} />
+          {upcomingSessions?.map((session, i) => (
+            <SessionCard key={i} session={session} />
           ))}
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full">
+          <Link
+            to="/tutor/availability"
+            className="btn bg-white border border-gray-700 w-full rounded-full"
+            style={{ hover: { backgroundColor: "#4CA1F0" } }}
+          >
             Manage Schedule
-          </button>
+          </Link>
         </div>
       ),
       progress: 100,
     },
   };
+
+  if (isLoadingUser || isLoadingSessions) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  if (isErrorUser) {
+    return <ErrorAlert message={errorUser.message} />;
+  }
+
+  if (isErrorSessions) {
+    return <ErrorAlert message={errorSessions.message} />;
+  }
 
   const {
     icon,
@@ -143,7 +204,39 @@ const TutorDashboardPage = () => {
     sessionMessage,
     sessionIcon,
     progress,
-  } = profileStatus[tutor.status] || profileStatus.pending;
+  } = profileStatus[tutorStatus] || profileStatus.pending;
+
+  const renderProfileButton = () => {
+    if (tutorStatus === "pending") {
+      return (
+        <button
+          onClick={() => window.location.reload()}
+          className="btn btn-primary w-full mt-4 rounded-full"
+          style={{ backgroundColor: "#4CA1F0", color: "white" }}
+        >
+          {btnMessage}
+        </button>
+      );
+    }
+
+    if (tutorStatus === "rejected") {
+      return (
+        <button disabled className="btn btn-primary w-full mt-4 rounded-full">
+          {btnMessage}
+        </button>
+      );
+    }
+
+    return (
+      <Link
+        to="/tutor/profile"
+        className="btn btn-primary w-full mt-4 rounded-full"
+        style={{ backgroundColor: "#4CA1F0", color: "white" }}
+      >
+        {btnMessage}
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -152,15 +245,20 @@ const TutorDashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-2 md:space-y-6">
             <h1 className="text-2xl md:mb-4 font-semibold">
-              Welcome back, {authUser?.firstName || "Tutor"}
+              Welcome back, {user?.firstName || "Tutor"}
             </h1>
 
             {/* Status-specific Layout */}
-            {tutor.status === "pending" && <PendingLayout />}
-            {tutor.status === "rejected" && <RejectedLayout />}
-            {tutor.status === "approved" && <ApprovedLayout />}
-            {tutor.status === "active" && (
-              <ActiveLayout tutor={tutor} handleView={handleView} />
+            {tutorStatus === "pending" && <PendingLayout />}
+            {tutorStatus === "rejected" && <RejectedLayout />}
+            {tutorStatus === "approved" && <ApprovedLayout />}
+            {tutorStatus === "active" && (
+              <ActiveLayout
+                tutor={tutor}
+                upcomingSessions={upcomingSessions}
+                pendingRequests={pendingBookingRequestsData}
+                handleView={handleView}
+              />
             )}
           </div>
 
@@ -170,11 +268,28 @@ const TutorDashboardPage = () => {
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Profile Status</h2>
               <div
-                className={`flex items-center gap-3 rounded-lg p-3 ${bgColor}`}
+                className={`flex items-center gap-3 rounded-lg p-3 ${
+                  tutorStatus === "approved" || tutorStatus === "active"
+                    ? "bg-green-100"
+                    : ""
+                }`}
+                style={
+                  tutorStatus === "pending"
+                    ? { backgroundColor: bgColor, color: color }
+                    : {}
+                }
               >
                 {icon}
                 <div>
-                  <p className={`font-semibold ${color}`}>{title}</p>
+                  <p
+                    className={`font-semibold ${
+                      tutorStatus === "approved" || tutorStatus === "active"
+                        ? "text-green-900"
+                        : ""
+                    }`}
+                  >
+                    {title}
+                  </p>
                   <p className="text-xs text-gray-600">{subtitle}</p>
                 </div>
               </div>
@@ -186,8 +301,11 @@ const TutorDashboardPage = () => {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
                   <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${progress}%`,
+                      backgroundColor: "#4CA1F0",
+                    }}
                   ></div>
                 </div>
 
@@ -201,22 +319,23 @@ const TutorDashboardPage = () => {
                     <span>Education Verified</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4 text-red-500" />
+                    {tutorStatus === "approved" || tutorStatus === "active" ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-red-500" />
+                    )}
                     <span>Background Check</span>
                   </div>
                 </div>
 
-                <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full">
-                  {btnMessage}
-                </button>
+                {renderProfileButton()}
               </div>
             </div>
 
             {/* Upcoming Sessions */}
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Upcoming Sessions</h2>
-              {tutor.status === "active" &&
-              tutor.upcomingSessions.length > 0 ? (
+              {tutorStatus === "active" && upcomingSessions.length > 0 ? (
                 sessionMessage
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -233,6 +352,7 @@ const TutorDashboardPage = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         session={selectedSession}
+        updateBookingStatusMutation={updateBookingStatusMutation}
       />
     </>
   );
@@ -283,8 +403,8 @@ function ApprovedLayout() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Users2 className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users2 className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -294,8 +414,8 @@ function ApprovedLayout() {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Calendar1Icon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Calendar1Icon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -305,8 +425,8 @@ function ApprovedLayout() {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <StarsIcon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <StarsIcon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -319,8 +439,8 @@ function ApprovedLayout() {
       <div className="bg-white rounded-lg border shadow p-4">
         <h2 className="text-lg font-semibold mb-4">Booking Requests</h2>
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-6">
-            <Calendar1Icon className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <Calendar1Icon className="w-8 h-8 text-primary" />
           </div>
           <div className="text-center max-w-md">
             <h3 className="text-lg font-semibold mb-2">
@@ -338,8 +458,8 @@ function ApprovedLayout() {
       <div className="bg-white rounded-lg border shadow p-4">
         <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
         <div className="flex items-center gap-3 p-3 border rounded-lg">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-            <AlertCircle className="w-5 h-5 text-blue-600" />
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <AlertCircle className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1">
             <p className="text-sm">You do not have any recent activities</p>
@@ -350,48 +470,67 @@ function ApprovedLayout() {
   );
 }
 
-function ActiveLayout({ tutor, handleView }) {
+function ActiveLayout({
+  tutor,
+  upcomingSessions,
+  pendingRequests,
+  handleView,
+}) {
+  const pendingBookingRequests = pendingRequests
+    ? Array.isArray(pendingRequests)
+      ? pendingRequests
+      : [pendingRequests]
+    : [];
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Users2 className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Users2 className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Total Students</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{tutor?.students?.length || 0}</p>
         </div>
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Calendar1Icon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Calendar1Icon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Weekly Sessions</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{tutor?.weeklySessions || 0}</p>
         </div>
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <StarsIcon className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <StarsIcon className="w-5 h-5 text-primary" />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Ratings</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{tutor?.rating || 0}</p>
         </div>
       </div>
 
       {/* Booking Requests */}
       <div className="bg-white rounded-lg border shadow p-4">
-        <h2 className="text-lg font-semibold mb-4">Booking Requests</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Booking Requests</h2>
+          <Link
+            to="/tutor/booking-requests"
+            className="text-primary text-sm font-medium hover:underline"
+          >
+            View All
+          </Link>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -414,30 +553,41 @@ function ActiveLayout({ tutor, handleView }) {
               </tr>
             </thead>
             <tbody>
-              {tutor.upcomingSessions.map((session, i) => (
-                <tr key={i} className="border-b">
-                  <td className="py-3 px-2">
-                    <BookingCard {...session} />
-                  </td>
-                  <td className="py-3 px-2 text-sm hidden sm:table-cell">
-                    {session.subject}
-                  </td>
-                  <td className="py-3 px-2 text-sm hidden md:table-cell">
-                    {session.date}
-                  </td>
-                  <td className="py-3 px-2 text-sm hidden md:table-cell">
-                    {session.timehrs}
-                  </td>
-                  <td className="py-3 px-2">
-                    <button
-                      onClick={() => handleView(session)}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                    >
-                      View
-                    </button>
+              {pendingBookingRequests?.length > 0 ? (
+                pendingBookingRequests.map((session, i) => (
+                  <tr key={i} className="border-b">
+                    <td className="py-3 px-2">
+                      <BookingCard session={session} />
+                    </td>
+                    <td className="py-3 px-2 text-sm hidden sm:table-cell">
+                      {session.subject.name}
+                    </td>
+                    <td className="py-3 px-2 text-sm hidden md:table-cell">
+                      {formatDate(session.scheduledStart)}
+                    </td>
+                    <td className="py-3 px-2 text-sm hidden md:table-cell">
+                      {formatTimeRange(
+                        session.scheduledStart,
+                        session.scheduledEnd
+                      )}
+                    </td>
+                    <td className="py-3 px-2">
+                      <button
+                        onClick={() => handleView(session)}
+                        className="text-primary hover:underline font-medium text-sm"
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-4 text-gray-500">
+                    No pending booking requests.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -461,8 +611,8 @@ function ActiveLayout({ tutor, handleView }) {
           </div>
 
           <div className="flex items-center gap-3 p-3 border rounded-lg">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Calendar1 className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Calendar1 className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-sm">New booking request from Yinka Doe</p>
@@ -475,50 +625,82 @@ function ActiveLayout({ tutor, handleView }) {
   );
 }
 
-function SessionCard({ name, subject, time, image }) {
+function SessionCard({ session }) {
   return (
     <div className="flex items-center justify-between border rounded-lg p-3 w-full">
       <div className="flex items-center gap-3">
         <img
-          src={image}
-          alt={`${name} profile`}
+          src={session.student.user.profileImageUrl}
+          alt={`${session.student.user.firstName} profile`}
           className="w-8 h-8 rounded-full"
         />
         <div>
-          <p className="font-medium text-sm">{name}</p>
-          <p className="text-xs text-gray-500">{subject}</p>
-          <p className="text-xs text-gray-500">{time}</p>
+          <p className="font-medium text-sm">{`${session.student.user.firstName} ${session.student.user.lastName}`}</p>
+          <p className="text-xs text-gray-500">{session.subject.name}</p>
+          <p className="text-xs text-gray-500">
+            {formatDuration(session.scheduledStart, session.scheduledEnd)}
+          </p>
         </div>
       </div>
-      <button className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-700 transition-colors">
+      <button
+        className="btn btn-sm rounded-full"
+        style={{ backgroundColor: "#E6F4EA", color: "#34A853" }}
+      >
         Confirmed
       </button>
     </div>
   );
 }
 
-function BookingCard({ name, image, exam }) {
+function BookingCard({ session }) {
   return (
     <div className="flex items-center gap-3">
       <img
-        src={image}
-        alt={`${name} profile`}
+        src={session.student.user.profileImageUrl}
+        alt={`${session.student.user.firstName} profile`}
         className="w-8 h-8 rounded-full"
       />
       <div>
-        <p className="text-sm font-medium">{name}</p>
-        <p className="text-xs text-gray-500">{exam}</p>
+        <p className="text-sm font-medium">{`${session.student.user.firstName} ${session.student.user.lastName}`}</p>
       </div>
     </div>
   );
 }
 
-function ViewModal({ isOpen, onClose, session }) {
+function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
   const [status, setStatus] = useState(null);
 
   const handleClose = () => {
     setStatus(null);
     onClose();
+  };
+
+  const handleAccept = () => {
+    updateBookingStatusMutation.mutate(
+      { availabilityId: session.id, status: "confirmed" },
+      {
+        onSuccess: () => {
+          setStatus("accepted");
+        },
+        onError: (err) => {
+          handleToastError(err, "Failed to accept booking request.");
+        },
+      }
+    );
+  };
+
+  const handleDecline = () => {
+    updateBookingStatusMutation.mutate(
+      { availabilityId: session.id, status: "open" },
+      {
+        onSuccess: () => {
+          setStatus("rejected");
+        },
+        onError: (err) => {
+          handleToastError(err, "Failed to decline booking request.");
+        },
+      }
+    );
   };
 
   if (!isOpen || !session) return null;
@@ -538,13 +720,17 @@ function ViewModal({ isOpen, onClose, session }) {
                     Request Accepted
                   </h3>
                   <p className="text-sm text-gray-600">
-                    You've accepted a booking request from {session.name}. A
-                    notification has been sent.
+                    You've accepted a booking request from{" "}
+                    {`${session.student.user.firstName} ${session.student.user.lastName}`}
+                    . A notification has been sent.
                   </p>
                 </div>
                 <button
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full"
-                  onClick={handleClose}
+                  className="btn btn-primary w-full"
+                  onClick={() => {
+                    handleClose();
+                  }}
+                  style={{ backgroundColor: "#4CA1F0", color: "white" }}
                 >
                   Done
                 </button>
@@ -560,17 +746,22 @@ function ViewModal({ isOpen, onClose, session }) {
                     Request Declined
                   </h3>
                   <p className="text-sm text-gray-600">
-                    You've declined the booking request from {session.name}.
+                    You've declined the booking request from{" "}
+                    {`${session.student.user.firstName} ${session.student.user.lastName}`}
+                    .
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <button
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                    onClick={handleClose}
+                    className="btn btn-primary w-full"
+                    onClick={() => {
+                      handleClose();
+                    }}
+                    style={{ backgroundColor: "#4CA1F0", color: "white" }}
                   >
-                    Undo
+                    Done
                   </button>
-                  <button className="border border-gray-300 px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                  <button className="btn btn-outline w-full">
                     Report a Problem
                   </button>
                 </div>
@@ -580,7 +771,7 @@ function ViewModal({ isOpen, onClose, session }) {
         ) : (
           <>
             <div className="flex items-center justify-between mb-6">
-              <BookingCard {...session} />
+              <BookingCard session={session} />
               <button
                 onClick={onClose}
                 className="p-1 hover:bg-gray-100 rounded-full"
@@ -591,20 +782,25 @@ function ViewModal({ isOpen, onClose, session }) {
 
             <div className="mb-6">
               <h4 className="text-sm font-medium mb-2">Date & Time</h4>
-              <p className="text-sm font-semibold">Date: {session.date}</p>
-              <p className="text-sm text-gray-600">{session.timehrs}</p>
+              <p className="text-sm font-semibold">
+                Date: {formatDate(session.scheduledStart)}
+              </p>
+              <p className="text-sm text-gray-600">
+                {formatTimeRange(session.scheduledStart, session.scheduledEnd)}
+              </p>
             </div>
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStatus("accepted")}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                onClick={handleAccept}
+                className="btn btn-primary flex-1"
+                style={{ backgroundColor: "#4CA1F0", color: "white" }}
               >
                 Accept Request
               </button>
               <button
-                onClick={() => setStatus("rejected")}
-                className="flex-1 border border-gray-300 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                onClick={handleDecline}
+                className="btn btn-outline flex-1"
               >
                 Decline
               </button>

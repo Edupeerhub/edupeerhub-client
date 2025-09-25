@@ -2,14 +2,42 @@ import { NavLink } from "react-router-dom";
 import LogoutIcon from "../assets/images/layout-icons/logout.svg?react";
 import Logo from "../assets/images/edupeerhub-logo1.svg?react";
 import useLogout from "../hooks/auth/useLogout";
+import { useQuery } from "@tanstack/react-query";
+import { getUserProfile } from "../lib/api/user/userApi";
+import useAuthUser from "../hooks/auth/useAuthUser";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { logoutMutation } = useLogout();
+  const { authUser } = useAuthUser();
+
+  const { data: user } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: getUserProfile,
+    enabled: !!authUser,
+  });
+
+  const tutor = user?.tutor;
+
+  const getTutorStatus = () => {
+    if (!tutor) return null;
+    if (tutor.approvalStatus === 'approved' && user.accountStatus === 'active') {
+      return 'active';
+    }
+    return tutor.approvalStatus;
+  }
+
+  const tutorStatus = getTutorStatus();
+
+  const isTutorAndRestricted = authUser?.role === 'tutor' && (tutorStatus === 'pending' || tutorStatus === 'rejected');
 
   const baseClasses =
     "btn btn-ghost justify-start w-full gap-3 px-3 normal-case transition-colors duration-200";
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (e, label) => {
+    if (isTutorAndRestricted && label !== 'Dashboard') {
+        e.preventDefault();
+        return;
+    }
     if (window.innerWidth < 1024) {
       onClose();
     }
@@ -68,31 +96,36 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
 
         {/* Navigation Links */}
         <nav className="flex-1 p-4 space-y-7 mt-4">
-          {links.map(({ path, label, icon: Icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              onClick={() => handleLinkClick()}
-              className={({ isActive }) =>
-                `${baseClasses} ${
-                  isActive
-                    ? " text-[#0568FF] bg-[#CDE1FF]"
-                    : "text-[#2C3A47] hover:text-[#0568FF] hover:bg-[#CDE1FF]"
-                }`
-              }
-            >
-              {Icon && (
-                <Icon
-                  className="size-5 opacity-70"
-                  style={{
-                    fill: "cuurrentColor",
-                    stroke: "currentColor",
-                  }}
-                />
-              )}
-              <span>{label}</span>
-            </NavLink>
-          ))}
+          {links.map(({ path, label, icon: Icon }) => {
+            const isDisabled = isTutorAndRestricted && label !== 'Dashboard';
+            return (
+                <NavLink
+                key={path}
+                to={isDisabled ? '#' : path}
+                onClick={(e) => handleLinkClick(e, label)}
+                className={({ isActive }) =>
+                    `${baseClasses} ${
+                    isActive && !isDisabled
+                        ? " text-[#0568FF] bg-[#CDE1FF]"
+                        : isDisabled
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-[#2C3A47] hover:text-[#0568FF] hover:bg-[#CDE1FF]"
+                    }`
+                }
+                >
+                {Icon && (
+                    <Icon
+                    className="size-5 opacity-70"
+                    style={{
+                        fill: "cuurrentColor",
+                        stroke: "currentColor",
+                    }}
+                    />
+                )}
+                <span>{label}</span>
+                </NavLink>
+            );
+            })}
         </nav>
         <div className="p-4">
           <button
