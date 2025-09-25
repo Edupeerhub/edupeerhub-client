@@ -27,18 +27,32 @@ const TutorDashboardPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { data: user, isLoading: isLoadingUser, isError: isErrorUser, error: errorUser } = useQuery({
+  const {
+    data: user,
+    isLoading: isLoadingUser,
+    isError: isErrorUser,
+    error: errorUser,
+  } = useQuery({
     queryKey: ["userProfile"],
     queryFn: getUserProfile,
   });
 
-  const { data: upcomingSessionsData, isLoading: isLoadingSessions, isError: isErrorSessions, error: errorSessions } = useQuery({
+  const {
+    data: upcomingSessionsData,
+    isLoading: isLoadingSessions,
+    isError: isErrorSessions,
+    error: errorSessions,
+  } = useQuery({
     queryKey: ["upcomingSessions"],
     queryFn: getConfirmedUpcomingSessions,
     enabled: !!user,
   });
 
-  const upcomingSessions = upcomingSessionsData ? (Array.isArray(upcomingSessionsData) ? upcomingSessionsData : [upcomingSessionsData]) : [];
+  const upcomingSessions = upcomingSessionsData
+    ? Array.isArray(upcomingSessionsData)
+      ? upcomingSessionsData
+      : [upcomingSessionsData]
+    : [];
 
   const tutor = user?.tutor;
 
@@ -49,18 +63,21 @@ const TutorDashboardPage = () => {
   };
 
   const getTutorStatus = () => {
-    if (!tutor) return 'pending';
-    if (tutor.approvalStatus === 'approved' && user.accountStatus === 'active') {
-      return 'active';
+    if (!tutor) return "pending";
+    if (
+      tutor.approvalStatus === "approved" &&
+      user.accountStatus === "active"
+    ) {
+      return "active";
     }
     return tutor.approvalStatus;
-  }
+  };
 
   const tutorStatus = getTutorStatus();
 
   const profileStatus = {
     pending: {
-      icon: <Clock className="w-5 h-5" style={{ color: '#BB6927' }} />,
+      icon: <Clock className="w-5 h-5" style={{ color: "#BB6927" }} />,
       title: "Pending Approval",
       subtitle: "Awaiting Verification",
       btnMessage: "Check Status",
@@ -118,7 +135,11 @@ const TutorDashboardPage = () => {
           {upcomingSessions?.map((session, i) => (
             <SessionCard key={i} session={session} />
           ))}
-          <Link to="/tutor/availability" className="btn btn-primary w-full" style={{ backgroundColor: '#4CA1F0', color: 'white' }}>
+          <Link
+            to="/tutor/availability"
+            className="btn bg-white border border-gray-700 w-full rounded-full"
+            style={{ hover: { backgroundColor: "#4CA1F0" } }}
+          >
             Manage Schedule
           </Link>
         </div>
@@ -155,6 +176,38 @@ const TutorDashboardPage = () => {
     progress,
   } = profileStatus[tutorStatus] || profileStatus.pending;
 
+  const renderProfileButton = () => {
+    if (tutorStatus === "pending") {
+      return (
+        <button
+          onClick={() => window.location.reload()}
+          className="btn btn-primary w-full mt-4 rounded-full"
+          style={{ backgroundColor: "#4CA1F0", color: "white" }}
+        >
+          {btnMessage}
+        </button>
+      );
+    }
+
+    if (tutorStatus === "rejected") {
+      return (
+        <button disabled className="btn btn-primary w-full mt-4 rounded-full">
+          {btnMessage}
+        </button>
+      );
+    }
+
+    return (
+      <Link
+        to="/tutor/profile"
+        className="btn btn-primary w-full mt-4 rounded-full"
+        style={{ backgroundColor: "#4CA1F0", color: "white" }}
+      >
+        {btnMessage}
+      </Link>
+    );
+  };
+
   return (
     <>
       <div className="p-2 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
@@ -170,7 +223,11 @@ const TutorDashboardPage = () => {
             {tutorStatus === "rejected" && <RejectedLayout />}
             {tutorStatus === "approved" && <ApprovedLayout />}
             {tutorStatus === "active" && (
-              <ActiveLayout tutor={tutor} upcomingSessions={upcomingSessions} handleView={handleView} />
+              <ActiveLayout
+                tutor={tutor}
+                upcomingSessions={upcomingSessions}
+                handleView={handleView}
+              />
             )}
           </div>
 
@@ -180,12 +237,28 @@ const TutorDashboardPage = () => {
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Profile Status</h2>
               <div
-                className={`flex items-center gap-3 rounded-lg p-3 ${tutorStatus === 'approved' || tutorStatus === 'active' ? 'bg-green-100' : ''}`}
-                style={tutorStatus === 'pending' ? { backgroundColor: bgColor, color: color } : {}}
+                className={`flex items-center gap-3 rounded-lg p-3 ${
+                  tutorStatus === "approved" || tutorStatus === "active"
+                    ? "bg-green-100"
+                    : ""
+                }`}
+                style={
+                  tutorStatus === "pending"
+                    ? { backgroundColor: bgColor, color: color }
+                    : {}
+                }
               >
                 {icon}
                 <div>
-                  <p className={`font-semibold ${tutorStatus === 'approved' || tutorStatus === 'active' ? 'text-green-900' : ''}`}>{title}</p>
+                  <p
+                    className={`font-semibold ${
+                      tutorStatus === "approved" || tutorStatus === "active"
+                        ? "text-green-900"
+                        : ""
+                    }`}
+                  >
+                    {title}
+                  </p>
                   <p className="text-xs text-gray-600">{subtitle}</p>
                 </div>
               </div>
@@ -198,7 +271,10 @@ const TutorDashboardPage = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
                   <div
                     className="h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%`, backgroundColor: '#4CA1F0' }}
+                    style={{
+                      width: `${progress}%`,
+                      backgroundColor: "#4CA1F0",
+                    }}
                   ></div>
                 </div>
 
@@ -212,7 +288,7 @@ const TutorDashboardPage = () => {
                     <span>Education Verified</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    {tutorStatus === 'approved' || tutorStatus === 'active' ? (
+                    {tutorStatus === "approved" || tutorStatus === "active" ? (
                       <Check className="w-4 h-4 text-green-500" />
                     ) : (
                       <Clock className="w-4 h-4 text-red-500" />
@@ -221,17 +297,14 @@ const TutorDashboardPage = () => {
                   </div>
                 </div>
 
-                <Link to="/tutor/profile" className="btn btn-primary w-full mt-4" style={{ backgroundColor: '#4CA1F0', color: 'white' }}>
-                  {btnMessage}
-                </Link>
+                {renderProfileButton()}
               </div>
             </div>
 
             {/* Upcoming Sessions */}
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Upcoming Sessions</h2>
-              {tutorStatus === "active" &&
-              upcomingSessions.length > 0 ? (
+              {tutorStatus === "active" && upcomingSessions.length > 0 ? (
                 sessionMessage
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -408,7 +481,10 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
       <div className="bg-white rounded-lg border shadow p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Booking Requests</h2>
-          <Link to="/tutor/sessions" className="text-primary text-sm font-medium hover:underline">
+          <Link
+            to="/tutor/booking-requests"
+            className="text-primary text-sm font-medium hover:underline"
+          >
             View All
           </Link>
         </div>
@@ -446,7 +522,10 @@ function ActiveLayout({ tutor, upcomingSessions, handleView }) {
                     {formatDate(session.scheduledStart)}
                   </td>
                   <td className="py-3 px-2 text-sm hidden md:table-cell">
-                    {formatTimeRange(session.scheduledStart, session.scheduledEnd)}
+                    {formatTimeRange(
+                      session.scheduledStart,
+                      session.scheduledEnd
+                    )}
                   </td>
                   <td className="py-3 px-2">
                     <button
@@ -507,10 +586,15 @@ function SessionCard({ session }) {
         <div>
           <p className="font-medium text-sm">{`${session.student.user.firstName} ${session.student.user.lastName}`}</p>
           <p className="text-xs text-gray-500">{session.subject.name}</p>
-          <p className="text-xs text-gray-500">{formatDuration(session.scheduledStart, session.scheduledEnd)}</p>
+          <p className="text-xs text-gray-500">
+            {formatDuration(session.scheduledStart, session.scheduledEnd)}
+          </p>
         </div>
       </div>
-      <button className="btn btn-sm rounded-full" style={{ backgroundColor: '#E6F4EA', color: '#34A853' }}>
+      <button
+        className="btn btn-sm rounded-full"
+        style={{ backgroundColor: "#E6F4EA", color: "#34A853" }}
+      >
         Confirmed
       </button>
     </div>
@@ -557,14 +641,15 @@ function ViewModal({ isOpen, onClose, session }) {
                     Request Accepted
                   </h3>
                   <p className="text-sm text-gray-600">
-                    You've accepted a booking request from {`${session.student.user.firstName} ${session.student.user.lastName}`}. A
-                    notification has been sent.
+                    You've accepted a booking request from{" "}
+                    {`${session.student.user.firstName} ${session.student.user.lastName}`}
+                    . A notification has been sent.
                   </p>
                 </div>
                 <button
                   className="btn btn-primary w-full"
                   onClick={handleClose}
-                  style={{ backgroundColor: '#4CA1F0', color: 'white' }}
+                  style={{ backgroundColor: "#4CA1F0", color: "white" }}
                 >
                   Done
                 </button>
@@ -580,14 +665,16 @@ function ViewModal({ isOpen, onClose, session }) {
                     Request Declined
                   </h3>
                   <p className="text-sm text-gray-600">
-                    You've declined the booking request from {`${session.student.user.firstName} ${session.student.user.lastName}`}.
+                    You've declined the booking request from{" "}
+                    {`${session.student.user.firstName} ${session.student.user.lastName}`}
+                    .
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <button
                     className="btn btn-primary w-full"
                     onClick={handleClose}
-                    style={{ backgroundColor: '#4CA1F0', color: 'white' }}
+                    style={{ backgroundColor: "#4CA1F0", color: "white" }}
                   >
                     Undo
                   </button>
@@ -612,15 +699,19 @@ function ViewModal({ isOpen, onClose, session }) {
 
             <div className="mb-6">
               <h4 className="text-sm font-medium mb-2">Date & Time</h4>
-              <p className="text-sm font-semibold">Date: {formatDate(session.scheduledStart)}</p>
-              <p className="text-sm text-gray-600">{formatTimeRange(session.scheduledStart, session.scheduledEnd)}</p>
+              <p className="text-sm font-semibold">
+                Date: {formatDate(session.scheduledStart)}
+              </p>
+              <p className="text-sm text-gray-600">
+                {formatTimeRange(session.scheduledStart, session.scheduledEnd)}
+              </p>
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={() => setStatus("accepted")}
                 className="btn btn-primary flex-1"
-                style={{ backgroundColor: '#4CA1F0', color: 'white' }}
+                style={{ backgroundColor: "#4CA1F0", color: "white" }}
               >
                 Accept Request
               </button>

@@ -34,3 +34,13 @@ export const getConfirmedUpcomingSessions = async () => {
     const response = await axiosInstance.get("/booking/availability?status=confirmed");
     return response.data.data;
 };
+
+export const getBookingRequests = async () => {
+    const response = await axiosInstance.get("/booking/requests");
+    return response.data.data;
+};
+
+export const getPendingBookingRequests = async () => {
+    const response = await axiosInstance.get("/booking/availability?status=pending");
+    return response.data.data;
+};

@@ -49,6 +49,7 @@ import ChatPage from "./pages/messaging/ChatPage";
 import CallPage from "./pages/messaging/CallPage";
 import RecentChatsPage from "./pages/messaging/RecentChatsPage";
 import TutorPrivateProfilePage from "./pages/tutor/TutorPrivateProfilePage";
+import BookingRequestsPage from "./pages/tutor/BookingRequestsPage";
 
 export default function App() {
   const location = useLocation();
@@ -151,6 +152,7 @@ export default function App() {
           />
           <Route path="settings" element={<TutorSettingsPage />} />
           <Route path="profile" element={<TutorPrivateProfilePage />} />
+          <Route path="booking-requests" element={<BookingRequestsPage />} />
         </Route>
 
         {/* Chat & Video/Calling routes: accessible to both students and tutors */}
