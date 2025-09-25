@@ -31,16 +31,50 @@ export const bookSession = async ({ bookingId, subjectId }) => {
 };
 
 export const getConfirmedUpcomingSessions = async () => {
-    const response = await axiosInstance.get("/booking/availability?status=confirmed");
-    return response.data.data;
+  const response = await axiosInstance.get(
+    "/booking/availability?status=confirmed"
+  );
+  return response.data.data;
 };
 
 export const getBookingRequests = async () => {
-    const response = await axiosInstance.get("/booking/requests");
-    return response.data.data;
+  const response = await axiosInstance.get("/booking/requests");
+  return response.data.data;
 };
 
 export const getPendingBookingRequests = async () => {
-    const response = await axiosInstance.get("/booking/availability?status=pending");
-    return response.data.data;
+  const response = await axiosInstance.get(
+    "/booking/availability?status=pending"
+  );
+  return response.data.data;
+};
+
+export const updateBookingAvailabilityStatus = async (availabilityId, status) => {
+  const response = await axiosInstance.patch(`/booking/availability/${availabilityId}`, { status });
+  return response.data.data;
+};
+
+export const createBookingAvailability = async (availabilityData) => {
+  const response = await axiosInstance.post("/booking/availability", availabilityData);
+  return response.data.data;
+};
+
+export const getAllTutorAvailabilities = async () => {
+  const response = await axiosInstance.get("/booking/availability");
+  return response.data.data;
+};
+
+export const cancelBookingAvailability = async (availabilityId, cancellationReason) => {
+  const response = await axiosInstance.patch(`/booking/availability/${availabilityId}/cancel`, { cancellationReason });
+  return response.data.data;
+};
+
+export const deleteBookingAvailability = async (availabilityId) => {
+  const response = await axiosInstance.delete(`/booking/availability/${availabilityId}`);
+  return response.data.data;
+};
+
+export const updateBookingAvailability = async (availabilityId, updateData) => {
+  const response = await axiosInstance.patch(`/booking/availability/${availabilityId}`, updateData);
+  return response.data.data;
 };

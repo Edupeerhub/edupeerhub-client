@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { getPendingBookingRequests } from "../../lib/api/common/bookingApi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getPendingBookingRequests,
+  updateBookingAvailabilityStatus,
+} from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { formatDate, formatTimeRange } from "../../utils/time";
 import ViewModal from "../../components/tutor/ViewModal";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
 
 const BookingRequestsPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     data: bookingRequests,
@@ -21,25 +29,27 @@ const BookingRequestsPage = () => {
     queryFn: getPendingBookingRequests,
   });
 
+  const updateBookingStatusMutation = useMutation({
+    mutationFn: ({ availabilityId, status }) =>
+      updateBookingAvailabilityStatus(availabilityId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bookingRequests"]);
+      handleToastSuccess("Booking request updated successfully!");
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to update booking request.");
+    },
+  });
+
   const handleAcceptRequest = (id) => {
-    console.log("Accept request (placeholder): ", id);
-    // To implement fully, this would require an API call and query invalidation.
+    updateBookingStatusMutation.mutate({
+      availabilityId: id,
+      status: "confirmed",
+    });
   };
 
   const handleDeclineRequest = (id) => {
-    console.log("Decline request (placeholder): ", id);
-    // To implement fully, this would require an API call and query invalidation.
-  };
-
-  const handleDismissRequest = (id) => {
-    console.log("Dismiss request (placeholder): ", id);
-    // To implement fully, this would require an API call and query invalidation.
-    // Not modifying local state to adhere to "leave existing functionality as is" with React Query.
-  };
-
-  const handleView = (session) => {
-    setSelectedSession(session);
-    setModalOpen(true);
+    updateBookingStatusMutation.mutate({ availabilityId: id, status: "open" });
   };
 
   if (isLoading) {

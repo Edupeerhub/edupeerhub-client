@@ -1,4 +1,3 @@
-import useAuthUser from "../../hooks/auth/useAuthUser";
 import {
   Clock,
   Check,
@@ -14,18 +13,26 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
-import { getConfirmedUpcomingSessions, getPendingBookingRequests } from "../../lib/api/common/bookingApi";
+import {
+  getConfirmedUpcomingSessions,
+  getPendingBookingRequests,
+  updateBookingAvailabilityStatus,
+} from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { formatDate, formatDuration, formatTimeRange } from "../../utils/time";
 import { Link } from "react-router-dom";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
 
 const TutorDashboardPage = () => {
-  const { authUser } = useAuthUser();
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     data: user,
@@ -57,6 +64,18 @@ const TutorDashboardPage = () => {
     queryKey: ["pendingBookingRequests"],
     queryFn: getPendingBookingRequests,
     enabled: !!user,
+  });
+
+  const updateBookingStatusMutation = useMutation({
+    mutationFn: ({ availabilityId, status }) =>
+      updateBookingAvailabilityStatus(availabilityId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bookingRequests"]);
+      handleToastSuccess("Booking request updated successfully!");
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to update booking request.");
+    },
   });
 
   const upcomingSessions = upcomingSessionsData
@@ -333,6 +352,7 @@ const TutorDashboardPage = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         session={selectedSession}
+        updateBookingStatusMutation={updateBookingStatusMutation}
       />
     </>
   );
@@ -450,7 +470,12 @@ function ApprovedLayout() {
   );
 }
 
-function ActiveLayout({ tutor, upcomingSessions, pendingRequests, handleView }) {
+function ActiveLayout({
+  tutor,
+  upcomingSessions,
+  pendingRequests,
+  handleView,
+}) {
   const pendingBookingRequests = pendingRequests
     ? Array.isArray(pendingRequests)
       ? pendingRequests
@@ -528,33 +553,41 @@ function ActiveLayout({ tutor, upcomingSessions, pendingRequests, handleView }) 
               </tr>
             </thead>
             <tbody>
-              {pendingBookingRequests?.map((session, i) => (
-                <tr key={i} className="border-b">
-                  <td className="py-3 px-2">
-                    <BookingCard session={session} />
-                  </td>
-                  <td className="py-3 px-2 text-sm hidden sm:table-cell">
-                    {session.subject.name}
-                  </td>
-                  <td className="py-3 px-2 text-sm hidden md:table-cell">
-                    {formatDate(session.scheduledStart)}
-                  </td>
-                  <td className="py-3 px-2 text-sm hidden md:table-cell">
-                    {formatTimeRange(
-                      session.scheduledStart,
-                      session.scheduledEnd
-                    )}
-                  </td>
-                  <td className="py-3 px-2">
-                    <button
-                      onClick={() => handleView(session)}
-                      className="text-primary hover:underline font-medium text-sm"
-                    >
-                      View
-                    </button>
+              {pendingBookingRequests?.length > 0 ? (
+                pendingBookingRequests.map((session, i) => (
+                  <tr key={i} className="border-b">
+                    <td className="py-3 px-2">
+                      <BookingCard session={session} />
+                    </td>
+                    <td className="py-3 px-2 text-sm hidden sm:table-cell">
+                      {session.subject.name}
+                    </td>
+                    <td className="py-3 px-2 text-sm hidden md:table-cell">
+                      {formatDate(session.scheduledStart)}
+                    </td>
+                    <td className="py-3 px-2 text-sm hidden md:table-cell">
+                      {formatTimeRange(
+                        session.scheduledStart,
+                        session.scheduledEnd
+                      )}
+                    </td>
+                    <td className="py-3 px-2">
+                      <button
+                        onClick={() => handleView(session)}
+                        className="text-primary hover:underline font-medium text-sm"
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-4 text-gray-500">
+                    No pending booking requests.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -634,12 +667,40 @@ function BookingCard({ session }) {
   );
 }
 
-function ViewModal({ isOpen, onClose, session }) {
+function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
   const [status, setStatus] = useState(null);
 
   const handleClose = () => {
     setStatus(null);
     onClose();
+  };
+
+  const handleAccept = () => {
+    updateBookingStatusMutation.mutate(
+      { availabilityId: session.id, status: "confirmed" },
+      {
+        onSuccess: () => {
+          setStatus("accepted");
+        },
+        onError: (err) => {
+          handleToastError(err, "Failed to accept booking request.");
+        },
+      }
+    );
+  };
+
+  const handleDecline = () => {
+    updateBookingStatusMutation.mutate(
+      { availabilityId: session.id, status: "open" },
+      {
+        onSuccess: () => {
+          setStatus("rejected");
+        },
+        onError: (err) => {
+          handleToastError(err, "Failed to decline booking request.");
+        },
+      }
+    );
   };
 
   if (!isOpen || !session) return null;
@@ -666,7 +727,9 @@ function ViewModal({ isOpen, onClose, session }) {
                 </div>
                 <button
                   className="btn btn-primary w-full"
-                  onClick={handleClose}
+                  onClick={() => {
+                    handleClose();
+                  }}
                   style={{ backgroundColor: "#4CA1F0", color: "white" }}
                 >
                   Done
@@ -691,10 +754,12 @@ function ViewModal({ isOpen, onClose, session }) {
                 <div className="flex flex-col gap-2 w-full">
                   <button
                     className="btn btn-primary w-full"
-                    onClick={handleClose}
+                    onClick={() => {
+                      handleClose();
+                    }}
                     style={{ backgroundColor: "#4CA1F0", color: "white" }}
                   >
-                    Undo
+                    Done
                   </button>
                   <button className="btn btn-outline w-full">
                     Report a Problem
@@ -727,14 +792,14 @@ function ViewModal({ isOpen, onClose, session }) {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStatus("accepted")}
+                onClick={handleAccept}
                 className="btn btn-primary flex-1"
                 style={{ backgroundColor: "#4CA1F0", color: "white" }}
               >
                 Accept Request
               </button>
               <button
-                onClick={() => setStatus("rejected")}
+                onClick={handleDecline}
                 className="btn btn-outline flex-1"
               >
                 Decline
