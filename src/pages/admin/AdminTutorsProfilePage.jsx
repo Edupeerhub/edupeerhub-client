@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 /**
  * AdminTutorsProfilePage.jsx
- * Tailwind-ready. Uses AdminLayout (from earlier).
  * Replace mockData with API data as needed.
  */
 

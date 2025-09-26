@@ -1,89 +1,86 @@
-import React, { useState } from "react";
+// src/pages/admin/AdminSettingsPage.jsx
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../layouts/Layout";
 
+const settingsSections = [
+  {
+    key: "profile",
+    title: "Profile Setting",
+    desc: "Manage your personal information, contact details, and account settings.",
+    path: "/admin/settings/profile",
+  },
+  {
+    key: "platform",
+    title: "Platform Preferences",
+    desc: "Customize the platform's preferences.",
+    path: "/admin/settings/platform",
+  },
+  {
+    key: "security",
+    title: "Security Settings",
+    desc: "Enhance your account security and privacy settings.",
+    path: "/admin/settings/security",
+  },
+  {
+    key: "notifications",
+    title: "Notifications",
+    desc: "Configure your notification settings for emails, in-app alerts, and more.",
+    path: "/admin/settings/notifications",
+  },
+];
+
+function SectionRow({ title, desc, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left flex items-center justify-between p-6 rounded-xl bg-white border shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-200"
+    >
+      <div className="max-w-[75%]">
+        <div className="text-lg font-semibold text-gray-900">{title}</div>
+        <div className="mt-1 text-sm text-gray-500">{desc}</div>
+      </div>
+
+      <div className="flex items-center justify-center w-10 h-10 rounded-full border bg-white">
+        <svg
+          className="w-5 h-5 text-gray-400"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </div>
+    </button>
+  );
+}
+
 export default function AdminSettingsPage() {
-  const [form, setForm] = useState({
-    siteName: "Edupeer",
-    allowSignup: true,
-    supportEmail: "support@edupeer.com",
-  });
-
-  function onChange(e) {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }
-
-  function onSave(e) {
-    e.preventDefault();
-    alert("Mock save - integrate API here");
-  }
+  const navigate = useNavigate();
 
   return (
-    <div className="max-w-3xl">
-      <h1 className="text-2xl font-semibold mb-6">Settings</h1>
+    <div className="max-w-5xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-gray-900">
+          Manage your account, system preferences, and platform controls.
+        </h1>
+      </div>
 
-      <form
-        className="bg-white p-6 rounded-xl border shadow-sm"
-        onSubmit={onSave}
-      >
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Site Name</label>
-          <input
-            name="siteName"
-            value={form.siteName}
-            onChange={onChange}
-            className="w-full px-3 py-2 border rounded-md"
+      <div className="space-y-6">
+        {settingsSections.map((s) => (
+          <SectionRow
+            key={s.key}
+            title={s.title}
+            desc={s.desc}
+            onClick={() => navigate(s.path)}
           />
-        </div>
-
-        <div className="mb-4 flex items-center gap-3">
-          <input
-            type="checkbox"
-            name="allowSignup"
-            checked={form.allowSignup}
-            onChange={onChange}
-            className="w-4 h-4"
-          />
-          <label className="text-sm">Allow user signup</label>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-1">
-            Support Email
-          </label>
-          <input
-            name="supportEmail"
-            value={form.supportEmail}
-            onChange={onChange}
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md"
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              setForm({
-                siteName: "Edupeer",
-                allowSignup: true,
-                supportEmail: "support@edupeer.com",
-              })
-            }
-            className="px-4 py-2 border rounded-md"
-          >
-            Reset
-          </button>
-        </div>
-      </form>
+        ))}
+      </div>
     </div>
   );
 }
