@@ -49,13 +49,22 @@ export const getPendingBookingRequests = async () => {
   return response.data.data;
 };
 
-export const updateBookingAvailabilityStatus = async (availabilityId, status) => {
-  const response = await axiosInstance.patch(`/booking/availability/${availabilityId}`, { status });
+export const updateBookingAvailabilityStatus = async (
+  availabilityId,
+  status
+) => {
+  const response = await axiosInstance.patch(
+    `/booking/availability/${availabilityId}/status`,
+    { status }
+  );
   return response.data.data;
 };
 
 export const createBookingAvailability = async (availabilityData) => {
-  const response = await axiosInstance.post("/booking/availability", availabilityData);
+  const response = await axiosInstance.post(
+    "/booking/availability",
+    availabilityData
+  );
   return response.data.data;
 };
 
@@ -64,17 +73,28 @@ export const getAllTutorAvailabilities = async () => {
   return response.data.data;
 };
 
-export const cancelBookingAvailability = async (availabilityId, cancellationReason) => {
-  const response = await axiosInstance.patch(`/booking/availability/${availabilityId}/cancel`, { cancellationReason });
+export const cancelBookingAvailability = async (
+  availabilityId,
+  cancellationReason
+) => {
+  const response = await axiosInstance.patch(
+    `/booking/availability/${availabilityId}/cancel`,
+    { cancellationReason }
+  );
   return response.data.data;
 };
 
 export const deleteBookingAvailability = async (availabilityId) => {
-  const response = await axiosInstance.delete(`/booking/availability/${availabilityId}`);
+  const response = await axiosInstance.delete(
+    `/booking/availability/${availabilityId}`
+  );
   return response.data.data;
 };
 
 export const updateBookingAvailability = async (availabilityId, updateData) => {
-  const response = await axiosInstance.patch(`/booking/availability/${availabilityId}`, updateData);
+  const response = await axiosInstance.patch(
+    `/booking/availability/${availabilityId}`,
+    updateData
+  );
   return response.data.data;
 };

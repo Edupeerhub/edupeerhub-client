@@ -21,11 +21,18 @@ import ErrorAlert from "../../components/common/ErrorAlert";
 
 const TutorAvailabilityPage = () => {
   const queryClient = useQueryClient();
+
+  // Keep your existing form data structure with helper fields for UI
   const [formData, setFormData] = useState({
     scheduledStart: "",
     scheduledEnd: "",
     tutorNotes: "",
+    // Helper fields for the custom time picker UI
+    date: "",
+    startTime: "",
+    endTime: "",
   });
+
   const [editingAvailability, setEditingAvailability] = useState(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
@@ -41,12 +48,149 @@ const TutorAvailabilityPage = () => {
     queryFn: () => fetchTutorAvailability({ status: "open" }),
   });
 
+  // Custom TimePicker Component
+  const TimePicker = ({
+    label,
+    value,
+    onChange,
+    options,
+    disabled,
+    placeholder,
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+      <div className="relative">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => !disabled && setIsOpen(!isOpen)}
+            disabled={disabled}
+            className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-left ${
+              disabled
+                ? "bg-gray-100 cursor-not-allowed"
+                : "bg-white hover:bg-gray-50"
+            }`}
+          >
+            {value ? (
+              new Date(`2000-01-01T${value}`).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              })
+            ) : (
+              <span className="text-gray-400">{placeholder}</span>
+            )}
+            <span className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              ⏰
+            </span>
+          </button>
+
+          {isOpen && !disabled && (
+            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {isOpen && !disabled && (
+          <div className="fixed inset-0 z-5" onClick={() => setIsOpen(false)} />
+        )}
+      </div>
+    );
+  };
+
+  // Time slot generator (every 15 minutes from 6 AM to 10 PM)
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 6; hour < 22; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const timeString = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
+        const displayTime = new Date(
+          `2000-01-01T${timeString}`
+        ).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        });
+        slots.push({ value: timeString, label: displayTime });
+      }
+    }
+    return slots;
+  };
+
+  // Generate available end times (15 min to 1 hour after start)
+  const getAvailableEndTimes = (startTime) => {
+    if (!startTime) return [];
+
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const startTotalMinutes = startHour * 60 + startMinute;
+
+    const endTimes = [];
+
+    for (let duration = 15; duration <= 60; duration += 15) {
+      const endTotalMinutes = startTotalMinutes + duration;
+
+      if (endTotalMinutes >= 22 * 60) break; // Don't allow sessions past 10 PM
+
+      const endHour = Math.floor(endTotalMinutes / 60);
+      const endMinute = endTotalMinutes % 60;
+      const timeString = `${endHour.toString().padStart(2, "0")}:${endMinute
+        .toString()
+        .padStart(2, "0")}`;
+      const displayTime = new Date(
+        `2000-01-01T${timeString}`
+      ).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      endTimes.push({
+        value: timeString,
+        label: `${displayTime} (${duration} min session)`,
+      });
+    }
+
+    return endTimes;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+  };
+
+  // Handle time changes for custom time picker
+  const handleTimeChange = (field, value) => {
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+
+      // Clear end time if start time changes
+      if (field === "startTime") {
+        newData.endTime = "";
+      }
+
+      return newData;
+    });
   };
 
   const createAvailabilityMutation = useMutation({
@@ -58,6 +202,9 @@ const TutorAvailabilityPage = () => {
         scheduledStart: "",
         scheduledEnd: "",
         tutorNotes: "",
+        date: "",
+        startTime: "",
+        endTime: "",
       });
     },
     onError: (err) => {
@@ -76,6 +223,9 @@ const TutorAvailabilityPage = () => {
         scheduledStart: "",
         scheduledEnd: "",
         tutorNotes: "",
+        date: "",
+        startTime: "",
+        endTime: "",
       });
     },
     onError: (err) => {
@@ -109,10 +259,15 @@ const TutorAvailabilityPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Use your existing API field names
     const dataToSend = {
-      ...formData,
-      scheduledStart: new Date(formData.scheduledStart).toISOString(),
-      scheduledEnd: new Date(formData.scheduledEnd).toISOString(),
+      scheduledStart: new Date(
+        `${formData.date}T${formData.startTime}`
+      ).toISOString(),
+      scheduledEnd: new Date(
+        `${formData.date}T${formData.endTime}`
+      ).toISOString(),
+      tutorNotes: formData.tutorNotes,
     };
 
     if (editingAvailability) {
@@ -127,14 +282,17 @@ const TutorAvailabilityPage = () => {
 
   const handleEdit = (availability) => {
     setEditingAvailability(availability);
+    const startDate = new Date(availability.scheduledStart);
+    const endDate = new Date(availability.scheduledEnd);
+
     setFormData({
-      scheduledStart: new Date(availability.scheduledStart)
-        .toISOString()
-        .slice(0, 16),
-      scheduledEnd: new Date(availability.scheduledEnd)
-        .toISOString()
-        .slice(0, 16),
+      scheduledStart: availability.scheduledStart,
+      scheduledEnd: availability.scheduledEnd,
       tutorNotes: availability.tutorNotes || "",
+      // Helper fields for UI
+      date: startDate.toISOString().split("T")[0],
+      startTime: startDate.toTimeString().slice(0, 5),
+      endTime: endDate.toTimeString().slice(0, 5),
     });
   };
 
@@ -144,6 +302,9 @@ const TutorAvailabilityPage = () => {
       scheduledStart: "",
       scheduledEnd: "",
       tutorNotes: "",
+      date: "",
+      startTime: "",
+      endTime: "",
     });
   };
 
@@ -183,62 +344,90 @@ const TutorAvailabilityPage = () => {
   }
 
   return (
-    <div className="max-w-full sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-auto sm:p-6 bg-white shadow-md rounded-lg">
+    <div className="max-w-full sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-2 sm:p-6 bg-white shadow-md rounded-lg">
       <h1 className="text-2xl font-semibold mb-6">Manage Your Availability</h1>
       {createAvailabilityMutation.error && (
         <ErrorAlert message={createAvailabilityMutation.error.message} />
       )}
+
       <div className="mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">
           {editingAvailability
             ? "Edit Availability Slot"
             : "Create New Availability Slot"}
         </h2>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Date Input */}
             <div>
               <label
-                htmlFor="scheduledStart"
+                htmlFor="date"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Scheduled Start
+                Date
               </label>
               <input
-                type="datetime-local"
-                id="scheduledStart"
-                name="scheduledStart"
-                value={formData.scheduledStart}
+                type="date"
+                id="date"
+                name="date"
+                value={formData.date}
                 onChange={handleChange}
+                min={new Date().toISOString().split("T")[0]}
                 required
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="scheduledEnd"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Scheduled End
-              </label>
-              <input
-                type="datetime-local"
-                id="scheduledEnd"
-                name="scheduledEnd"
-                value={formData.scheduledEnd}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
+            {/* Start Time Picker */}
+            <TimePicker
+              label="Start Time"
+              value={formData.startTime}
+              onChange={(value) => handleTimeChange("startTime", value)}
+              options={generateTimeSlots()}
+              placeholder="Select start time"
+            />
+
+            {/* End Time Picker */}
+            <TimePicker
+              label="End Time"
+              value={formData.endTime}
+              onChange={(value) => handleTimeChange("endTime", value)}
+              options={getAvailableEndTimes(formData.startTime)}
+              disabled={!formData.startTime}
+              placeholder={
+                formData.startTime
+                  ? "Select end time"
+                  : "Select start time first"
+              }
+            />
           </div>
+
+          {formData.startTime && formData.endTime && (
+            <div className="bg-blue-50 p-3 rounded-md">
+              <p className="text-sm text-blue-700">
+                Session Duration:{" "}
+                {(() => {
+                  const [startHour, startMinute] = formData.startTime
+                    .split(":")
+                    .map(Number);
+                  const [endHour, endMinute] = formData.endTime
+                    .split(":")
+                    .map(Number);
+                  const duration =
+                    endHour * 60 + endMinute - (startHour * 60 + startMinute);
+                  return `${duration} minutes`;
+                })()}
+              </p>
+            </div>
+          )}
 
           <div>
             <label
               htmlFor="tutorNotes"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Tutor Notes (Optional)
+              Tutor Notes (Required)
             </label>
             <textarea
               id="tutorNotes"
@@ -256,7 +445,7 @@ const TutorAvailabilityPage = () => {
               <Button
                 type="button"
                 onClick={handleCancelEdit}
-                className="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-500  hover:bg-gray-400 border border-gray-300 rounded-md shadow-sm"
+                className="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-500 hover:bg-gray-400 border border-gray-300 rounded-md shadow-sm"
               >
                 Cancel Edit
               </Button>

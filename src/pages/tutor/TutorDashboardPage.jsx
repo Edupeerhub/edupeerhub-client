@@ -11,7 +11,11 @@ import {
   StarsIcon,
   Calendar1,
   X,
+  CalendarSyncIcon,
 } from "lucide-react";
+import StudentIcon from "../../assets/tutor-dashboard-icons/students.svg?react";
+import RatingsIcon from "../../assets/tutor-dashboard-icons/ratings.svg?react";
+import CalendarIcon from "../../assets/tutor-dashboard-icons/calendar.svg?react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
@@ -211,8 +215,7 @@ const TutorDashboardPage = () => {
       return (
         <button
           onClick={() => window.location.reload()}
-          className="btn btn-primary w-full mt-4 rounded-full"
-          style={{ backgroundColor: "#4CA1F0", color: "white" }}
+          className="btn bg-primary hover:bg-primary/80 text-white  w-full mt-4 rounded-full"
         >
           {btnMessage}
         </button>
@@ -230,8 +233,7 @@ const TutorDashboardPage = () => {
     return (
       <Link
         to="/tutor/profile"
-        className="btn btn-primary w-full mt-4 rounded-full"
-        style={{ backgroundColor: "#4CA1F0", color: "white" }}
+        className="btn bg-primary hover:bg-primary/80 text-white w-full mt-4 rounded-full"
       >
         {btnMessage}
       </Link>
@@ -404,7 +406,7 @@ function ApprovedLayout() {
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Users2 className="w-5 h-5 text-primary" />
+              <StudentIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -415,7 +417,7 @@ function ApprovedLayout() {
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Calendar1Icon className="w-5 h-5 text-primary" />
+              <CalendarSyncIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -426,7 +428,7 @@ function ApprovedLayout() {
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <StarsIcon className="w-5 h-5 text-primary" />
+              <RatingsIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -489,7 +491,7 @@ function ActiveLayout({
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Users2 className="w-5 h-5 text-primary" />
+              <StudentIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -500,7 +502,7 @@ function ActiveLayout({
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Calendar1Icon className="w-5 h-5 text-primary" />
+              <CalendarIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
@@ -511,7 +513,7 @@ function ActiveLayout({
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <StarsIcon className="w-5 h-5 text-primary" />
+              <RatingsIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
