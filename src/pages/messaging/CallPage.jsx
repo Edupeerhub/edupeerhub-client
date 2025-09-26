@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getStreamToken } from "../../lib/api/common/getStreamApi";
-
 import {
   StreamVideo,
   StreamVideoClient,
@@ -13,7 +12,6 @@ import {
   CallingState,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
-
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import PageLoader from "../../components/common/PageLoader";
 import { handleToastError } from "../../utils/toastDisplayHandler";
@@ -22,6 +20,8 @@ import {
   trackSessionCompleted,
   trackSessionStart,
 } from "../../lib/api/analytics/trackEventApi";
+import FeedbackModal from "../../components/messaging/FeedbackModal";
+import useCreateReview from "../../hooks/review/useCreateReview";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -30,39 +30,32 @@ const CallPage = () => {
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [isConnecting, setIsConnecting] = useState(true);
-
   const { authUser } = useAuthUser();
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
     enabled: !!authUser,
   });
-
   const navigate = useNavigate();
   const startTimeRef = useRef(null);
 
   useEffect(() => {
     const initCall = async () => {
       if (!tokenData?.token || !authUser || !callId) return;
-
       try {
         const user = {
           id: authUser.id,
           name: `${authUser.firstName} ${authUser.lastName}`,
           image: authUser.profileImageUrl,
         };
-
         const videoClient = new StreamVideoClient({
           apiKey: STREAM_API_KEY,
           user,
           token: tokenData.token,
         });
-
         const callInstance = videoClient.call("default", callId);
         await callInstance.join({ create: true });
-
         try {
-          // Track session_started event
           await trackSessionStart({
             sessionId: callInstance.id,
             studentId: authUser.role === "student" ? authUser.id : null,
@@ -71,7 +64,6 @@ const CallPage = () => {
         } catch (err) {
           console.error("Failed to track session start:", err);
         }
-
         setClient(videoClient);
         setCall(callInstance);
         setIsConnecting(false);
@@ -81,7 +73,6 @@ const CallPage = () => {
         setIsConnecting(false);
       }
     };
-
     initCall();
   }, [tokenData, authUser, callId]);
 
@@ -110,18 +101,50 @@ const CallPage = () => {
 };
 
 const CallContent = ({ call, authUser, navigate, startTimeRef }) => {
-  const { useCallCallingState } = useCallStateHooks();
+  const { useCallCallingState, useCallMembers } = useCallStateHooks();
   const callingState = useCallCallingState();
-  const completedRef = useRef(false); // prevent duplicate tracking
+  const members = useCallMembers();
+  const completedRef = useRef(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const { createReviewMutation, isCreatingReview } = useCreateReview();
 
-  // Track call start
+  const reviewee = members.find((member) => member.user.id !== authUser.id)?.user;
+
+  const handleNavigate = () => {
+    if (authUser.role === "student") navigate("/student");
+    else if (authUser.role === "tutor") navigate("/tutor");
+    else navigate("/");
+  };
+
+  const handleCloseModal = () => {
+    setShowFeedbackModal(false);
+    handleNavigate();
+  };
+
+  const handleSubmitFeedback = (feedback) => {
+    if (!reviewee) return;
+    createReviewMutation(
+      {
+        ...feedback,
+        reviewerId: authUser.id,
+        revieweeId: reviewee.id,
+        sessionId: call.id,
+        type: authUser.role === "student" ? "student_to_tutor" : "tutor_to_student",
+      },
+      {
+        onSettled: () => {
+          handleCloseModal();
+        },
+      }
+    );
+  };
+
   useEffect(() => {
     if (callingState === CallingState.JOINED && !startTimeRef.current) {
       startTimeRef.current = new Date();
     }
   }, [callingState, startTimeRef]);
 
-  // Track call end & duration
   useEffect(() => {
     const handleCallEnd = async () => {
       if (
@@ -130,7 +153,6 @@ const CallContent = ({ call, authUser, navigate, startTimeRef }) => {
         !completedRef.current
       ) {
         completedRef.current = true;
-
         try {
           await trackSessionCompleted({
             sessionId: call.id,
@@ -141,21 +163,25 @@ const CallContent = ({ call, authUser, navigate, startTimeRef }) => {
         } catch (err) {
           console.error("Failed to track session completion:", err);
         }
-
-        // Navigate based on role
-        if (authUser.role === "student") navigate("/student");
-        else if (authUser.role === "tutor") navigate("/tutor");
-        else navigate("/");
+        setShowFeedbackModal(true);
       }
     };
-
     handleCallEnd();
-  }, [callingState, authUser, call, navigate]);
+  }, [callingState, authUser, call]);
 
   return (
     <StreamTheme>
       <SpeakerLayout />
-      <CallControls />
+      <CallControls onLeave={() => call.leave()} />
+      {showFeedbackModal && (
+        <FeedbackModal
+          isOpen={showFeedbackModal}
+          onClose={handleCloseModal}
+          onSubmit={handleSubmitFeedback}
+          revieweeName={reviewee?.name || "the other participant"}
+          isSubmitting={isCreatingReview}
+        />
+      )}
     </StreamTheme>
   );
 };
