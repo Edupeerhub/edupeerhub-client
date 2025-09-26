@@ -51,7 +51,7 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
     <div className="flex items-center justify-between p-2 border-b bg-white">
       <div className="flex items-center space-x-3">
         <button
-          onClick={handleProfileClick}
+          // onClick={handleProfileClick}
           className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full transition-transform hover:scale-105"
         >
           <Avatar
@@ -63,7 +63,7 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
 
         <div>
           <button
-            onClick={handleProfileClick}
+            // onClick={handleProfileClick}
             className="text-lg font-semibold text-gray-900 hover:text-blue-600 focus:outline-none focus:underline transition-colors"
           >
             {otherUser.name || otherUser.id}
@@ -85,9 +85,9 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
+      {/* <div className="flex items-center space-x-2">
         <CallButton handleVideoCall={handleVideoCall} />
-      </div>
+      </div> */}
     </div>
   );
 };

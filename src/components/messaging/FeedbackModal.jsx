@@ -4,22 +4,38 @@ import Modal from "../ui/Modal";
 import StarRating from "../ui/StarRating";
 import Button from "../ui/Button";
 
-const FeedbackModal = ({ isOpen, onClose, onSubmit, revieweeName, isSubmitting }) => {
+const FeedbackModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  revieweeName,
+  isSubmitting,
+}) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+
+  const handleClose = () => {
+    setRating(0);
+    setComment("");
+    onClose();
+  };
 
   const handleSubmit = () => {
     onSubmit({ rating, comment });
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Rate your session with ${revieweeName}`}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={`Rate your session with ${revieweeName}`}
+    >
       <div className="flex flex-col space-y-4">
         <p className="text-gray-600">
           Help us improve by rating your experience and leaving a comment.
         </p>
         <div className="flex justify-center">
-            <StarRating rating={rating} onRatingChange={setRating} />
+          <StarRating rating={rating} onRatingChange={setRating} />
         </div>
         <textarea
           className="w-full p-2 border border-gray-300 rounded-md"
@@ -29,10 +45,17 @@ const FeedbackModal = ({ isOpen, onClose, onSubmit, revieweeName, isSubmitting }
           onChange={(e) => setComment(e.target.value)}
         />
         <div className="flex justify-end space-x-2">
-          <Button onClick={onClose} variant="outline">
+          <Button
+            onClick={onClose}
+            className="bg-gray-300 text-gray-700 hover:bg-gray-400"
+          >
             Skip
           </Button>
-          <Button onClick={handleSubmit} disabled={rating === 0} loading={isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            disabled={rating === 0}
+            loading={isSubmitting}
+          >
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </div>

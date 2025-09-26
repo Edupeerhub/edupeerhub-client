@@ -98,3 +98,8 @@ export const updateBookingAvailability = async (availabilityId, updateData) => {
   );
   return response.data.data;
 };
+
+export const fetchBookingById = async (bookingId) => {
+  const response = await axiosInstance.get(`/booking/${bookingId}`);
+  return response.data.data;
+};

@@ -12,7 +12,6 @@ import StudentDashboardPage from "./pages/student/StudentDashboardPage";
 import TutorDashboardPage from "./pages/tutor/TutorDashboardPage";
 import { Toaster } from "react-hot-toast";
 import PublicOnlyRoute from "./components/routes/PublicRoute";
-import { AuthProvider } from "./context/AuthContext";
 import EmailVerificationRoute from "./components/routes/EmailVerificationRoute";
 import AdminRoute from "./components/routes/AdminRoute";
 import OnboardingRoute from "./components/routes/OnboardingRoute";
@@ -55,7 +54,7 @@ export default function App() {
   const location = useLocation();
 
   return (
-    <AuthProvider>
+    <>
       <Routes>
         {/* Public landing page */}
         <Route path="/" element={<HomePage />} />
@@ -187,6 +186,6 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster />
-    </AuthProvider>
+    </>
   );
 }

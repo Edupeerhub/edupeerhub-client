@@ -1,13 +1,13 @@
 import { Chat, ChannelList } from "stream-chat-react";
 import "stream-chat-react/dist/css/v2/index.css";
 import useAuthUser from "../../hooks/auth/useAuthUser";
-import { useChatClient } from "../../hooks/messaging/useChatClient";
 import CustomChannelPreview from "../../components/messaging/ChannelList";
 import Spinner from "../../components/common/Spinner";
+import useChat from "../../hooks/messaging/useChatContext";
 
 const RecentChatsPage = () => {
   const { authUser } = useAuthUser();
-  const chatClient = useChatClient();
+  const { chatClient } = useChat();
 
   if (!chatClient) return <Spinner />;
 
