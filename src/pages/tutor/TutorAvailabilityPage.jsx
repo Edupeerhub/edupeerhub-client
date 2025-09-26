@@ -11,23 +11,95 @@ import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
-import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import Spinner from "../../components/common/Spinner";
 import { formatDate, formatTimeRange } from "../../utils/time";
-import { X } from "lucide-react";
 import Modal from "../../components/ui/Modal";
 import ErrorAlert from "../../components/common/ErrorAlert";
+
+// 🔹 Utility to format time
+const formatTime = (hour, minute) => {
+  const h = ((hour + 11) % 12) + 1;
+  const m = minute.toString().padStart(2, "0");
+  const suffix = hour < 12 ? "AM" : "PM";
+  return `${h}:${m} ${suffix}`;
+};
+
+// 🔹 Generic Dropdown Picker (used for date + time)
+const DropdownPicker = ({
+  label,
+  value,
+  onChange,
+  options,
+  disabled,
+  placeholder,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          aria-expanded={isOpen}
+          role="combobox"
+          className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-left ${
+            disabled
+              ? "bg-gray-100 cursor-not-allowed"
+              : "bg-white hover:bg-gray-50"
+          }`}
+        >
+          {value ? (
+            options.find((opt) => opt.value === value)?.label
+          ) : (
+            <span className="text-gray-400">{placeholder}</span>
+          )}
+        </button>
+
+        {isOpen && !disabled && (
+          <>
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setIsOpen(false)}
+            />
+            <div
+              className="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+              role="listbox"
+            >
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const TutorAvailabilityPage = () => {
   const queryClient = useQueryClient();
 
-  // Keep your existing form data structure with helper fields for UI
   const [formData, setFormData] = useState({
     scheduledStart: "",
     scheduledEnd: "",
     tutorNotes: "",
-    // Helper fields for the custom time picker UI
     date: "",
     startTime: "",
     endTime: "",
@@ -48,151 +120,149 @@ const TutorAvailabilityPage = () => {
     queryFn: () => fetchTutorAvailability({ status: "open" }),
   });
 
-  // Custom TimePicker Component
-  const TimePicker = ({
-    label,
-    value,
-    onChange,
-    options,
-    disabled,
-    placeholder,
-  }) => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    return (
-      <div className="relative">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label}
-        </label>
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => !disabled && setIsOpen(!isOpen)}
-            disabled={disabled}
-            className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-left ${
-              disabled
-                ? "bg-gray-100 cursor-not-allowed"
-                : "bg-white hover:bg-gray-50"
-            }`}
-          >
-            {value ? (
-              new Date(`2000-01-01T${value}`).toLocaleTimeString([], {
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-              })
-            ) : (
-              <span className="text-gray-400">{placeholder}</span>
-            )}
-            <span className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              ⏰
-            </span>
-          </button>
-
-          {isOpen && !disabled && (
-            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-              {options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(option.value);
-                    setIsOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        {isOpen && !disabled && (
-          <div className="fixed inset-0 z-5" onClick={() => setIsOpen(false)} />
-        )}
-      </div>
-    );
+  // 🔹 Generate next 30 days
+  const generateDateOptions = () => {
+    const dates = [];
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const value = date.toISOString().split("T")[0];
+      const label = date.toLocaleDateString([], {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      dates.push({ value, label });
+    }
+    return dates;
   };
 
-  // Time slot generator (every 15 minutes from 6 AM to 10 PM)
+  // 🔹 Generate 15-min slots from 6 AM – 10 PM
   const generateTimeSlots = () => {
     const slots = [];
     for (let hour = 6; hour < 22; hour++) {
       for (let minute = 0; minute < 60; minute += 15) {
-        const timeString = `${hour.toString().padStart(2, "0")}:${minute
+        const value = `${hour.toString().padStart(2, "0")}:${minute
           .toString()
           .padStart(2, "0")}`;
-        const displayTime = new Date(
-          `2000-01-01T${timeString}`
-        ).toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        });
-        slots.push({ value: timeString, label: displayTime });
+        slots.push({ value, label: formatTime(hour, minute) });
       }
     }
     return slots;
   };
 
-  // Generate available end times (15 min to 1 hour after start)
+  // 🔹 End time options relative to start
   const getAvailableEndTimes = (startTime) => {
     if (!startTime) return [];
-
     const [startHour, startMinute] = startTime.split(":").map(Number);
     const startTotalMinutes = startHour * 60 + startMinute;
 
     const endTimes = [];
-
     for (let duration = 15; duration <= 60; duration += 15) {
       const endTotalMinutes = startTotalMinutes + duration;
-
-      if (endTotalMinutes >= 22 * 60) break; // Don't allow sessions past 10 PM
+      if (endTotalMinutes >= 22 * 60) break;
 
       const endHour = Math.floor(endTotalMinutes / 60);
       const endMinute = endTotalMinutes % 60;
-      const timeString = `${endHour.toString().padStart(2, "0")}:${endMinute
+      const value = `${endHour.toString().padStart(2, "0")}:${endMinute
         .toString()
         .padStart(2, "0")}`;
-      const displayTime = new Date(
-        `2000-01-01T${timeString}`
-      ).toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-
       endTimes.push({
-        value: timeString,
-        label: `${displayTime} (${duration} min session)`,
+        value,
+        label: `${formatTime(endHour, endMinute)} (${duration} min session)`,
       });
     }
-
     return endTimes;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  // Handle time changes for custom time picker
+  // 🔹 Handlers
   const handleTimeChange = (field, value) => {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
-
-      // Clear end time if start time changes
-      if (field === "startTime") {
-        newData.endTime = "";
-      }
-
+      if (field === "startTime") newData.endTime = "";
       return newData;
     });
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.date || !formData.startTime || !formData.endTime) {
+      return handleToastError(null, "Please select date, start, and end time.");
+    }
+
+    const dataToSend = {
+      scheduledStart: new Date(
+        `${formData.date}T${formData.startTime}`
+      ).toISOString(),
+      scheduledEnd: new Date(
+        `${formData.date}T${formData.endTime}`
+      ).toISOString(),
+      tutorNotes: formData.tutorNotes,
+    };
+
+    if (editingAvailability) {
+      updateAvailabilityMutation.mutate({
+        availabilityId: editingAvailability.id,
+        updateData: dataToSend,
+      });
+    } else {
+      createAvailabilityMutation.mutate(dataToSend);
+    }
+  };
+
+  const handleEdit = (availability) => {
+    setEditingAvailability(availability);
+    const startDate = new Date(availability.scheduledStart);
+    const endDate = new Date(availability.scheduledEnd);
+
+    setFormData({
+      scheduledStart: availability.scheduledStart,
+      scheduledEnd: availability.scheduledEnd,
+      tutorNotes: availability.tutorNotes || "",
+      date: startDate.toISOString().split("T")[0],
+      startTime: startDate.toTimeString().slice(0, 5),
+      endTime: endDate.toTimeString().slice(0, 5),
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAvailability(null);
+    setFormData({
+      scheduledStart: "",
+      scheduledEnd: "",
+      tutorNotes: "",
+      date: "",
+      startTime: "",
+      endTime: "",
+    });
+  };
+
+  const handleCancelAvailability = (id) => {
+    setAvailabilityToCancel(id);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmCancel = () => {
+    if (availabilityToCancel && cancellationReason) {
+      cancelAvailabilityMutation.mutate({
+        id: availabilityToCancel,
+        cancellationReason,
+      });
+      setIsCancelModalOpen(false);
+      setCancellationReason("");
+      setAvailabilityToCancel(null);
+    }
+  };
+
+  const handleCloseCancelModal = () => {
+    setIsCancelModalOpen(false);
+    setCancellationReason("");
+    setAvailabilityToCancel(null);
+  };
+
+  // 🔹 Mutations (your originals, kept intact)
   const createAvailabilityMutation = useMutation({
     mutationFn: createBookingAvailability,
     onSuccess: () => {
@@ -256,81 +326,6 @@ const TutorAvailabilityPage = () => {
     },
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Use your existing API field names
-    const dataToSend = {
-      scheduledStart: new Date(
-        `${formData.date}T${formData.startTime}`
-      ).toISOString(),
-      scheduledEnd: new Date(
-        `${formData.date}T${formData.endTime}`
-      ).toISOString(),
-      tutorNotes: formData.tutorNotes,
-    };
-
-    if (editingAvailability) {
-      updateAvailabilityMutation.mutate({
-        availabilityId: editingAvailability.id,
-        updateData: dataToSend,
-      });
-    } else {
-      createAvailabilityMutation.mutate(dataToSend);
-    }
-  };
-
-  const handleEdit = (availability) => {
-    setEditingAvailability(availability);
-    const startDate = new Date(availability.scheduledStart);
-    const endDate = new Date(availability.scheduledEnd);
-
-    setFormData({
-      scheduledStart: availability.scheduledStart,
-      scheduledEnd: availability.scheduledEnd,
-      tutorNotes: availability.tutorNotes || "",
-      // Helper fields for UI
-      date: startDate.toISOString().split("T")[0],
-      startTime: startDate.toTimeString().slice(0, 5),
-      endTime: endDate.toTimeString().slice(0, 5),
-    });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingAvailability(null);
-    setFormData({
-      scheduledStart: "",
-      scheduledEnd: "",
-      tutorNotes: "",
-      date: "",
-      startTime: "",
-      endTime: "",
-    });
-  };
-
-  const handleCancelAvailability = (id) => {
-    setAvailabilityToCancel(id);
-    setIsCancelModalOpen(true);
-  };
-
-  const handleConfirmCancel = () => {
-    if (availabilityToCancel && cancellationReason) {
-      cancelAvailabilityMutation.mutate({
-        id: availabilityToCancel,
-        cancellationReason,
-      });
-      setIsCancelModalOpen(false);
-      setCancellationReason("");
-      setAvailabilityToCancel(null);
-    }
-  };
-
-  const handleCloseCancelModal = () => {
-    setIsCancelModalOpen(false);
-    setCancellationReason("");
-    setAvailabilityToCancel(null);
-  };
-
   if (isLoadingAvailabilities) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -344,8 +339,10 @@ const TutorAvailabilityPage = () => {
   }
 
   return (
-    <div className="max-w-full sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-2 sm:p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-semibold mb-6">Manage Your Availability</h1>
+    <div className="max-w-full sm:max-w-md md:max-w-2xl lg:max-w-6xl mx-auto p-2 sm:p-3">
+      <h1 className="text-2xl font-semibold mb-6 pl-2">
+        Manage Your Availability
+      </h1>
       {createAvailabilityMutation.error && (
         <ErrorAlert message={createAvailabilityMutation.error.message} />
       )}
@@ -359,28 +356,17 @@ const TutorAvailabilityPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Date Input */}
-            <div>
-              <label
-                htmlFor="date"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Date
-              </label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                min={new Date().toISOString().split("T")[0]}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
+            {/* Custom Date Picker */}
+            <DropdownPicker
+              label="Date"
+              value={formData.date}
+              onChange={(value) => setFormData((p) => ({ ...p, date: value }))}
+              options={generateDateOptions()}
+              placeholder="Select a date"
+            />
 
             {/* Start Time Picker */}
-            <TimePicker
+            <DropdownPicker
               label="Start Time"
               value={formData.startTime}
               onChange={(value) => handleTimeChange("startTime", value)}
@@ -389,7 +375,7 @@ const TutorAvailabilityPage = () => {
             />
 
             {/* End Time Picker */}
-            <TimePicker
+            <DropdownPicker
               label="End Time"
               value={formData.endTime}
               onChange={(value) => handleTimeChange("endTime", value)}
@@ -433,7 +419,9 @@ const TutorAvailabilityPage = () => {
               id="tutorNotes"
               name="tutorNotes"
               value={formData.tutorNotes}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, tutorNotes: e.target.value }))
+              }
               rows="4"
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="e.g., Available for advanced topics in Algebra."
@@ -473,9 +461,9 @@ const TutorAvailabilityPage = () => {
           </div>
         </form>
       </div>
-
-      <div className="mt-10">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      {/* Availabilities List */}
+      <div className="mt-10 border-t-2 pt-3 ">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 pl-2">
           Your Current Availabilities
         </h2>
         {availabilities?.length === 0 ? (
@@ -556,45 +544,42 @@ const TutorAvailabilityPage = () => {
         )}
       </div>
 
+      {/* Cancel Modal */}
       <Modal
         isOpen={isCancelModalOpen}
         onClose={handleCloseCancelModal}
         title="Cancel Availability"
       >
-        <div className="p-4">
-          <label
-            htmlFor="cancellationReason"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Reason for Cancellation
-          </label>
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            Are you sure you want to cancel this availability slot? Please
+            provide a reason for cancellation:
+          </p>
           <textarea
-            id="cancellationReason"
-            name="cancellationReason"
-            rows="4"
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             value={cancellationReason}
             onChange={(e) => setCancellationReason(e.target.value)}
-            placeholder="Please provide a reason for canceling this availability."
+            rows="3"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter cancellation reason..."
           ></textarea>
-          <div className="mt-4 flex justify-end gap-2">
+          <div className="flex justify-end gap-3">
             <Button
+              type="button"
               onClick={handleCloseCancelModal}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-300 rounded-md hover:bg-gray-400"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
             >
-              Cancel
+              Close
             </Button>
             <Button
+              type="button"
               onClick={handleConfirmCancel}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-              disabled={
-                !cancellationReason || cancelAvailabilityMutation.isLoading
-              }
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              disabled={cancelAvailabilityMutation.isLoading}
             >
               {cancelAvailabilityMutation.isLoading ? (
                 <Spinner size="small" />
               ) : (
-                "Confirm Cancellation"
+                "Confirm Cancel"
               )}
             </Button>
           </div>
