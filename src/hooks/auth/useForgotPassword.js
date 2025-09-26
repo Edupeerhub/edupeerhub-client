@@ -38,13 +38,12 @@ const useForgotPassword = () => {
           errors[err.field] = err.issue;
         });
         setFieldErrors(errors);
-        handleToastError(error);
       } else {
         // General error
         const msg = responseData?.error || "An error occurred.";
         setGeneralError(msg);
-        handleToastError(error);
       }
+      handleToastError(error);
     },
   });
 

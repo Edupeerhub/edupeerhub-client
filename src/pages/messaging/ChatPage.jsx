@@ -11,54 +11,67 @@ import {
 } from "stream-chat-react";
 import ChatLoader from "../../components/ui/ChatLoader";
 import CallButton from "../../components/ui/CallButton";
-import { handleToastSuccess } from "../../utils/toastDisplayHandler";
+// import { handleToastSuccess } from "../../utils/toastDisplayHandler";
 import useAuthUser from "../../hooks/auth/useAuthUser";
 import generateDmChannelId from "../../utils/generateChannelId";
-import { useChatClient } from "../../hooks/messaging/useChatClient";
 import CustomChannelHeader from "../../components/messaging/CustomChannelHeader";
+import useChat from "../../hooks/messaging/useChatContext";
 
 const ChatPage = () => {
   const { id: targetUserId } = useParams();
   const [channel, setChannel] = useState(null);
   const [isLoading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { authUser } = useAuthUser();
 
-  const chatClient = useChatClient();
+  const { chatClient } = useChat();
 
   useEffect(() => {
     if (!chatClient || !authUser || !targetUserId) return;
 
     const initChannel = async () => {
-      setLoading(true);
-      const channelId = await generateDmChannelId(authUser.id, targetUserId);
-      const currChannel = chatClient.channel("messaging", channelId, {
-        members: [authUser.id, targetUserId],
-      });
-      await currChannel.watch();
-      setChannel(currChannel);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const channelId = await generateDmChannelId(authUser.id, targetUserId);
+        const currChannel = chatClient.channel("messaging", channelId, {
+          members: [authUser.id, targetUserId],
+        });
+        await currChannel.watch();
+        setChannel(currChannel);
+      } catch (error) {
+        console.error("Failed to initialize channel:", error);
+        // Could show error state or redirect
+      } finally {
+        setLoading(false);
+      }
     };
 
     initChannel();
+
+    // Cleanup
+    return () => {
+      if (channel) {
+        channel.stopWatching().catch(console.error);
+      }
+    };
   }, [chatClient, authUser, targetUserId]);
 
-  const handleVideoCall = () => {
-    if (!channel) return;
+  // const handleVideoCall = () => {
+  //   if (!channel) return;
 
-    const role = authUser.role;
-    const routePrefix = role === "tutor" ? "/tutor" : "/student";
-    const callUrl = `${routePrefix}/call/${channel.id}`;
+  //   const role = authUser.role;
+  //   const routePrefix = role === "tutor" ? "/tutor" : "/student";
+  //   const callUrl = `${routePrefix}/call/${channel.id}`;
 
-    channel.sendMessage({
-      text: `Join my call: ${window.location.origin}${callUrl}`,
-    });
+  //   channel.sendMessage({
+  //     text: `Join my call: ${window.location.origin}${callUrl}`,
+  //   });
 
-    navigate(callUrl);
+  //   navigate(callUrl);
 
-    handleToastSuccess("Video call link sent!");
-  };
+  //   handleToastSuccess("Video call link sent!");
+  // };
 
   if (!chatClient || !channel || isLoading) return <ChatLoader />;
 
@@ -74,7 +87,7 @@ const ChatPage = () => {
                 <CustomChannelHeader
                   channel={channel}
                   authUser={authUser}
-                  handleVideoCall={handleVideoCall}
+                  // handleVideoCall={handleVideoCall}
                 />
               </div>
               {/* <ChannelHeader /> */}

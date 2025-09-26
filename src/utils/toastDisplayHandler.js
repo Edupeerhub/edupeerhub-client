@@ -1,12 +1,8 @@
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "./getErrorMessage.js";
 
-export function handleToastError(
-  error,
-  fallbackMessage = "Something went wrong"
-) {
-  const message =
-    error?.response?.data?.message || error?.message || fallbackMessage;
-
+export function handleToastError(error, fallbackMessage) {
+  const message = getErrorMessage(error, fallbackMessage);
   toast.error(message);
 }
 

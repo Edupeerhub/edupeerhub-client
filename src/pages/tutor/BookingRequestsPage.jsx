@@ -61,7 +61,7 @@ const BookingRequestsPage = () => {
   }
 
   if (isError) {
-    return <ErrorAlert message={error.message} />;
+    return <ErrorAlert error={error.message} />;
   }
 
   return (

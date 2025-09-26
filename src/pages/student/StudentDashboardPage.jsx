@@ -37,13 +37,15 @@ const StudentDashboardPage = () => {
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-2 md:space-y-6">
-          <h1 className="text-2xl md:mb-4 font-semibold">
+          <h1 className="text-2xl md:mb-4 font-semibold pl-2 md:pl-0">
             Welcome back, {authUser?.firstName || "Student"}
           </h1>
 
           {/* Overview */}
-          <div className="bg-white rounded-lg border shadow p-2 sm:p-4">
-            <h2 className="text-lg font-semibold mb-4 ">Overview</h2>
+          <div className="">
+            <h2 className="text-lg font-semibold mb-4 pl-2 md:pl-0">
+              Overview
+            </h2>
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <OverviewPanel icon={streakIcon} text="Daily Streak" />
               <OverviewPanel icon={quizIcon} text="Quizzes" />
