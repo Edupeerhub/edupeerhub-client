@@ -50,7 +50,7 @@ const LoginPage = () => {
           linkText="Sign up"
           linkTo="/signup"
         />{" "}
-        <ErrorAlert message={generalError} />
+        <ErrorAlert error={generalError} />
         <form onSubmit={handleLogin} className="space-y-4">
           <Input
             label="Email"

@@ -143,7 +143,7 @@ const EmailVerificationPage = () => {
             <h2 className="text-2xl font-semibold text-center mb-1 text-black">
               Verify Your Email
             </h2>
-            {generalError && <ErrorAlert message={generalError} />}
+            {generalError && <ErrorAlert error={generalError} />}
             <p className="text-m ">
               Enter the 6-digit code sent to your email address.
             </p>

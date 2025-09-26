@@ -16,7 +16,6 @@ import Spinner from "../../components/common/Spinner";
 import { formatDate, formatTimeRange } from "../../utils/time";
 import Modal from "../../components/ui/Modal";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import { extractToastMessage } from "../../utils/extractToastErrorMessage";
 
 // 🔹 Utility to format time
 const formatTime = (hour, minute) => {
@@ -279,8 +278,7 @@ const TutorAvailabilityPage = () => {
       });
     },
     onError: (err) => {
-      const message = extractToastMessage(err, "Failed to add availability.");
-      handleToastError(null, message);
+      handleToastError(err, "Failed to add availability.");
     },
   });
 
@@ -301,12 +299,7 @@ const TutorAvailabilityPage = () => {
       });
     },
     onError: (err) => {
-      const message = extractToastMessage(
-        err,
-        "Failed to update availability."
-      );
-
-      handleToastError(null, message);
+      handleToastError(err, "Failed to update availability.");
     },
   });
 
@@ -318,12 +311,7 @@ const TutorAvailabilityPage = () => {
       queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
     },
     onError: (err) => {
-      const message = extractToastMessage(
-        err,
-        "Failed to cancel availability."
-      );
-
-      handleToastError(null, message);
+      handleToastError(err, "Failed to cancel availability.");
     },
   });
 
@@ -334,12 +322,7 @@ const TutorAvailabilityPage = () => {
       queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
     },
     onError: (err) => {
-      const message = extractToastMessage(
-        err,
-        "Failed to delete availability."
-      );
-
-      handleToastError(null, message);
+      handleToastError(err, "Failed to delete availability.");
     },
   });
 
@@ -352,17 +335,17 @@ const TutorAvailabilityPage = () => {
   }
 
   if (isErrorAvailabilities) {
-    return <ErrorAlert message={availabilitiesError.message} />;
+    return <ErrorAlert error={availabilitiesError} />;
   }
 
   return (
     <div className="max-w-full sm:max-w-md md:max-w-2xl lg:max-w-6xl mx-auto p-2 sm:p-3">
+      {createAvailabilityMutation.error && (
+        <ErrorAlert error={createAvailabilityMutation.error} />
+      )}
       <h1 className="text-2xl font-semibold mb-6 pl-2">
         Manage Your Availability
       </h1>
-      {createAvailabilityMutation.error && (
-        <ErrorAlert message={createAvailabilityMutation.error.message} />
-      )}
 
       <div className="mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">

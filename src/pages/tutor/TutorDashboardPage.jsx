@@ -191,11 +191,11 @@ const TutorDashboardPage = () => {
   }
 
   if (isErrorUser) {
-    return <ErrorAlert message={errorUser.message} />;
+    return <ErrorAlert error={errorUser.message} />;
   }
 
   if (isErrorSessions) {
-    return <ErrorAlert message={errorSessions.message} />;
+    return <ErrorAlert error={errorSessions.message} />;
   }
 
   const {
