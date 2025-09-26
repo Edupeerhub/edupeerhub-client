@@ -16,6 +16,7 @@ import Spinner from "../../components/common/Spinner";
 import { formatDate, formatTimeRange } from "../../utils/time";
 import Modal from "../../components/ui/Modal";
 import ErrorAlert from "../../components/common/ErrorAlert";
+import { extractToastMessage } from "../../utils/extractToastErrorMessage";
 
 // 🔹 Utility to format time
 const formatTime = (hour, minute) => {
@@ -278,7 +279,8 @@ const TutorAvailabilityPage = () => {
       });
     },
     onError: (err) => {
-      handleToastError(err, "Failed to add availability.");
+      const message = extractToastMessage(err, "Failed to add availability.");
+      handleToastError(null, message);
     },
   });
 
@@ -299,7 +301,12 @@ const TutorAvailabilityPage = () => {
       });
     },
     onError: (err) => {
-      handleToastError(err, "Failed to update availability.");
+      const message = extractToastMessage(
+        err,
+        "Failed to update availability."
+      );
+
+      handleToastError(null, message);
     },
   });
 
@@ -311,7 +318,12 @@ const TutorAvailabilityPage = () => {
       queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
     },
     onError: (err) => {
-      handleToastError(err, "Failed to cancel availability.");
+      const message = extractToastMessage(
+        err,
+        "Failed to cancel availability."
+      );
+
+      handleToastError(null, message);
     },
   });
 
@@ -322,7 +334,12 @@ const TutorAvailabilityPage = () => {
       queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
     },
     onError: (err) => {
-      handleToastError(err, "Failed to delete availability.");
+      const message = extractToastMessage(
+        err,
+        "Failed to delete availability."
+      );
+
+      handleToastError(null, message);
     },
   });
 
@@ -413,7 +430,7 @@ const TutorAvailabilityPage = () => {
               htmlFor="tutorNotes"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Tutor Notes (Required)
+              Tutor Notes (Optional)
             </label>
             <textarea
               id="tutorNotes"
@@ -511,7 +528,7 @@ const TutorAvailabilityPage = () => {
                   >
                     Edit
                   </Button>
-                  {availability.status === "open" && (
+                  {/* {availability.status === "open" && (
                     <Button
                       onClick={() => handleCancelAvailability(availability.id)}
                       className="px-4 py-2 text-sm font-medium bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
@@ -523,7 +540,7 @@ const TutorAvailabilityPage = () => {
                         "Cancel"
                       )}
                     </Button>
-                  )}
+                  )} */}
                   <Button
                     onClick={() =>
                       deleteAvailabilityMutation.mutate(availability.id)
