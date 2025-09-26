@@ -5,12 +5,13 @@ import {
   useChatContext,
 } from "stream-chat-react";
 import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react"; // or any icon library you prefer
 import CallButton from "../ui/CallButton";
 
 const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
   const navigate = useNavigate();
   const { members } = useChannelStateContext();
-  const { client } = useChatContext(); // 👈 gives you live user updates
+  const { client } = useChatContext();
 
   const [otherUser, setOtherUser] = useState(null);
 
@@ -24,7 +25,7 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
     if (foundUser) {
       setOtherUser(foundUser);
 
-      // 👀 listen for presence updates in real-time
+      // Listen for presence updates
       const handleUserUpdated = (event) => {
         if (event.user?.id === foundUser.id) {
           setOtherUser({ ...foundUser, ...event.user });
@@ -43,15 +44,27 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
 
   if (!channel || !authUser || !otherUser) return null;
 
+  const handleBack = () => {
+    navigate(-1); // 👈 go back in browser history
+  };
+
   const handleProfileClick = () => {
     navigate(`/profile/${otherUser.id}`);
   };
 
   return (
     <div className="flex items-center justify-between p-2 border-b bg-white">
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2">
+        {/* 👈 Back button */}
         <button
-          // onClick={handleProfileClick}
+          onClick={handleBack}
+          className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-700" />
+        </button>
+
+        <button
+          onClick={handleProfileClick}
           className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full transition-transform hover:scale-105"
         >
           <Avatar
@@ -63,7 +76,7 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
 
         <div>
           <button
-            // onClick={handleProfileClick}
+            onClick={handleProfileClick}
             className="text-lg font-semibold text-gray-900 hover:text-blue-600 focus:outline-none focus:underline transition-colors"
           >
             {otherUser.name || otherUser.id}
@@ -85,6 +98,7 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
         </div>
       </div>
 
+      {/* Uncomment if you want the call button */}
       {/* <div className="flex items-center space-x-2">
         <CallButton handleVideoCall={handleVideoCall} />
       </div> */}

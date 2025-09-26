@@ -12,16 +12,27 @@ const RecentChatsPage = () => {
   if (!chatClient) return <Spinner />;
 
   return (
-    <Chat client={chatClient} theme="messaging light">
-      <ChannelList
-        Preview={CustomChannelPreview}
-        filters={{ members: { $in: [authUser.id] } }}
-        sort={{ last_message_at: -1 }}
-        EmptyStateIndicator={() => (
-          <div className="no-chats">You have no chats yet.</div>
-        )}
-      />
-    </Chat>
+    <div className="flex flex-col h-full">
+      {/* ✅ Page header */}
+      <header className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-semibold text-gray-800">Recent Chats</h1>
+        {/* Optional: actions, e.g. new chat button */}
+        {/* <button className="text-sm text-blue-600">New Chat</button> */}
+      </header>
+
+      {/* ✅ Chat list below header */}
+      <div className="flex-1 overflow-y-auto"></div>
+      <Chat client={chatClient} theme="messaging light">
+        <ChannelList
+          Preview={CustomChannelPreview}
+          filters={{ members: { $in: [authUser.id] } }}
+          sort={{ last_message_at: -1 }}
+          EmptyStateIndicator={() => (
+            <div className="no-chats">You have no chats yet.</div>
+          )}
+        />
+      </Chat>
+    </div>
   );
 };
 
