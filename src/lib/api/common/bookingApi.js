@@ -5,6 +5,13 @@ export const getUpcomingSession = async () => {
   return response.data.data;
 };
 
+export const getAllStudentBookings = async ({ start, end, status }) => {
+  const response = await axiosInstance.get("/booking", {
+    params: { start, end, status },
+  });
+  return response.data.data;
+};
+
 export const fetchTutorAvailability = async ({ start, end, status }) => {
   const response = await axiosInstance.get(`/booking/availability`, {
     params: { start, end, status },
@@ -76,6 +83,13 @@ export const cancelBookingAvailability = async (
     `/booking/availability/${availabilityId}/cancel`,
     { cancellationReason }
   );
+  return response.data.data;
+};
+
+export const cancelStudentBooking = async (bookingId, cancellationReason) => {
+  const response = await axiosInstance.patch(`/booking/${bookingId}/cancel`, {
+    cancellationReason,
+  });
   return response.data.data;
 };
 

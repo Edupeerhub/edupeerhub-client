@@ -11,6 +11,7 @@ import ReportsIcon from "../assets/images/layout-icons/reports.svg?react";
 
 export const studentSidebarLinks = [
   { path: "/student/dashboard", label: "Dashboard", icon: DashboardIcon },
+  { path: "/student/sessions", label: "My Sessions", icon: SessionIcon },
   { path: "/student/library", label: "Library", icon: LibraryIcon },
   { path: "/student/tutors", label: "Tutors", icon: TutorIcon },
   { path: "/student/chats", label: "Messages", icon: MessageIcon },

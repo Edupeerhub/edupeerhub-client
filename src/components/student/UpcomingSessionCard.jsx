@@ -49,13 +49,13 @@ const getButtonState = (sessionDate) => {
   const tenMinutesBefore = new Date(sessionTime.getTime() - 10 * 60 * 1000);
 
   if (now >= tenMinutesBefore && now <= sessionTime) {
-    return { text: "JOIN", disabled: false };
+    return { joinDisabled: false, viewDisabled: true };
   } else {
-    return { text: "VIEW DETAILS", disabled: false };
+    return { joinDisabled: true, viewDisabled: false };
   }
 };
 
-const UpcomingSessionsCard = ({ upcomingSessions }) => {
+const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
   // Conditional check to handle the empty state
   if (!upcomingSessions) {
     return (
@@ -98,14 +98,23 @@ const UpcomingSessionsCard = ({ upcomingSessions }) => {
               <span>{formatSessionDate(upcomingSessions.scheduledStart)}</span>
             </div>
           </div>
-          <Link to={`/student/call/${upcomingSessions.id}`}>
+          <div className="flex flex-col sm:flex-row gap-2 mt-4">
             <button
-              className="mt-4 bg-blue-600 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-60 disabled:bg-gray-400"
-              disabled={buttonState.disabled}
+              className="bg-primary text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto disabled:bg-gray-400"
+              disabled={buttonState.viewDisabled}
+              onClick={() => onViewDetails(upcomingSessions)}
             >
-              {buttonState.text}
+              View Details
             </button>
-          </Link>
+            <Link to={`/student/call/${upcomingSessions.id}`}>
+              <button
+                className="bg-green-500 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto disabled:bg-gray-400"
+                disabled={buttonState.joinDisabled}
+              >
+                Join
+              </button>
+            </Link>
+          </div>
         </div>
         <img
           src={Upcoming}

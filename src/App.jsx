@@ -27,7 +27,6 @@ import StudentRoute from "./components/routes/StudentRoute";
 import TutorRoute from "./components/routes/TutorRoute";
 import StudentLibraryPage from "./pages/student/StudentLibraryPage";
 import StudentTutorsPage from "./pages/student/StudentTutorsPage";
-import StudentFaqPage from "./pages/general/FAQPage";
 import StudentSettingsPage from "./pages/student/StudentSettingsPage";
 import FAQPage from "./pages/general/FAQPage";
 import TutorSettingsPage from "./pages/tutor/TutorSettingsPage";
@@ -38,11 +37,9 @@ import ContactPage from "./pages/landing/ContactPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import StudentBookingPage from "./pages/student/StudentBookingPage";
-import StudentBookingsPage from "./pages/student/StudentBookingsPage";
 import AdminTutorsPage from "./pages/admin/AdminTutorsPage";
 import TutorSessionsPage from "./pages/tutor/TutorSessionsPage";
 import TutorAvailabilityPage from "./pages/tutor/TutorAvailabilityPage";
-import TutorMessagesPage from "./pages/tutor/TutorMessagesPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
 import ChatPage from "./pages/messaging/ChatPage";
@@ -50,6 +47,7 @@ import CallPage from "./pages/messaging/CallPage";
 import RecentChatsPage from "./pages/messaging/RecentChatsPage";
 import TutorPrivateProfilePage from "./pages/tutor/TutorPrivateProfilePage";
 import BookingRequestsPage from "./pages/tutor/BookingRequestsPage";
+import StudentSessionsPage from "./pages/student/StudentSessionsPage";
 
 export default function App() {
   const location = useLocation();
@@ -121,7 +119,7 @@ export default function App() {
             element={<CallPage key={location.pathname} />}
           />
           <Route path="booking/:id" element={<StudentBookingPage />} />
-          <Route path="bookings" element={<StudentBookingsPage />} />
+          <Route path="sessions" element={<StudentSessionsPage />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="settings" element={<StudentSettingsPage />} />
         </Route>

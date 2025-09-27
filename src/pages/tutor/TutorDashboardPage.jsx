@@ -34,11 +34,13 @@ import {
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
+import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
 
 const TutorDashboardPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -120,15 +122,25 @@ const TutorDashboardPage = () => {
     setSelectedSession(null);
   };
 
-  const handleCancelBooking = () => {
+  const handleOpenRescheduleModal = () => {
+    setIsDetailsModalOpen(false);
+    setIsRescheduleModalOpen(true);
+  };
+
+  const handleCloseRescheduleModal = () => {
+    setIsRescheduleModalOpen(false);
+    setSelectedSession(null);
+  };
+
+  const handleCancelBooking = (cancellationReason) => {
     if (selectedSession) {
-      cancelMutation.mutate(selectedSession.id);
+      cancelMutation.mutate({ id: selectedSession.id, cancellationReason });
     }
   };
 
-  const handleRescheduleBooking = () => {
-    console.log('Reschedule booking:', selectedSession);
-    setIsDetailsModalOpen(false);
+  const handleRescheduleBooking = (rescheduleData) => {
+    console.log('Reschedule booking:', rescheduleData);
+    setIsRescheduleModalOpen(false);
   };
 
   const getTutorStatus = () => {
@@ -397,6 +409,13 @@ const TutorDashboardPage = () => {
         booking={selectedSession}
         userType="tutor"
         onCancel={handleCancelBooking}
+        onReschedule={handleOpenRescheduleModal}
+      />
+      <RescheduleBookingModal
+        isOpen={isRescheduleModalOpen}
+        onClose={handleCloseRescheduleModal}
+        booking={selectedSession}
+        userType="tutor"
         onReschedule={handleRescheduleBooking}
       />
     </>
