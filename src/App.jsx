@@ -38,6 +38,7 @@ import ContactPage from "./pages/landing/ContactPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import StudentBookingPage from "./pages/student/StudentBookingPage";
+import StudentBookingsPage from "./pages/student/StudentBookingsPage";
 import AdminTutorsPage from "./pages/admin/AdminTutorsPage";
 import TutorSessionsPage from "./pages/tutor/TutorSessionsPage";
 import TutorAvailabilityPage from "./pages/tutor/TutorAvailabilityPage";
@@ -120,6 +121,7 @@ export default function App() {
             element={<CallPage key={location.pathname} />}
           />
           <Route path="booking/:id" element={<StudentBookingPage />} />
+          <Route path="bookings" element={<StudentBookingsPage />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="settings" element={<StudentSettingsPage />} />
         </Route>

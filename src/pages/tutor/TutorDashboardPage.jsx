@@ -23,6 +23,7 @@ import {
   getConfirmedUpcomingSessions,
   getPendingBookingRequests,
   updateBookingAvailabilityStatus,
+  cancelBookingAvailability,
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
@@ -32,10 +33,12 @@ import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
+import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 
 const TutorDashboardPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -82,6 +85,18 @@ const TutorDashboardPage = () => {
     },
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: cancelBookingAvailability,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["upcomingSessions"]);
+      handleToastSuccess('Booking cancelled successfully!');
+      setIsDetailsModalOpen(false);
+    },
+    onError: (err) => {
+      handleToastError(err, 'Failed to cancel booking.');
+    },
+  });
+
   const upcomingSessions = upcomingSessionsData
     ? Array.isArray(upcomingSessionsData)
       ? upcomingSessionsData
@@ -90,10 +105,30 @@ const TutorDashboardPage = () => {
 
   const tutor = user?.tutor;
 
-  //Modal for active state
   const handleView = (session) => {
     setSelectedSession(session);
     setModalOpen(true);
+  };
+
+  const handleViewDetails = (session) => {
+    setSelectedSession(session);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedSession(null);
+  };
+
+  const handleCancelBooking = () => {
+    if (selectedSession) {
+      cancelMutation.mutate(selectedSession.id);
+    }
+  };
+
+  const handleRescheduleBooking = () => {
+    console.log('Reschedule booking:', selectedSession);
+    setIsDetailsModalOpen(false);
   };
 
   const getTutorStatus = () => {
@@ -167,7 +202,7 @@ const TutorDashboardPage = () => {
       sessionMessage: (
         <div className="w-full space-y-3">
           {upcomingSessions?.map((session, i) => (
-            <SessionCard key={i} session={session} />
+            <SessionCard key={i} session={session} onClick={() => handleViewDetails(session)} />
           ))}
           <Link
             to="/tutor/availability"
@@ -355,6 +390,14 @@ const TutorDashboardPage = () => {
         onClose={() => setModalOpen(false)}
         session={selectedSession}
         updateBookingStatusMutation={updateBookingStatusMutation}
+      />
+      <BookingDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        booking={selectedSession}
+        userType="tutor"
+        onCancel={handleCancelBooking}
+        onReschedule={handleRescheduleBooking}
       />
     </>
   );
@@ -627,9 +670,9 @@ function ActiveLayout({
   );
 }
 
-function SessionCard({ session }) {
+function SessionCard({ session, onClick }) {
   return (
-    <div className="flex items-center justify-between border rounded-lg p-3 w-full">
+    <div className="flex items-center justify-between border rounded-lg p-3 w-full cursor-pointer" onClick={onClick}>
       <div className="flex items-center gap-3">
         <img
           src={session.student.user.profileImageUrl}

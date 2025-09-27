@@ -44,13 +44,14 @@ const formatSessionDate = (scheduledStart) => {
 };
 
 const getButtonState = (sessionDate) => {
-  const today = new Date();
-  const tenMinutesBefore = new Date(sessionDate.getTime() - 10 * 60 * 1000);
+  const now = new Date();
+  const sessionTime = new Date(sessionDate);
+  const tenMinutesBefore = new Date(sessionTime.getTime() - 10 * 60 * 1000);
 
-  if (sessionDate >= tenMinutesBefore && sessionDate <= today) {
+  if (now >= tenMinutesBefore && now <= sessionTime) {
     return { text: "JOIN", disabled: false };
   } else {
-    return { text: "VIEW DETAILS", disabled: true };
+    return { text: "VIEW DETAILS", disabled: false };
   }
 };
 
@@ -97,12 +98,14 @@ const UpcomingSessionsCard = ({ upcomingSessions }) => {
               <span>{formatSessionDate(upcomingSessions.scheduledStart)}</span>
             </div>
           </div>
-          <button
-            className="mt-4 bg-blue-600 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-60 disabled:bg-gray-400"
-            disabled={buttonState.disabled}
-          >
-            {buttonState.text}
-          </button>
+          <Link to={`/student/call/${upcomingSessions.id}`}>
+            <button
+              className="mt-4 bg-blue-600 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-60 disabled:bg-gray-400"
+              disabled={buttonState.disabled}
+            >
+              {buttonState.text}
+            </button>
+          </Link>
         </div>
         <img
           src={Upcoming}
