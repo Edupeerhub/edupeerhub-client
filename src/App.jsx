@@ -46,12 +46,7 @@ import TutorMessagesPage from "./pages/tutor/TutorMessagesPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
 import AdminTutorsProfilePage from "./pages/admin/AdminTutorsProfilePage";
-import AdminStudentsProfilePage from "./pages/admin/AdminStudentsProfilePage";
-// import AdminProfileSettingsPage from "./pages/admin/settings/AdminProfileSettingsPage";
-// import AdminPlatformPreferencesPage from "./pages/admin/settings/AdminPlatformPreferencesPage";
-// import AdminSecuritySettingsPage from "./pages/admin/settings/AdminSecuritySettingsPage";
-// import AdminNotificationsPage from "./pages/admin/settings/AdminNotificationsPage";
-import Comments from "./pages/admin/Comments";
+
 
 export default function App() {
   return (
@@ -152,29 +147,8 @@ export default function App() {
           <Route path="students" element={<AdminStudentsPage />} />
           <Route path="report" element={<AdminReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
-          {/* <Route
-            path="settings-profile"
-            element={<AdminProfileSettingsPage />}
-          /> */}
-          {/* <Route
-            path="settings-platform"
-            element={<AdminPlatformPreferencesPage />}
-          /> */}
-          {/* <Route
-            path="settings-security"
-            element={<AdminSecuritySettingsPage />}
-          /> */}
-          {/* <Route
-            path="settings-notifications"
-            element={<AdminNotificationsPage />}
-          /> */}
-          <Route path="comments" element={<Comments />} />
           <Route path="tutor-profile" element={<AdminTutorsProfilePage />} />
-          <Route
-            path="student-profile"
-            element={<AdminStudentsProfilePage />}
-          />
-        </Route>
+          
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Toaster />
