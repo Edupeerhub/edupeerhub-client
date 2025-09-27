@@ -44,7 +44,7 @@ const ForgotPasswordPage = () => {
               <h2 className="text-2xl font-semibold text-center mb-3 text-black">
                 Forgot Password{" "}
               </h2>
-              {generalError && <ErrorAlert message={generalError} />}
+              {generalError && <ErrorAlert error={generalError} />}
               <p className="text-m ">
                 Enter your email address and we'll send you a link to reset your
                 password.{" "}

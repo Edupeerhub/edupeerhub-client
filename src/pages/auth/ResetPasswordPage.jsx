@@ -49,7 +49,7 @@ const ResetPasswordPage = () => {
         <img src={logo} alt="Edupeerhub" />
         <h2 className="text-xl font-semibold  text-start">Reset Password</h2>
       </div>
-      {generalError && <ErrorAlert message={generalError} />}
+      {generalError && <ErrorAlert error={generalError} />}
       <div className="w-full">
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">

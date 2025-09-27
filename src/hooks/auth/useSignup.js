@@ -39,13 +39,12 @@ const useSignUp = () => {
           errors[err.field] = err.issue;
         });
         setFieldErrors(errors);
-        handleToastError(error);
       } else {
         // General error
         const msg = responseData?.message || "An error occurred.";
         setGeneralError(msg);
-        handleToastError(error);
       }
+      handleToastError(error);
     },
   });
 
