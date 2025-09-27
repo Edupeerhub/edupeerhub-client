@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom"; // Added Link
 import { useQuery } from "@tanstack/react-query";
 import { getStreamToken } from "../../lib/api/common/getStreamApi";
 import {
@@ -23,6 +23,7 @@ import {
 import FeedbackModal from "../../components/messaging/FeedbackModal";
 import useCreateReview from "../../hooks/review/useCreateReview";
 import { fetchBookingById } from "../../lib/api/common/bookingApi";
+import useCallAccess from "../../hooks/booking/useCallAccess"; // New import
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -31,7 +32,7 @@ const CallPage = () => {
 
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
-  const [isConnecting, setIsConnecting] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(false);
   const { authUser } = useAuthUser();
 
   const { data: tokenData } = useQuery({
@@ -41,7 +42,7 @@ const CallPage = () => {
   });
 
   // fetch booking details (contains tutor + student info)
-  const { data: bookingData } = useQuery({
+  const { data: bookingData, isLoading: isBookingLoading } = useQuery({
     queryKey: ["booking", bookingId],
     queryFn: () => fetchBookingById(bookingId),
     enabled: !!bookingId,
@@ -50,8 +51,18 @@ const CallPage = () => {
   const navigate = useNavigate();
   const startTimeRef = useRef(null);
 
+  // Use the new hook for access control
+  const { canAccess, reason, dashboardLink } = useCallAccess(bookingData);
+
   useEffect(() => {
-    if (!tokenData?.token || !authUser || !bookingId) return;
+    if (
+      !tokenData?.token ||
+      !authUser ||
+      !bookingId ||
+      !bookingData ||
+      !canAccess
+    )
+      return;
 
     const user = {
       id: authUser.id,
@@ -69,6 +80,8 @@ const CallPage = () => {
 
     const initCall = async () => {
       try {
+        setIsConnecting(true);
+
         await callInstance.join({ create: true });
 
         await trackSessionStart({
@@ -99,9 +112,25 @@ const CallPage = () => {
         });
       }
     };
-  }, [tokenData, authUser, bookingId]);
+  }, [tokenData, authUser, bookingId, bookingData, canAccess]);
 
-  if (isConnecting) return <PageLoader />;
+  if (isBookingLoading || isConnecting) return <PageLoader />;
+
+  // If access is denied, display a message
+  if (!canAccess) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-4">
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
+        <p className="text-lg text-gray-800 mb-6 text-center">{reason}</p>
+        <Link
+          to={dashboardLink}
+          className="bg-primary text-white px-6 py-3 rounded-full font-semibold transition-colors hover:bg-primary/80"
+        >
+          Go to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
