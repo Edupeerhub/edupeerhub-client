@@ -18,7 +18,7 @@ const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
           <p className="text-gray-500 mb-4 mt-1">You're all caught up!</p>
           <Link
             to="/student/tutors"
-            className="bg-primary text-white px-6 py-2 rounded-full font-semibold transition-colors hover:bg-primary/80"
+            className="bg-primary text-white px-6 py-2 rounded-full font-semibold transition-colors hover:bg-primary-focus"
           >
             Book a Session
           </Link>

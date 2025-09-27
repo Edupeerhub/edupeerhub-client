@@ -4,24 +4,20 @@ import streakIcon from "../../assets/Student-icon/streak.svg";
 import quizIcon from "../../assets/Student-icon/quiz.svg";
 import scoreIcon from "../../assets/Student-icon/score.svg";
 import greaterThanIcon from "../../assets/Student-icon/greater-than.svg";
-
 import { useQuery } from "@tanstack/react-query";
 import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
 import { Link } from "react-router-dom";
 import OverviewPanel from "../../components/student/OverviewPanel";
 import { getUpcomingSession } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
-import TutorSearchCard from "../../components/student/TutorSearchCard";
 import HorizontalScrollTutors from "../../components/student/HorizontalScrollTutors";
 import UpcomingSessionsCard from "../../components/student/UpcomingSessionCard";
 import { useState } from "react";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
-import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
   const { data, isLoading, error } = useQuery({
@@ -46,21 +42,6 @@ const StudentDashboardPage = () => {
   const handleCloseDetailsModal = () => {
     setIsDetailsModalOpen(false);
     setSelectedBooking(null);
-  };
-
-  const handleOpenRescheduleModal = () => {
-    setIsDetailsModalOpen(false);
-    setIsRescheduleModalOpen(true);
-  };
-
-  const handleCloseRescheduleModal = () => {
-    setIsRescheduleModalOpen(false);
-    setSelectedBooking(null);
-  };
-
-  const handleRescheduleBooking = (rescheduleData) => {
-    console.log("Reschedule booking:", rescheduleData);
-    setIsRescheduleModalOpen(false);
   };
 
   return (
@@ -124,7 +105,9 @@ const StudentDashboardPage = () => {
             <div className="flex-none px-2 sm:px-0">
               <h3 className="font-semibold text-lg mb-4">Currently Enrolled</h3>
               <div className="flex items-center justify-between w-full">
-                <p className="text-gray-500 text-sm font-semibold">No subject</p>
+                <p className="text-gray-500 text-sm font-semibold">
+                  No subject
+                </p>
                 <img
                   src={greaterThanIcon}
                   alt=">"
@@ -231,14 +214,6 @@ const StudentDashboardPage = () => {
         onClose={handleCloseDetailsModal}
         booking={selectedBooking}
         userType="student"
-        onReschedule={handleOpenRescheduleModal}
-      />
-      <RescheduleBookingModal
-        isOpen={isRescheduleModalOpen}
-        onClose={handleCloseRescheduleModal}
-        booking={selectedBooking}
-        userType="student"
-        onReschedule={handleRescheduleBooking}
       />
     </>
   );

@@ -146,7 +146,7 @@ const BookingRequestsPage = () => {
                   e.stopPropagation();
                   handleAcceptRequest(session.id);
                 }}
-                className="bg-primary text-white px-4 py-2 sm:px-6 rounded-full text-sm font-medium hover:bg-primary/80 transition-colors"
+                className="bg-primary text-white px-4 py-2 sm:px-6 rounded-full text-sm font-medium hover:bg-primary-focus transition-colors"
               >
                 Accept
               </button>

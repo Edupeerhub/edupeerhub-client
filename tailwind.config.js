@@ -8,6 +8,7 @@ export default {
       colors: {
         primary: "#4CA1F0",
         secondary: "#A1E3AF",
+        "primary-focus": "#3B8CD8", // dark hover version
         accent: "#2C3A47",
         background: "#F5F9FC",
         text: "#2C3A47",
@@ -34,6 +35,21 @@ export default {
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ["light"],
+    themes: [
+      {
+        light: {
+          primary: "#4CA1F0", // this sets btn-primary
+          "primary-focus": "#3B8CD8", // dark hover version
+          secondary: "#A1E3AF",
+          accent: "#2C3A47",
+          neutral: "#F5F9FC",
+          "base-100": "#FFFFFF",
+          info: "#2094F3",
+          success: "#009485",
+          warning: "#FF9900",
+          error: "#FF5724",
+        },
+      },
+    ],
   },
 };

@@ -79,6 +79,14 @@ export const updateBookingAvailability = async (availabilityId, updateData) => {
   return response.data.data;
 };
 
+export const rescheduleBooking = async (bookingId, updateData) => {
+  const response = await axiosInstance.patch(
+    `/booking/${bookingId}/reschedule`,
+    updateData
+  );
+  return response.data.data;
+};
+
 export const cancelBookingAvailability = async (
   availabilityId,
   cancellationReason

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { formatDate, formatTimeRange, formatDuration } from "../../utils/time";
 import { Link } from "react-router-dom";
-import useCallAccess from "../../hooks/booking/useCallAccess"; // New import
+import useCallAccess from "../../hooks/booking/useCallAccess";
 
 const BookingDetailsModal = ({
   booking,
@@ -14,8 +14,7 @@ const BookingDetailsModal = ({
   isPast,
 }) => {
   const [cancellationReason, setCancellationReason] = useState("");
-  // Use the new hook for access control
-  const { canAccess, reason } = useCallAccess(booking); // New line
+  const { canAccess, reason } = useCallAccess(booking);
 
   if (!isOpen || !booking) {
     return null;
@@ -137,9 +136,21 @@ const BookingDetailsModal = ({
             >
               Cancel Booking
             </button>
-            <button onClick={onReschedule} className="btn btn-primary flex-1">
-              Reschedule Booking
-            </button>
+            {isStudent ? (
+              <Link
+                to={`/student/chat/${booking.tutor?.user.id}`}
+                className="btn bg-primary hover:bg-primary-focus text-white flex-1 text-center"
+              >
+                Message Tutor
+              </Link>
+            ) : (
+              <button
+                onClick={onReschedule}
+                className="btn btn-primary flex-1 text-white"
+              >
+                Reschedule Booking
+              </button>
+            )}
           </div>
         )}
       </div>

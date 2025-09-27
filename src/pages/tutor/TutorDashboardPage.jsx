@@ -133,11 +133,6 @@ const TutorDashboardPage = () => {
     }
   };
 
-  const handleRescheduleBooking = (rescheduleData) => {
-    console.log("Reschedule booking:", rescheduleData);
-    setIsRescheduleModalOpen(false);
-  };
-
   const getTutorStatus = () => {
     if (!tutor) return "pending";
     if (
@@ -274,7 +269,7 @@ const TutorDashboardPage = () => {
       return (
         <button
           onClick={() => window.location.reload()}
-          className="btn bg-primary hover:bg-primary/80 text-white  w-full mt-4 rounded-full"
+          className="btn bg-primary hover:bg-primary-focus text-white  w-full mt-4 rounded-full"
         >
           {btnMessage}
         </button>
@@ -292,7 +287,7 @@ const TutorDashboardPage = () => {
     return (
       <Link
         to="/tutor/profile"
-        className="btn bg-primary hover:bg-primary/80 text-white w-full mt-4 rounded-full"
+        className="btn bg-primary hover:bg-primary-focus text-white w-full mt-4 rounded-full"
       >
         {btnMessage}
       </Link>
@@ -415,8 +410,7 @@ const TutorDashboardPage = () => {
         isOpen={isRescheduleModalOpen}
         onClose={handleCloseRescheduleModal}
         booking={selectedSession}
-        userType="tutor"
-        onReschedule={handleRescheduleBooking}
+        onReschedule={() => queryClient.invalidateQueries(["tutorBookings"])}
       />
     </>
   );
@@ -803,7 +797,7 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <button
-                    className="btn bg-primary w-full hover:bg-primary/80 text-white"
+                    className="btn bg-primary w-full hover:bg-primary-focus text-white"
                     onClick={() => {
                       handleClose();
                     }}
@@ -842,7 +836,7 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
             <div className="flex gap-3">
               <button
                 onClick={handleAccept}
-                className="btn text-white bg-primary hover:bg-primary/80 flex-1 rounded-full"
+                className="btn text-white bg-primary hover:bg-primary-focus flex-1 rounded-full"
               >
                 Accept Request
               </button>

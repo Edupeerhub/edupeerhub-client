@@ -23,7 +23,7 @@ const TutorSearchCard = ({ tutor }) => (
 
     <Link
       to={`/student/tutor-profile/${tutor.userId}`}
-      className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary/80 text-center no-underline"
+      className="mt-auto self-end px-4 py-2 text-sm bg-primary text-white rounded-full hover:bg-primary-focus text-center no-underline"
     >
       View Profile
     </Link>

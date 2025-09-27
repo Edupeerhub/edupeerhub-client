@@ -146,7 +146,7 @@ const FilterPanel = ({
             </button>
             <button
               onClick={handleApplyFilters}
-              className="flex-1 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90"
+              className="flex-1 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary-focus"
             >
               Apply Filters
             </button>
