@@ -1,6 +1,7 @@
 import Upcoming from "../../assets/Student-icon/upcoming.svg";
 import clockIcon from "../../assets/Student-icon/clock.svg";
 import { Link } from "react-router-dom";
+import useCallAccess from "../../hooks/booking/useCallAccess"; // New import
 
 // Helper function to format the date based on its proximity
 const formatSessionDate = (scheduledStart) => {
@@ -43,18 +44,7 @@ const formatSessionDate = (scheduledStart) => {
   }
 };
 
-const getButtonState = (sessionDate) => {
-  const today = new Date();
-  const tenMinutesBefore = new Date(sessionDate.getTime() - 10 * 60 * 1000);
-
-  if (sessionDate >= tenMinutesBefore && sessionDate <= today) {
-    return { text: "JOIN", disabled: false };
-  } else {
-    return { text: "VIEW DETAILS", disabled: true };
-  }
-};
-
-const UpcomingSessionsCard = ({ upcomingSessions }) => {
+const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
   // Conditional check to handle the empty state
   if (!upcomingSessions) {
     return (
@@ -77,7 +67,7 @@ const UpcomingSessionsCard = ({ upcomingSessions }) => {
 
   // If there is an upcoming session, render the full card
   const sessionDate = new Date(upcomingSessions.scheduledStart);
-  const buttonState = getButtonState(sessionDate);
+  const { canAccess, reason } = useCallAccess(upcomingSessions); // Use the new hook
 
   return (
     <div>
@@ -97,12 +87,23 @@ const UpcomingSessionsCard = ({ upcomingSessions }) => {
               <span>{formatSessionDate(upcomingSessions.scheduledStart)}</span>
             </div>
           </div>
-          <button
-            className="mt-4 bg-blue-600 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-60 disabled:bg-gray-400"
-            disabled={buttonState.disabled}
-          >
-            {buttonState.text}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 mt-4">
+            <button
+              className="bg-primary text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto" // Removed disabled prop
+              onClick={() => onViewDetails(upcomingSessions)}
+            >
+              View Details
+            </button>
+            <Link to={`/student/call/${upcomingSessions.id}`}>
+              <button
+                className="bg-green-500 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto disabled:bg-gray-400"
+                disabled={!canAccess} // Use canAccess from the hook
+                title={!canAccess ? reason : ""} // Add title for disabled reason
+              >
+                Join
+              </button>
+            </Link>
+          </div>
         </div>
         <img
           src={Upcoming}

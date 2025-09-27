@@ -23,6 +23,7 @@ import {
   getConfirmedUpcomingSessions,
   getPendingBookingRequests,
   updateBookingAvailabilityStatus,
+  cancelBookingAvailability,
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
@@ -32,10 +33,15 @@ import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
+import BookingDetailsModal from "../../components/common/BookingDetailsModal";
+import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
+import { getTutorReviewSummary } from "../../lib/api/tutor/tutorApi";
 
 const TutorDashboardPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -70,6 +76,12 @@ const TutorDashboardPage = () => {
     enabled: !!user,
   });
 
+  const { data: reviewSummary } = useQuery({
+    queryKey: ["tutorReviewSummary", user?.id],
+    queryFn: () => getTutorReviewSummary(user?.id),
+    enabled: !!user?.id,
+  });
+
   const updateBookingStatusMutation = useMutation({
     mutationFn: ({ availabilityId, status }) =>
       updateBookingAvailabilityStatus(availabilityId, status),
@@ -82,6 +94,18 @@ const TutorDashboardPage = () => {
     },
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: cancelBookingAvailability,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["upcomingSessions"]);
+      handleToastSuccess("Booking cancelled successfully!");
+      setIsDetailsModalOpen(false);
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to cancel booking.");
+    },
+  });
+
   const upcomingSessions = upcomingSessionsData
     ? Array.isArray(upcomingSessionsData)
       ? upcomingSessionsData
@@ -89,11 +113,42 @@ const TutorDashboardPage = () => {
     : [];
 
   const tutor = user?.tutor;
+  const rating = reviewSummary?.averageRating ?? 0;
 
-  //Modal for active state
   const handleView = (session) => {
     setSelectedSession(session);
     setModalOpen(true);
+  };
+
+  const handleViewDetails = (session) => {
+    setSelectedSession(session);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedSession(null);
+  };
+
+  const handleOpenRescheduleModal = () => {
+    setIsDetailsModalOpen(false);
+    setIsRescheduleModalOpen(true);
+  };
+
+  const handleCloseRescheduleModal = () => {
+    setIsRescheduleModalOpen(false);
+    setSelectedSession(null);
+  };
+
+  const handleCancelBooking = (cancellationReason) => {
+    if (selectedSession) {
+      cancelMutation.mutate({ id: selectedSession.id, cancellationReason });
+    }
+  };
+
+  const handleRescheduleBooking = (rescheduleData) => {
+    console.log("Reschedule booking:", rescheduleData);
+    setIsRescheduleModalOpen(false);
   };
 
   const getTutorStatus = () => {
@@ -166,9 +221,27 @@ const TutorDashboardPage = () => {
       color: "text-green-900",
       sessionMessage: (
         <div className="w-full space-y-3">
-          {upcomingSessions?.map((session, i) => (
-            <SessionCard key={i} session={session} />
-          ))}
+          {upcomingSessions?.length > 0 ? ( // Added conditional check here
+            upcomingSessions.map((session, i) => (
+              <SessionCard
+                key={i}
+                session={session}
+                onClick={() => handleViewDetails(session)}
+              />
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Calendar1Icon className="w-12 h-12 text-gray-400 mb-4" />{" "}
+              {/* Using Calendar1Icon from lucide-react */}
+              <p className="text-lg font-semibold text-gray-700 mb-2">
+                No Upcoming Sessions
+              </p>
+              <p className="text-sm text-gray-500">
+                You're all caught up! Manage your availability to get more
+                bookings.
+              </p>
+            </div>
+          )}
           <Link
             to="/tutor/availability"
             className="btn bg-white border border-gray-700 w-full rounded-full"
@@ -253,13 +326,14 @@ const TutorDashboardPage = () => {
             {/* Status-specific Layout */}
             {tutorStatus === "pending" && <PendingLayout />}
             {tutorStatus === "rejected" && <RejectedLayout />}
-            {tutorStatus === "approved" && <ApprovedLayout />}
+            {tutorStatus === "approved" && <ApprovedLayout rating={rating} />}
             {tutorStatus === "active" && (
               <ActiveLayout
                 tutor={tutor}
                 upcomingSessions={upcomingSessions}
                 pendingRequests={pendingBookingRequestsData}
                 handleView={handleView}
+                rating={rating}
               />
             )}
           </div>
@@ -356,6 +430,21 @@ const TutorDashboardPage = () => {
         session={selectedSession}
         updateBookingStatusMutation={updateBookingStatusMutation}
       />
+      <BookingDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        booking={selectedSession}
+        userType="tutor"
+        onCancel={handleCancelBooking}
+        onReschedule={handleOpenRescheduleModal}
+      />
+      <RescheduleBookingModal
+        isOpen={isRescheduleModalOpen}
+        onClose={handleCloseRescheduleModal}
+        booking={selectedSession}
+        userType="tutor"
+        onReschedule={handleRescheduleBooking}
+      />
     </>
   );
 };
@@ -398,7 +487,7 @@ function RejectedLayout() {
   );
 }
 
-function ApprovedLayout() {
+function ApprovedLayout({ rating }) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -433,7 +522,7 @@ function ApprovedLayout() {
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Ratings</p>
-          <p className="text-2xl font-bold">0</p>
+          <p className="text-2xl font-bold">{rating}</p>
         </div>
       </div>
 
@@ -472,12 +561,7 @@ function ApprovedLayout() {
   );
 }
 
-function ActiveLayout({
-  tutor,
-  upcomingSessions,
-  pendingRequests,
-  handleView,
-}) {
+function ActiveLayout({ tutor, pendingRequests, handleView, rating }) {
   const pendingBookingRequests = pendingRequests
     ? Array.isArray(pendingRequests)
       ? pendingRequests
@@ -518,7 +602,7 @@ function ActiveLayout({
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </div>
           <p className="text-sm text-gray-600">Ratings</p>
-          <p className="text-2xl font-bold">{tutor?.rating || 0}</p>
+          <p className="text-2xl font-bold">{rating}</p>
         </div>
       </div>
 
@@ -562,15 +646,15 @@ function ActiveLayout({
                       <BookingCard session={session} />
                     </td>
                     <td className="py-3 px-2 text-sm hidden sm:table-cell">
-                      {session.subject.name}
+                      {session?.subject?.name}
                     </td>
                     <td className="py-3 px-2 text-sm hidden md:table-cell">
-                      {formatDate(session.scheduledStart)}
+                      {formatDate(session?.scheduledStart)}
                     </td>
                     <td className="py-3 px-2 text-sm hidden md:table-cell">
                       {formatTimeRange(
-                        session.scheduledStart,
-                        session.scheduledEnd
+                        session?.scheduledStart,
+                        session?.scheduledEnd
                       )}
                     </td>
                     <td className="py-3 px-2">
@@ -627,20 +711,23 @@ function ActiveLayout({
   );
 }
 
-function SessionCard({ session }) {
+function SessionCard({ session, onClick }) {
   return (
-    <div className="flex items-center justify-between border rounded-lg p-3 w-full">
+    <div
+      className="flex items-center justify-between border rounded-lg p-3 w-full cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex items-center gap-3">
         <img
-          src={session.student.user.profileImageUrl}
-          alt={`${session.student.user.firstName} profile`}
+          src={session?.student?.user?.profileImageUrl}
+          alt={`${session?.student?.user?.firstName} profile`}
           className="w-8 h-8 rounded-full"
         />
         <div>
-          <p className="font-medium text-sm">{`${session.student.user.firstName} ${session.student.user.lastName}`}</p>
-          <p className="text-xs text-gray-500">{session.subject.name}</p>
+          <p className="font-medium text-sm">{`${session?.student?.user?.firstName} ${session?.student?.user?.lastName}`}</p>
+          <p className="text-xs text-gray-500">{session?.subject?.name}</p>
           <p className="text-xs text-gray-500">
-            {formatDuration(session.scheduledStart, session.scheduledEnd)}
+            {formatDuration(session?.scheduledStart, session?.scheduledEnd)}
           </p>
         </div>
       </div>
@@ -658,12 +745,12 @@ function BookingCard({ session }) {
   return (
     <div className="flex items-center gap-3">
       <img
-        src={session.student.user.profileImageUrl}
-        alt={`${session.student.user.firstName} profile`}
+        src={session?.student?.user?.profileImageUrl}
+        alt={`${session?.student?.user?.firstName} profile`}
         className="w-8 h-8 rounded-full"
       />
       <div>
-        <p className="text-sm font-medium">{`${session.student.user.firstName} ${session.student.user.lastName}`}</p>
+        <p className="text-sm font-medium">{`${session?.student?.user?.firstName} ${session?.student?.user?.lastName}`}</p>
       </div>
     </div>
   );
@@ -723,7 +810,7 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
                   </h3>
                   <p className="text-sm text-gray-600">
                     You've accepted a booking request from{" "}
-                    {`${session.student.user.firstName} ${session.student.user.lastName}`}
+                    {`${session?.student?.user?.firstName} ${session?.student?.user?.lastName}`}
                     . A notification has been sent.
                   </p>
                 </div>
@@ -749,7 +836,7 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
                   </h3>
                   <p className="text-sm text-gray-600">
                     You've declined the booking request from{" "}
-                    {`${session.student.user.firstName} ${session.student.user.lastName}`}
+                    {`${session?.student?.user?.firstName} ${session?.student?.user?.lastName}`}
                     .
                   </p>
                 </div>
@@ -785,10 +872,13 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
             <div className="mb-6">
               <h4 className="text-sm font-medium mb-2">Date & Time</h4>
               <p className="text-sm font-semibold">
-                Date: {formatDate(session.scheduledStart)}
+                Date: {formatDate(session?.scheduledStart)}
               </p>
               <p className="text-sm text-gray-600">
-                {formatTimeRange(session.scheduledStart, session.scheduledEnd)}
+                {formatTimeRange(
+                  session?.scheduledStart,
+                  session?.scheduledEnd
+                )}
               </p>
             </div>
 
