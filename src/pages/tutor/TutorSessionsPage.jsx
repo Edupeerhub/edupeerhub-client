@@ -2,15 +2,17 @@ import React, { useState } from "react";
 import { ChevronDown, Filter } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getConfirmedUpcomingSessions,
-  fetchTutorAvailability,
+  fetchTutorBookings,
   cancelBookingAvailability,
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { formatDate, formatTimeRange } from "../../utils/time";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
-import { handleToastSuccess, handleToastError } from "../../utils/toastDisplayHandler";
+import {
+  handleToastSuccess,
+  handleToastError,
+} from "../../utils/toastDisplayHandler";
 
 const TutorSessionsPage = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -19,66 +21,34 @@ const TutorSessionsPage = () => {
   const queryClient = useQueryClient();
 
   const {
-    data: upcomingSessionsData,
-    isLoading: isLoadingUpcoming,
-    isError: isErrorUpcoming,
-    error: errorUpcoming,
+    data: tutorBookingsData,
+    isLoading: isLoadingTutorBookings,
+    isError: isErrorTutorBookings,
+    error: errorTutorBookings,
   } = useQuery({
-    queryKey: ["upcomingSessions"],
-    queryFn: getConfirmedUpcomingSessions,
-  });
-
-  const {
-    data: completedSessionsData,
-    isLoading: isLoadingCompleted,
-    isError: isErrorCompleted,
-    error: errorCompleted,
-  } = useQuery({
-    queryKey: ["completedSessions"],
-    queryFn: () => fetchTutorAvailability({ status: "completed" }),
-  });
-
-  const {
-    data: cancelledSessionsData,
-    isLoading: isLoadingCancelled,
-    isError: isErrorCancelled,
-    error: errorCancelled,
-  } = useQuery({
-    queryKey: ["cancelledSessions"],
-    queryFn: () => fetchTutorAvailability({ status: "cancelled" }),
+    queryKey: ["tutorSessions"],
+    queryFn: () =>
+      fetchTutorBookings({ status: ["confirmed", "completed", "cancelled"] }),
   });
 
   const cancelMutation = useMutation({
     mutationFn: cancelBookingAvailability,
     onSuccess: () => {
-      queryClient.invalidateQueries(["upcomingSessions"]);
-      queryClient.invalidateQueries(["completedSessions"]);
-      queryClient.invalidateQueries(["cancelledSessions"]);
-      handleToastSuccess('Booking cancelled successfully!');
+      queryClient.invalidateQueries(["tutorSessions"]);
+      handleToastSuccess("Booking cancelled successfully!");
       setIsModalOpen(false);
     },
     onError: (err) => {
-      handleToastError(err, 'Failed to cancel booking.');
+      handleToastError(err, "Failed to cancel booking.");
     },
   });
 
-  const upcomingSessions = upcomingSessionsData
-    ? Array.isArray(upcomingSessionsData)
-      ? upcomingSessionsData
-      : [upcomingSessionsData]
-    : [];
-
-  const completedSessions = completedSessionsData
-    ? Array.isArray(completedSessionsData)
-      ? completedSessionsData
-      : [completedSessionsData]
-    : [];
-
-  const cancelledSessions = cancelledSessionsData
-    ? Array.isArray(cancelledSessionsData)
-      ? cancelledSessionsData
-      : [cancelledSessionsData]
-    : [];
+  const upcomingSessions =
+    tutorBookingsData?.filter((b) => b.status === "confirmed") || [];
+  const completedSessions =
+    tutorBookingsData?.filter((b) => b.status === "completed") || [];
+  const cancelledSessions =
+    tutorBookingsData?.filter((b) => b.status === "cancelled") || [];
 
   const totalSessions =
     upcomingSessions.length +
@@ -102,11 +72,11 @@ const TutorSessionsPage = () => {
   };
 
   const handleRescheduleBooking = () => {
-    console.log('Reschedule booking:', selectedSession);
+    console.log("Reschedule booking:", selectedSession);
     setIsModalOpen(false);
   };
 
-  if (isLoadingUpcoming || isLoadingCompleted || isLoadingCancelled) {
+  if (isLoadingTutorBookings) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner size="large" />
@@ -114,16 +84,8 @@ const TutorSessionsPage = () => {
     );
   }
 
-  if (isErrorUpcoming || isErrorCompleted || isErrorCancelled) {
-    return (
-      <ErrorAlert
-        message={
-          errorUpcoming?.message ||
-          errorCompleted?.message ||
-          errorCancelled?.message
-        }
-      />
-    );
+  if (isErrorTutorBookings) {
+    return <ErrorAlert message={errorTutorBookings} />;
   }
 
   const sessionsToDisplay =
@@ -332,7 +294,7 @@ const TutorSessionsPage = () => {
         userType="tutor"
         onCancel={handleCancelBooking}
         onReschedule={handleRescheduleBooking}
-        isPast={activeTab === 'past'}
+        isPast={activeTab === "past"}
       />
     </>
   );

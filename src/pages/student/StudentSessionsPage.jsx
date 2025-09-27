@@ -22,30 +22,20 @@ const StudentSessionsPage = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
 
   const {
-    data: upcomingBookings,
-    isLoading: isLoadingUpcoming,
-    isError: isErrorUpcoming,
-    error: errorUpcoming,
+    data: studentBookingsData,
+    isLoading: isLoadingStudentBookingsData,
+    isError: isErrorStudentBookingsData,
+    error: errorStudentBookingsData,
   } = useQuery({
-    queryKey: ["studentUpcomingBookings"],
-    queryFn: () => getAllStudentBookings({ status: "confirmed" }),
-  });
-
-  const {
-    data: pastBookings,
-    isLoading: isLoadingPast,
-    isError: isErrorPast,
-    error: errorPast,
-  } = useQuery({
-    queryKey: ["studentPastBookings"],
-    queryFn: () => getAllStudentBookings({ status: "completed" }),
+    queryKey: ["studentSessions"],
+    queryFn: () =>
+      getAllStudentBookings({ status: ["confirmed", "completed"] }),
   });
 
   const cancelMutation = useMutation({
     mutationFn: cancelStudentBooking,
     onSuccess: () => {
-      queryClient.invalidateQueries(["studentUpcomingBookings"]);
-      queryClient.invalidateQueries(["studentPastBookings"]);
+      queryClient.invalidateQueries(["studentSessions"]);
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
@@ -88,7 +78,7 @@ const StudentSessionsPage = () => {
     setIsRescheduleModalOpen(false);
   };
 
-  if (isLoadingUpcoming || isLoadingPast) {
+  if (isLoadingStudentBookingsData) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner size="large" />
@@ -96,9 +86,14 @@ const StudentSessionsPage = () => {
     );
   }
 
-  if (isErrorUpcoming || isErrorPast) {
-    return <ErrorAlert error={errorUpcoming?.message || errorPast?.message} />;
+  if (isErrorStudentBookingsData) {
+    return <ErrorAlert error={errorStudentBookingsData?.message} />;
   }
+
+  const upcomingBookings =
+    studentBookingsData?.filter((b) => b.status === "confirmed") || [];
+  const pastBookings =
+    studentBookingsData?.filter((b) => b.status === "completed") || [];
 
   const bookingsToDisplay =
     activeTab === "upcoming" ? upcomingBookings : pastBookings;

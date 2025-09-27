@@ -2,49 +2,11 @@ import Upcoming from "../../assets/Student-icon/upcoming.svg";
 import clockIcon from "../../assets/Student-icon/clock.svg";
 import { Link } from "react-router-dom";
 import useCallAccess from "../../hooks/booking/useCallAccess"; // New import
-
-// Helper function to format the date based on its proximity
-const formatSessionDate = (scheduledStart) => {
-  const sessionDate = new Date(scheduledStart);
-  const today = new Date();
-  const oneWeekFromToday = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-  // Check if the session is within the next 7 days
-  if (sessionDate >= today && sessionDate < oneWeekFromToday) {
-    const weekday = sessionDate.toLocaleDateString("en-US", {
-      weekday: "long",
-    });
-    const time = sessionDate.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-    return `${weekday}, ${time}`;
-  } else {
-    // Format for beyond one week: "Month Dayth, Time"
-    const month = sessionDate.toLocaleDateString("en-US", { month: "long" });
-    const day = sessionDate.getDate();
-    const time = sessionDate.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    // Add correct suffix for the day of the month (e.g., "st", "nd", "rd", "th")
-    let suffix = "th";
-    if (day === 1 || day === 21 || day === 31) {
-      suffix = "st";
-    } else if (day === 2 || day === 22) {
-      suffix = "nd";
-    } else if (day === 3 || day === 23) {
-      suffix = "rd";
-    }
-
-    return `${month} ${day}${suffix}, ${time}`;
-  }
-};
+import { formatSessionDate } from "../../utils/time";
 
 const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
+  const { canAccess, reason } = useCallAccess(upcomingSessions);
+
   // Conditional check to handle the empty state
   if (!upcomingSessions) {
     return (
@@ -64,10 +26,6 @@ const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
       </div>
     );
   }
-
-  // If there is an upcoming session, render the full card
-  const sessionDate = new Date(upcomingSessions.scheduledStart);
-  const { canAccess, reason } = useCallAccess(upcomingSessions); // Use the new hook
 
   return (
     <div>
@@ -89,20 +47,26 @@ const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
           </div>
           <div className="flex flex-col sm:flex-row gap-2 mt-4">
             <button
-              className="bg-primary text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto" // Removed disabled prop
+              className="bg-primary text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto"
               onClick={() => onViewDetails(upcomingSessions)}
             >
               View Details
             </button>
-            <Link to={`/student/call/${upcomingSessions.id}`}>
+            {canAccess ? (
+              <Link to={`/student/call/${upcomingSessions.id}`}>
+                <button className="bg-green-500 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto disabled:bg-gray-400">
+                  Join
+                </button>
+              </Link>
+            ) : (
               <button
-                className="bg-green-500 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto disabled:bg-gray-400"
-                disabled={!canAccess} // Use canAccess from the hook
-                title={!canAccess ? reason : ""} // Add title for disabled reason
+                className="bg-gray-400 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto cursor-not-allowed"
+                disabled={true}
+                title={reason}
               >
                 Join
               </button>
-            </Link>
+            )}
           </div>
         </div>
         <img

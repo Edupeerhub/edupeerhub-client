@@ -1,3 +1,4 @@
+import { formatTimeRemaining } from "../../utils/time";
 import useAuthUser from "../auth/useAuthUser";
 
 const useCallAccess = (booking) => {
@@ -19,6 +20,7 @@ const useCallAccess = (booking) => {
 
   const sessionStartTime = new Date(booking.scheduledStart);
   const now = new Date();
+
   const fifteenMinutesBefore = new Date(
     sessionStartTime.getTime() - 15 * 60 * 1000
   );
@@ -50,12 +52,13 @@ const useCallAccess = (booking) => {
 
   // 3. Check time-based access (15 minutes before to 15 minutes after start)
   if (now < fifteenMinutesBefore) {
-    const timeRemaining = Math.ceil(
-      (fifteenMinutesBefore.getTime() - now.getTime()) / (1000 * 60)
-    );
+    const timeDifferenceMs = fifteenMinutesBefore.getTime() - now.getTime();
+
+    const timeRemainingString = formatTimeRemaining(timeDifferenceMs);
+
     return {
       canAccess: false,
-      reason: `You can join the call in ${timeRemaining} minutes.`,
+      reason: `You can join the call in ${timeRemainingString}.`,
       dashboardLink: isStudent ? "/student/dashboard" : "/tutor/dashboard",
     };
   }

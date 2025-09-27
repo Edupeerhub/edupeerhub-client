@@ -1,19 +1,19 @@
 import { axiosInstance } from "../axios";
 
+// General
 export const getUpcomingSession = async () => {
   const response = await axiosInstance.get("/booking/upcoming");
   return response.data.data;
 };
 
-export const getAllStudentBookings = async ({ start, end, status }) => {
-  const response = await axiosInstance.get("/booking", {
-    params: { start, end, status },
-  });
+export const fetchBookingById = async (bookingId) => {
+  const response = await axiosInstance.get(`/booking/${bookingId}`);
   return response.data.data;
 };
 
-export const fetchTutorAvailability = async ({ start, end, status }) => {
-  const response = await axiosInstance.get(`/booking/availability`, {
+// Student
+export const getAllStudentBookings = async ({ start, end, status }) => {
+  const response = await axiosInstance.get("/booking", {
     params: { start, end, status },
   });
   return response.data.data;
@@ -37,17 +37,18 @@ export const bookSession = async ({ bookingId, subjectId }) => {
   return response.data.data;
 };
 
-export const getConfirmedUpcomingSessions = async () => {
-  const response = await axiosInstance.get(
-    "/booking/availability?status=confirmed"
-  );
+export const cancelStudentBooking = async (bookingId, cancellationReason) => {
+  const response = await axiosInstance.patch(`/booking/${bookingId}/cancel`, {
+    cancellationReason,
+  });
   return response.data.data;
 };
 
-export const getPendingBookingRequests = async () => {
-  const response = await axiosInstance.get(
-    "/booking/availability?status=pending"
-  );
+// Tutor
+export const fetchTutorBookings = async ({ start, end, status }) => {
+  const response = await axiosInstance.get(`/booking/availability`, {
+    params: { start, end, status },
+  });
   return response.data.data;
 };
 
@@ -70,8 +71,11 @@ export const createBookingAvailability = async (availabilityData) => {
   return response.data.data;
 };
 
-export const getAllTutorAvailabilities = async () => {
-  const response = await axiosInstance.get("/booking/availability");
+export const updateBookingAvailability = async (availabilityId, updateData) => {
+  const response = await axiosInstance.patch(
+    `/booking/availability/${availabilityId}`,
+    updateData
+  );
   return response.data.data;
 };
 
@@ -86,29 +90,9 @@ export const cancelBookingAvailability = async (
   return response.data.data;
 };
 
-export const cancelStudentBooking = async (bookingId, cancellationReason) => {
-  const response = await axiosInstance.patch(`/booking/${bookingId}/cancel`, {
-    cancellationReason,
-  });
-  return response.data.data;
-};
-
 export const deleteBookingAvailability = async (availabilityId) => {
   const response = await axiosInstance.delete(
     `/booking/availability/${availabilityId}`
   );
-  return response.data.data;
-};
-
-export const updateBookingAvailability = async (availabilityId, updateData) => {
-  const response = await axiosInstance.patch(
-    `/booking/availability/${availabilityId}`,
-    updateData
-  );
-  return response.data.data;
-};
-
-export const fetchBookingById = async (bookingId) => {
-  const response = await axiosInstance.get(`/booking/${bookingId}`);
   return response.data.data;
 };

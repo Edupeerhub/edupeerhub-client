@@ -20,10 +20,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
 import {
-  getConfirmedUpcomingSessions,
-  getPendingBookingRequests,
   updateBookingAvailabilityStatus,
   cancelBookingAvailability,
+  fetchTutorBookings,
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
@@ -55,24 +54,13 @@ const TutorDashboardPage = () => {
   });
 
   const {
-    data: upcomingSessionsData,
-    isLoading: isLoadingSessions,
-    isError: isErrorSessions,
-    error: errorSessions,
+    data: tutorBookingsData,
+    isLoading: isLoadingTutorBookings,
+    isError: isErrorTutorBookings,
+    error: errorTutorBookings,
   } = useQuery({
-    queryKey: ["upcomingSessions"],
-    queryFn: getConfirmedUpcomingSessions,
-    enabled: !!user,
-  });
-
-  const {
-    data: pendingBookingRequestsData,
-    isLoading: isLoadingPendingRequests,
-    isError: isErrorPendingRequests,
-    error: errorPendingRequests,
-  } = useQuery({
-    queryKey: ["pendingBookingRequests"],
-    queryFn: getPendingBookingRequests,
+    queryKey: ["tutorBookings"],
+    queryFn: () => fetchTutorBookings({ status: ["confirmed", "pending"] }),
     enabled: !!user,
   });
 
@@ -86,7 +74,7 @@ const TutorDashboardPage = () => {
     mutationFn: ({ availabilityId, status }) =>
       updateBookingAvailabilityStatus(availabilityId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries(["bookingRequests"]);
+      queryClient.invalidateQueries(["tutorBookings"]);
       handleToastSuccess("Booking request updated successfully!");
     },
     onError: (err) => {
@@ -97,7 +85,7 @@ const TutorDashboardPage = () => {
   const cancelMutation = useMutation({
     mutationFn: cancelBookingAvailability,
     onSuccess: () => {
-      queryClient.invalidateQueries(["upcomingSessions"]);
+      queryClient.invalidateQueries(["tutorBookings"]);
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
@@ -106,11 +94,10 @@ const TutorDashboardPage = () => {
     },
   });
 
-  const upcomingSessions = upcomingSessionsData
-    ? Array.isArray(upcomingSessionsData)
-      ? upcomingSessionsData
-      : [upcomingSessionsData]
-    : [];
+  const upcomingSessions =
+    tutorBookingsData?.filter((b) => b.status === "confirmed") || [];
+  const pendingBookingRequests =
+    tutorBookingsData?.filter((b) => b.status === "pending") || [];
 
   const tutor = user?.tutor;
   const rating = reviewSummary?.averageRating ?? 0;
@@ -170,8 +157,8 @@ const TutorDashboardPage = () => {
       title: "Pending Approval",
       subtitle: "Awaiting Verification",
       btnMessage: "Check Status",
-      bgColor: "#F9E5D5",
-      color: "#BB6927",
+      bgColor: "bg-amber-100",
+      color: "text-amber-600",
       sessionMessage: (
         <p className="text-sm text-gray-600">
           Sorry, there are no upcoming sessions yet until your verification is
@@ -244,8 +231,7 @@ const TutorDashboardPage = () => {
           )}
           <Link
             to="/tutor/availability"
-            className="btn bg-white border border-gray-700 w-full rounded-full"
-            style={{ hover: { backgroundColor: "#4CA1F0" } }}
+            className="btn bg-white border border-gray-700 w-full rounded-full hover:bg-[#4CA1F0]"
           >
             Manage Schedule
           </Link>
@@ -255,7 +241,7 @@ const TutorDashboardPage = () => {
     },
   };
 
-  if (isLoadingUser || isLoadingSessions) {
+  if (isLoadingUser || isLoadingTutorBookings) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner size="large" />
@@ -267,8 +253,8 @@ const TutorDashboardPage = () => {
     return <ErrorAlert error={errorUser.message} />;
   }
 
-  if (isErrorSessions) {
-    return <ErrorAlert error={errorSessions.message} />;
+  if (isErrorTutorBookings) {
+    return <ErrorAlert error={errorTutorBookings.message} />;
   }
 
   const {
@@ -331,7 +317,7 @@ const TutorDashboardPage = () => {
               <ActiveLayout
                 tutor={tutor}
                 upcomingSessions={upcomingSessions}
-                pendingRequests={pendingBookingRequestsData}
+                pendingBookingRequests={pendingBookingRequests}
                 handleView={handleView}
                 rating={rating}
               />
@@ -344,28 +330,11 @@ const TutorDashboardPage = () => {
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Profile Status</h2>
               <div
-                className={`flex items-center gap-3 rounded-lg p-3 ${
-                  tutorStatus === "approved" || tutorStatus === "active"
-                    ? "bg-green-100"
-                    : ""
-                }`}
-                style={
-                  tutorStatus === "pending"
-                    ? { backgroundColor: bgColor, color: color }
-                    : {}
-                }
+                className={`flex items-center gap-3 rounded-lg p-3 ${bgColor}`}
               >
                 {icon}
                 <div>
-                  <p
-                    className={`font-semibold ${
-                      tutorStatus === "approved" || tutorStatus === "active"
-                        ? "text-green-900"
-                        : ""
-                    }`}
-                  >
-                    {title}
-                  </p>
+                  <p className={`font-semibold ${color}`}>{title}</p>
                   <p className="text-xs text-gray-600">{subtitle}</p>
                 </div>
               </div>
@@ -387,11 +356,19 @@ const TutorDashboardPage = () => {
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500" />
+                    {tutorStatus === "approved" || tutorStatus === "active" ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-red-500" />
+                    )}{" "}
                     <span>Identity Verified</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500" />
+                    {tutorStatus === "approved" || tutorStatus === "active" ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-red-500" />
+                    )}{" "}
                     <span>Education Verified</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
@@ -411,14 +388,10 @@ const TutorDashboardPage = () => {
             {/* Upcoming Sessions */}
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Upcoming Sessions</h2>
-              {tutorStatus === "active" && upcomingSessions.length > 0 ? (
-                sessionMessage
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  {sessionIcon}
-                  <div className="mt-4">{sessionMessage}</div>
-                </div>
-              )}
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                {sessionIcon}
+                {sessionMessage}
+              </div>
             </div>
           </div>
         </div>
@@ -494,7 +467,7 @@ function ApprovedLayout({ rating }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center">
               <StudentIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -505,7 +478,7 @@ function ApprovedLayout({ rating }) {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-fullflex items-center justify-center">
               <CalendarSyncIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -516,7 +489,7 @@ function ApprovedLayout({ rating }) {
 
         <div className="bg-white rounded-lg border shadow p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center">
               <RatingsIcon />
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -561,13 +534,7 @@ function ApprovedLayout({ rating }) {
   );
 }
 
-function ActiveLayout({ tutor, pendingRequests, handleView, rating }) {
-  const pendingBookingRequests = pendingRequests
-    ? Array.isArray(pendingRequests)
-      ? pendingRequests
-      : [pendingRequests]
-    : [];
-
+function ActiveLayout({ tutor, pendingBookingRequests, handleView, rating }) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -771,22 +738,16 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
         onSuccess: () => {
           setStatus("accepted");
         },
-        onError: (err) => {
-          handleToastError(err, "Failed to accept booking request.");
-        },
       }
     );
   };
 
   const handleDecline = () => {
     updateBookingStatusMutation.mutate(
-      { availabilityId: session.id, status: "open" },
+      { availabilityId: session.id, status: "open" }, // TODO: Set to cancelled or leave as is?
       {
         onSuccess: () => {
           setStatus("rejected");
-        },
-        onError: (err) => {
-          handleToastError(err, "Failed to decline booking request.");
         },
       }
     );
@@ -842,16 +803,12 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                   <button
-                    className="btn btn-primary w-full"
+                    className="btn bg-primary w-full hover:bg-primary/80 text-white"
                     onClick={() => {
                       handleClose();
                     }}
-                    style={{ backgroundColor: "#4CA1F0", color: "white" }}
                   >
                     Done
-                  </button>
-                  <button className="btn btn-outline w-full">
-                    Report a Problem
                   </button>
                 </div>
               </div>
@@ -885,14 +842,13 @@ function ViewModal({ isOpen, onClose, session, updateBookingStatusMutation }) {
             <div className="flex gap-3">
               <button
                 onClick={handleAccept}
-                className="btn btn-primary flex-1"
-                style={{ backgroundColor: "#4CA1F0", color: "white" }}
+                className="btn text-white bg-primary hover:bg-primary/80 flex-1 rounded-full"
               >
                 Accept Request
               </button>
               <button
                 onClick={handleDecline}
-                className="btn btn-outline flex-1"
+                className="btn btn-outline flex-1 rounded-full"
               >
                 Decline
               </button>

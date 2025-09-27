@@ -80,7 +80,7 @@ const BookingDetailsModal = ({
                 className={`relative inline-block px-3 py-1 font-semibold leading-tight ${
                   booking.status === "confirmed"
                     ? "text-green-900"
-                    : "text-red-900"
+                    : "text-yellow-900"
                 }`}
               >
                 <span
@@ -88,7 +88,7 @@ const BookingDetailsModal = ({
                   className={`absolute inset-0 ${
                     booking.status === "confirmed"
                       ? "bg-green-200"
-                      : "bg-red-200"
+                      : "bg-yellow-200"
                   } opacity-50 rounded-full`}
                 ></span>
                 <span className="relative">{booking.status}</span>
@@ -97,7 +97,7 @@ const BookingDetailsModal = ({
             {!isPast && (
               <div>
                 <p className="text-sm text-gray-500">Meeting Link</p>
-                {canAccess ? ( // Conditional rendering based on canAccess
+                {canAccess ? (
                   <Link
                     to={`/${userType}/call/${booking.id}`}
                     className="text-blue-600 hover:underline"
@@ -109,7 +109,7 @@ const BookingDetailsModal = ({
                     className="text-gray-500 cursor-not-allowed"
                     title={reason}
                   >
-                    Join Call (Disabled: {reason})
+                    Join Call ({reason})
                   </span>
                 )}
               </div>

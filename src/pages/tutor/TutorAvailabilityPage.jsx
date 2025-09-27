@@ -5,7 +5,7 @@ import {
   cancelBookingAvailability,
   deleteBookingAvailability,
   updateBookingAvailability,
-  fetchTutorAvailability,
+  fetchTutorBookings,
 } from "../../lib/api/common/bookingApi";
 import {
   handleToastError,
@@ -117,7 +117,7 @@ const TutorAvailabilityPage = () => {
     error: availabilitiesError,
   } = useQuery({
     queryKey: ["tutorOpenAvailabilities"],
-    queryFn: () => fetchTutorAvailability({ status: "open" }),
+    queryFn: () => fetchTutorBookings({ status: "open" }),
   });
 
   // 🔹 Generate next 30 days
