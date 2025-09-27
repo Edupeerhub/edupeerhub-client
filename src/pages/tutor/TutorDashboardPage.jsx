@@ -221,13 +221,27 @@ const TutorDashboardPage = () => {
       color: "text-green-900",
       sessionMessage: (
         <div className="w-full space-y-3">
-          {upcomingSessions?.map((session, i) => (
-            <SessionCard
-              key={i}
-              session={session}
-              onClick={() => handleViewDetails(session)}
-            />
-          ))}
+          {upcomingSessions?.length > 0 ? ( // Added conditional check here
+            upcomingSessions.map((session, i) => (
+              <SessionCard
+                key={i}
+                session={session}
+                onClick={() => handleViewDetails(session)}
+              />
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Calendar1Icon className="w-12 h-12 text-gray-400 mb-4" />{" "}
+              {/* Using Calendar1Icon from lucide-react */}
+              <p className="text-lg font-semibold text-gray-700 mb-2">
+                No Upcoming Sessions
+              </p>
+              <p className="text-sm text-gray-500">
+                You're all caught up! Manage your availability to get more
+                bookings.
+              </p>
+            </div>
+          )}
           <Link
             to="/tutor/availability"
             className="btn bg-white border border-gray-700 w-full rounded-full"
