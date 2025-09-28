@@ -5,9 +5,6 @@ const StatCard = ({ title, value, isCompact }) => (
   <div className="bg-white border rounded-lg p-3 sm:p-4">
     <div className="text-lg sm:text-2xl font-bold text-gray-800">{value}</div>
     <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
-      <span className={isCompact ? "sm:hidden" : "hidden sm:inline"}>
-        {title}
-      </span>
       <span className={isCompact ? "" : "sm:hidden"}>{title}</span>
       <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
     </div>
