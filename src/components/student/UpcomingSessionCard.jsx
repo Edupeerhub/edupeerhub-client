@@ -29,7 +29,7 @@ const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
 
   return (
     <div>
-      <h3 className="font-semibold text-lg mb-4">Upcoming Sessions</h3>
+      {/* <h3 className="font-semibold text-lg mb-4">Upcoming Sessions</h3> */}
       <div className="flex items-center justify-between rounded-lg md:p-4 h-44">
         <div className="flex flex-col justify-between h-full p-1">
           <div>

@@ -68,7 +68,7 @@ const BookingRequestsPage = () => {
     <div className="w-full max-w-7xl flex flex-col p-6 bg-white">
       <h1 className="text-xl font-semibold mb-6">Booking Requests</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(250px,auto))] justify-start">
         {bookingRequests?.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-2">
@@ -99,12 +99,12 @@ const BookingRequestsPage = () => {
         {bookingRequests?.map((session) => (
           <div
             key={session.id}
-            className="border border-gray-200 rounded-lg p-3 sm:p-4 relative cursor-pointer hover:bg-gray-50 transition-colors"
-            // onClick={() => handleView(session)}
+            className="border border-gray-200 rounded-lg p-3 sm:p-4 relative cursor-pointer hover:bg-gray-50 transition-colors flex flex-col"
           >
-            <div className="flex flex-col sm:flex-row gap-5 sm:justify-between sm:items-center mb-4">
+            {/* top section (student + date info) */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 sm:justify-between sm:items-center mb-4 flex-1">
               {/* Student info */}
-              <div className="">
+              <div className="flex items-center gap-3">
                 <img
                   src={
                     session.student?.user?.profileImageUrl ||
@@ -125,7 +125,7 @@ const BookingRequestsPage = () => {
               </div>
 
               {/* Date and time */}
-              <div className="">
+              <div>
                 <p className="text-sm text-gray-600 mb-1">Date & Time</p>
                 <p className="font-medium text-gray-900">
                   {formatDate(session.scheduledStart)}
@@ -139,14 +139,14 @@ const BookingRequestsPage = () => {
               </div>
             </div>
 
-            {/* Action buttons - now placeholders */}
-            <div className="flex gap-3">
+            {/* action buttons */}
+            <div className="flex mt-auto justify-around items-center">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleAcceptRequest(session.id);
                 }}
-                className="bg-primary text-white px-4 py-2 sm:px-6 rounded-full text-sm font-medium hover:bg-primary-focus transition-colors"
+                className="bg-primary text-white px-6 py-2 sm:px-8 rounded-full text-sm font-medium hover:bg-primary-focus transition-colors"
               >
                 Accept
               </button>
@@ -155,7 +155,7 @@ const BookingRequestsPage = () => {
                   e.stopPropagation();
                   handleDeclineRequest(session.id);
                 }}
-                className="border border-gray-300 text-gray-700 px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
+                className="border border-gray-300 text-gray-700 px-6 py-2 sm:px-8 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
               >
                 Decline
               </button>
