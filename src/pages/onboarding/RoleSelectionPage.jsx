@@ -11,9 +11,9 @@ const RoleSelectionPage = () => {
   const navigate = useNavigate();
 
   const handleRoleSelection = (role) => {
-    if (role === "Tutor") {
+    if (role === "tutor") {
       navigate("/tutor/onboarding");
-    } else if (role === "Student") {
+    } else if (role === "student") {
       navigate("/student/onboarding");
     }
   };
@@ -58,7 +58,7 @@ const RoleSelectionPage = () => {
               role={roleData.role}
               description={roleData.description}
               image={roleData.image}
-              onClick={() => handleRoleSelection(roleData.role)}
+              onClick={() => handleRoleSelection(roleData.id)}
               isHovered={hoveredCard === roleData.id}
               onHover={() => setHoveredCard(roleData.id)}
               onLeave={() => setHoveredCard(null)}
