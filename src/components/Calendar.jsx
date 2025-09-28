@@ -31,13 +31,18 @@ const formatDate = (date, format) => {
     "Dec",
   ];
 
-  if (format === "YYYY-MM-DD") {
+  if (format === "yyyy-MM-dd") {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
-  if (format === "MMMM YYYY") {
+  if (format === "yyyy-MM") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  }
+  if (format === "MMMM yyyy") {
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   }
   if (format === "MMM") {
@@ -66,13 +71,18 @@ const addDays = (date, days) => {
   return newDate;
 };
 
-const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
+const Calendar = ({
+  bookingDates = [],
+  compact = true,
+  onMonthChange,
+  onDateClick,
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
   React.useEffect(() => {
-    if (onMonthChange) onMonthChange(currentMonth);
+    if (onMonthChange) onMonthChange(formatDate(currentMonth, "YYYY-MM"));
   }, [currentMonth, onMonthChange]);
 
   const today = formatDate(new Date(), "YYYY-MM-DD");
@@ -111,7 +121,11 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   }
 
   const handleDayClick = (day) => {
-    setSelectedDate(formatDate(day, "YYYY-MM-DD"));
+    const formattedDate = formatDate(day, "YYYY-MM-DD");
+    setSelectedDate(formattedDate);
+    if (onDateClick) {
+      onDateClick(formattedDate);
+    }
   };
 
   const handlePreviousMonth = () => {
@@ -251,11 +265,10 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
           const isSelected = formatted === selectedDate;
           const isBooked = bookingDates.includes(formatted);
 
-          let cls = `mx-auto flex ${daySizeClass} items-center justify-center rounded-full cursor-pointer transition `;
+          let cls = `relative mx-auto flex ${daySizeClass} items-center justify-center rounded-full cursor-pointer transition `;
           if (!dayObj.isCurrentMonth) cls += "text-gray-300 ";
           else if (isSelected) cls += "bg-blue-500 text-white ";
-          else if (isToday) cls += "border border-blue-500 text-blue-500 ";
-          else if (isBooked) cls += "bg-green-100 text-green-700 ";
+          else if (isToday) cls += "border-2 border-blue-500 text-blue-500 ";
           else cls += "text-gray-700 hover:bg-gray-100 ";
 
           return (
@@ -267,6 +280,9 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
               aria-pressed={isSelected}
             >
               {dayObj.date.getDate()}
+              {isBooked && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+              )}
             </button>
           );
         })}

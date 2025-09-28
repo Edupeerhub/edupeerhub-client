@@ -8,24 +8,31 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
 import { Link } from "react-router-dom";
 import OverviewPanel from "../../components/student/OverviewPanel";
+import { endOfMonth, parseISO } from "date-fns";
 import {
   cancelStudentBooking,
   getUpcomingSession,
+  getAllStudentBookings,
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import HorizontalScrollTutors from "../../components/student/HorizontalScrollTutors";
 import UpcomingSessionsCard from "../../components/student/UpcomingSessionCard";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
+import { formatDate } from "../../utils/time";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(
+    formatDate(new Date(), "yyyy-MM") // e.g. "2025-09"
+  );
 
   const queryClient = useQueryClient();
 
@@ -34,20 +41,34 @@ const StudentDashboardPage = () => {
     queryFn: () => getRecommendedTutors(),
   });
 
+  const { data: monthBookings = [], isLoading: monthLoading } = useQuery({
+    queryKey: ["studentBookings", currentMonth],
+    queryFn: () => {
+      const start = `${currentMonth}-01`;
+      const end = formatDate(endOfMonth(parseISO(start)), "yyyy-MM-dd");
+      return getAllStudentBookings({
+        start,
+        end,
+        status: ["confirmed"],
+      });
+    },
+    keepPreviousData: true,
+  });
+
   const {
     data: upcomingSessions,
     isLoading: upcomingSessionsLoading,
     error: upcomingSessionsError,
   } = useQuery({
-    queryKey: ["upcomingSessions"],
-    queryFn: () => getUpcomingSession(),
+    queryKey: ["upcomingSession"],
+    queryFn: getUpcomingSession,
   });
 
   const cancelMutation = useMutation({
     mutationFn: ({ id, cancellationReason }) =>
       cancelStudentBooking(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["upcomingSessions"]);
+      queryClient.invalidateQueries(["upcomingSession"]);
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
@@ -71,6 +92,53 @@ const StudentDashboardPage = () => {
       cancelMutation.mutate({ id: selectedBooking.id, cancellationReason });
     }
   };
+
+  const bookedDates = monthBookings.map((session) =>
+    formatDate(new Date(session.scheduledStart), "yyyy-MM-dd")
+  );
+
+  const selectedDayBookings = selectedDate
+    ? monthBookings.filter(
+        (session) =>
+          formatDate(new Date(session.scheduledStart), "yyyy-MM-dd") ===
+          formatDate(selectedDate, "yyyy-MM-dd")
+      )
+    : [];
+
+  // const earliestForDay = selectedDayBookings.sort(
+  //   (a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart)
+  // )[0];
+
+  const earliestForDay = useMemo(() => {
+    if (!selectedDate) return null;
+    return [...monthBookings]
+      .filter(
+        (session) =>
+          formatDate(new Date(session.scheduledStart), "yyyy-MM-dd") ===
+          formatDate(selectedDate, "yyyy-MM-dd")
+      )
+      .sort(
+        (a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart)
+      )[0];
+  }, [selectedDate, monthBookings]);
+
+  // const filteredSessions = selectedDate
+  //   ? studentBookingsData?.filter(
+  //       (session) =>
+  //         formatDate(new Date(session.scheduledStart), "YYYY-MM-DD") ===
+  //         selectedDate
+  //     )
+  //   : studentBookingsData;
+
+  // // In StudentDashboardPage
+  // const nextSession = filteredSessions?.sort(
+  //   (a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart)
+  // )?.[0];
+
+  // <UpcomingSessionsCard
+  //   upcomingSessions={nextSession}
+  //   onViewDetails={handleViewDetails}
+  // />;
 
   return (
     <>
@@ -111,7 +179,7 @@ const StudentDashboardPage = () => {
               )}
               {!upcomingSessionsLoading && !upcomingSessionsError && (
                 <UpcomingSessionsCard
-                  upcomingSessions={upcomingSessions}
+                  upcomingSessions={earliestForDay || upcomingSessions}
                   onViewDetails={handleViewDetails}
                 />
               )}
@@ -123,7 +191,9 @@ const StudentDashboardPage = () => {
             <div className="flex-none">
               <Calendar
                 compact={true}
-                bookingDates={["2025-09-10", "2025-09-14"]}
+                bookingDates={bookedDates} // array of YYYY-MM-DD strings
+                onDateClick={(date) => setSelectedDate(date)}
+                onMonthChange={(month) => setCurrentMonth(month)}
               />
             </div>
 
