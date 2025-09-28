@@ -16,7 +16,7 @@ export function useStudentBooking(tutorId, date) {
   const start = date
     ? new Date(
         Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0)
-      ).toISOString()
+      )
     : null;
   const end = date
     ? new Date(
@@ -28,7 +28,7 @@ export function useStudentBooking(tutorId, date) {
           59,
           59
         )
-      ).toISOString()
+      )
     : null;
 
   const { data: availabilityData, isLoading: availabilityLoading } = useQuery({

@@ -1,3 +1,9 @@
+// utils/timeUtils.js
+
+// ========================================
+// EXISTING UTILITIES (for displaying stored dates)
+// ========================================
+
 export function formatTimeRange(startISO, endISO) {
   const formatter = new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
@@ -112,4 +118,85 @@ export const formatTimeRemaining = (ms) => {
   // Handle pluralization (e.g., "1 minute" vs "5 minutes")
   const plural = time === 1 ? "" : "s";
   return `${time} ${unit}${plural}`;
+};
+
+// ========================================
+// NEW UTILITIES (for dropdown pickers)
+// ========================================
+
+// 🔹 Utility to format time for dropdown options
+export const formatTime = (hour, minute) => {
+  const h = ((hour + 11) % 12) + 1;
+  const m = minute.toString().padStart(2, "0");
+  const suffix = hour < 12 ? "AM" : "PM";
+  return `${h}:${m} ${suffix}`;
+};
+
+// 🔹 Generate next 30 days for dropdown
+export const generateDateOptions = () => {
+  const dates = [];
+  const today = new Date();
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    // Use local date string instead of UTC conversion
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const value = `${year}-${month}-${day}`;
+    const label = date.toLocaleDateString([], {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    dates.push({ value, label });
+  }
+  return dates;
+};
+
+// 🔹 Generate 15-min slots from 6 AM – 10 PM for dropdown
+export const generateTimeSlots = () => {
+  const slots = [];
+  for (let hour = 6; hour < 22; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const value = `${hour.toString().padStart(2, "0")}:${minute
+        .toString()
+        .padStart(2, "0")}`;
+      slots.push({ value, label: formatTime(hour, minute) });
+    }
+  }
+  return slots;
+};
+
+// 🔹 End time options relative to start for dropdown
+export const getAvailableEndTimes = (startTime) => {
+  if (!startTime) return [];
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const startTotalMinutes = startHour * 60 + startMinute;
+
+  const endTimes = [];
+  for (let duration = 15; duration <= 60; duration += 15) {
+    const endTotalMinutes = startTotalMinutes + duration;
+    if (endTotalMinutes >= 22 * 60) break;
+
+    const endHour = Math.floor(endTotalMinutes / 60);
+    const endMinute = endTotalMinutes % 60;
+    const value = `${endHour.toString().padStart(2, "0")}:${endMinute
+      .toString()
+      .padStart(2, "0")}`;
+    endTimes.push({
+      value,
+      label: `${formatTime(endHour, endMinute)} (${duration} min session)`,
+    });
+  }
+  return endTimes;
+};
+
+// 🔹 Calculate duration between start and end time strings
+export const calculateDuration = (startTime, endTime) => {
+  if (!startTime || !endTime) return 0;
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
+  return endHour * 60 + endMinute - (startHour * 60 + startMinute);
 };

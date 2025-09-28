@@ -28,8 +28,8 @@ const TutorProfilePage = () => {
 
   const { data: availability, isLoading: availabilityLoading } =
     useAvailability({
-      start: new Date().toISOString().split("T")[0],
-      end: new Date().toISOString().split("T")[0],
+      start: new Date().toLocaleDateString("en-CA"),
+      end: new Date().toLocaleDateString("en-CA"),
       tutorId: id,
     });
 

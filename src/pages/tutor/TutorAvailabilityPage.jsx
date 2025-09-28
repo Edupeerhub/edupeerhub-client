@@ -16,82 +16,13 @@ import Spinner from "../../components/common/Spinner";
 import { formatDate, formatTimeRange } from "../../utils/time";
 import Modal from "../../components/ui/Modal";
 import ErrorAlert from "../../components/common/ErrorAlert";
-
-// 🔹 Utility to format time
-const formatTime = (hour, minute) => {
-  const h = ((hour + 11) % 12) + 1;
-  const m = minute.toString().padStart(2, "0");
-  const suffix = hour < 12 ? "AM" : "PM";
-  return `${h}:${m} ${suffix}`;
-};
-
-// 🔹 Generic Dropdown Picker (used for date + time)
-const DropdownPicker = ({
-  label,
-  value,
-  onChange,
-  options,
-  disabled,
-  placeholder,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
-          disabled={disabled}
-          aria-expanded={isOpen}
-          role="combobox"
-          className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-left ${
-            disabled
-              ? "bg-gray-100 cursor-not-allowed"
-              : "bg-white hover:bg-gray-50"
-          }`}
-        >
-          {value ? (
-            options.find((opt) => opt.value === value)?.label
-          ) : (
-            <span className="text-gray-400">{placeholder}</span>
-          )}
-        </button>
-
-        {isOpen && !disabled && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setIsOpen(false)}
-            />
-            <div
-              className="absolute z-20 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
-              role="listbox"
-            >
-              {options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  role="option"
-                  onClick={() => {
-                    onChange(option.value);
-                    setIsOpen(false);
-                  }}
-                  className="w-full px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
+import DropdownPicker from "../../components/ui/DropdownPicker";
+import {
+  generateDateOptions,
+  generateTimeSlots,
+  getAvailableEndTimes,
+  calculateDuration,
+} from "../../utils/time";
 
 const TutorAvailabilityPage = () => {
   const queryClient = useQueryClient();
@@ -120,63 +51,6 @@ const TutorAvailabilityPage = () => {
     queryFn: () => fetchTutorBookings({ status: "open" }),
   });
 
-  // 🔹 Generate next 30 days
-  const generateDateOptions = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      const value = date.toISOString().split("T")[0];
-      const label = date.toLocaleDateString([], {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-      dates.push({ value, label });
-    }
-    return dates;
-  };
-
-  // 🔹 Generate 15-min slots from 6 AM – 10 PM
-  const generateTimeSlots = () => {
-    const slots = [];
-    for (let hour = 6; hour < 22; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        const value = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`;
-        slots.push({ value, label: formatTime(hour, minute) });
-      }
-    }
-    return slots;
-  };
-
-  // 🔹 End time options relative to start
-  const getAvailableEndTimes = (startTime) => {
-    if (!startTime) return [];
-    const [startHour, startMinute] = startTime.split(":").map(Number);
-    const startTotalMinutes = startHour * 60 + startMinute;
-
-    const endTimes = [];
-    for (let duration = 15; duration <= 60; duration += 15) {
-      const endTotalMinutes = startTotalMinutes + duration;
-      if (endTotalMinutes >= 22 * 60) break;
-
-      const endHour = Math.floor(endTotalMinutes / 60);
-      const endMinute = endTotalMinutes % 60;
-      const value = `${endHour.toString().padStart(2, "0")}:${endMinute
-        .toString()
-        .padStart(2, "0")}`;
-      endTimes.push({
-        value,
-        label: `${formatTime(endHour, endMinute)} (${duration} min session)`,
-      });
-    }
-    return endTimes;
-  };
-
   // 🔹 Handlers
   const handleTimeChange = (field, value) => {
     setFormData((prev) => {
@@ -193,12 +67,8 @@ const TutorAvailabilityPage = () => {
     }
 
     const dataToSend = {
-      scheduledStart: new Date(
-        `${formData.date}T${formData.startTime}`
-      ).toISOString(),
-      scheduledEnd: new Date(
-        `${formData.date}T${formData.endTime}`
-      ).toISOString(),
+      scheduledStart: new Date(`${formData.date}T${formData.startTime}:00`), // Send Date object
+      scheduledEnd: new Date(`${formData.date}T${formData.endTime}:00`), // Send Date object
       tutorNotes: formData.tutorNotes,
     };
 
@@ -393,17 +263,8 @@ const TutorAvailabilityPage = () => {
             <div className="bg-blue-50 p-3 rounded-md">
               <p className="text-sm text-blue-700">
                 Session Duration:{" "}
-                {(() => {
-                  const [startHour, startMinute] = formData.startTime
-                    .split(":")
-                    .map(Number);
-                  const [endHour, endMinute] = formData.endTime
-                    .split(":")
-                    .map(Number);
-                  const duration =
-                    endHour * 60 + endMinute - (startHour * 60 + startMinute);
-                  return `${duration} minutes`;
-                })()}
+                {calculateDuration(formData.startTime, formData.endTime)}{" "}
+                minutes
               </p>
             </div>
           )}
@@ -461,6 +322,7 @@ const TutorAvailabilityPage = () => {
           </div>
         </form>
       </div>
+
       {/* Availabilities List */}
       <div className="mt-10 border-t-2 pt-3 ">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 pl-2">
@@ -511,19 +373,6 @@ const TutorAvailabilityPage = () => {
                   >
                     Edit
                   </Button>
-                  {/* {availability.status === "open" && (
-                    <Button
-                      onClick={() => handleCancelAvailability(availability.id)}
-                      className="px-4 py-2 text-sm font-medium bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                      disabled={cancelAvailabilityMutation.isLoading}
-                    >
-                      {cancelAvailabilityMutation.isLoading ? (
-                        <Spinner size="small" />
-                      ) : (
-                        "Cancel"
-                      )}
-                    </Button>
-                  )} */}
                   <Button
                     onClick={() =>
                       deleteAvailabilityMutation.mutate(availability.id)

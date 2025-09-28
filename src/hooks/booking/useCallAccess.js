@@ -19,14 +19,16 @@ const useCallAccess = (booking) => {
   const isTutor = authUser.role === "tutor";
 
   const sessionStartTime = new Date(booking.scheduledStart);
+  const sessionEndTime = new Date(booking.scheduledEnd);
+
   const now = new Date();
 
   const fifteenMinutesBefore = new Date(
     sessionStartTime.getTime() - 15 * 60 * 1000
   );
-  const sixtyMinutesAfter = new Date(
-    sessionStartTime.getTime() + 60 * 60 * 1000
-  ); // Allow joining up to 15 minutes after start
+  const fifteenMinutesAfter = new Date(
+    sessionEndTime.getTime() + 15 * 60 * 1000
+  ); // Allow joining up to 15 minutes after session ends
 
   // 1. Check if the current user is part of the booking
   const isUserInBooking =
@@ -63,7 +65,7 @@ const useCallAccess = (booking) => {
     };
   }
 
-  if (now > sixtyMinutesAfter) {
+  if (now > fifteenMinutesAfter) {
     return {
       canAccess: false,
       reason: "The session has already ended.",
