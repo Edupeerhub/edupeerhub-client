@@ -22,7 +22,7 @@ const BookingDetailsModal = ({
 
   const isStudent = userType === "student";
   const otherParty = isStudent ? booking.tutor : booking.student;
-  const otherPartyName = `${otherParty.user.firstName} ${otherParty.user.lastName}`;
+  const otherPartyName = `${otherParty?.user?.firstName} ${otherParty?.user?.lastName}`;
 
   const handleCancel = () => {
     onCancel(cancellationReason);
@@ -51,18 +51,21 @@ const BookingDetailsModal = ({
             </div>
             <div>
               <p className="text-sm text-gray-500">Subject</p>
-              <p className="font-semibold">{booking.subject.name}</p>
+              <p className="font-semibold">{booking?.subject?.name}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Date</p>
               <p className="font-semibold">
-                {formatDate(booking.scheduledStart)}
+                {formatDate(booking?.scheduledStart)}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Time</p>
               <p className="font-semibold">
-                {formatTimeRange(booking.scheduledStart, booking.scheduledEnd)}
+                {formatTimeRange(
+                  booking?.scheduledStart,
+                  booking?.scheduledEnd
+                )}
               </p>
             </div>
           </div>
@@ -70,7 +73,7 @@ const BookingDetailsModal = ({
             <div>
               <p className="text-sm text-gray-500">Duration</p>
               <p className="font-semibold">
-                {formatDuration(booking.scheduledStart, booking.scheduledEnd)}
+                {formatDuration(booking?.scheduledStart, booking?.scheduledEnd)}
               </p>
             </div>
             <div>
@@ -85,12 +88,12 @@ const BookingDetailsModal = ({
                 <span
                   aria-hidden
                   className={`absolute inset-0 ${
-                    booking.status === "confirmed"
+                    booking?.status === "confirmed"
                       ? "bg-green-200"
                       : "bg-yellow-200"
                   } opacity-50 rounded-full`}
                 ></span>
-                <span className="relative">{booking.status}</span>
+                <span className="relative">{booking?.status}</span>
               </span>
             </div>
             {!isPast && (
@@ -98,7 +101,7 @@ const BookingDetailsModal = ({
                 <p className="text-sm text-gray-500">Meeting Link</p>
                 {canAccess ? (
                   <Link
-                    to={`/${userType}/call/${booking.id}`}
+                    to={`/${userType}/call/${booking?.id}`}
                     className="text-blue-600 hover:underline"
                   >
                     Join Call
@@ -138,7 +141,7 @@ const BookingDetailsModal = ({
             </button>
             {isStudent ? (
               <Link
-                to={`/student/chat/${booking.tutor?.user.id}`}
+                to={`/student/chat/${booking.tutor?.user?.id}`}
                 className="btn bg-primary hover:bg-primary-focus text-white flex-1 text-center"
               >
                 Message Tutor

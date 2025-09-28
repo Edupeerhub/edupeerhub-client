@@ -4,21 +4,30 @@ import streakIcon from "../../assets/Student-icon/streak.svg";
 import quizIcon from "../../assets/Student-icon/quiz.svg";
 import scoreIcon from "../../assets/Student-icon/score.svg";
 import greaterThanIcon from "../../assets/Student-icon/greater-than.svg";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
 import { Link } from "react-router-dom";
 import OverviewPanel from "../../components/student/OverviewPanel";
-import { getUpcomingSession } from "../../lib/api/common/bookingApi";
+import {
+  cancelStudentBooking,
+  getUpcomingSession,
+} from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import HorizontalScrollTutors from "../../components/student/HorizontalScrollTutors";
 import UpcomingSessionsCard from "../../components/student/UpcomingSessionCard";
 import { useState } from "react";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["recommendedTutors"],
@@ -34,6 +43,19 @@ const StudentDashboardPage = () => {
     queryFn: () => getUpcomingSession(),
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: ({ id, cancellationReason }) =>
+      cancelStudentBooking(id, cancellationReason),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["upcomingSessions"]);
+      handleToastSuccess("Booking cancelled successfully!");
+      setIsDetailsModalOpen(false);
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to cancel booking.");
+    },
+  });
+
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
     setIsDetailsModalOpen(true);
@@ -42,6 +64,12 @@ const StudentDashboardPage = () => {
   const handleCloseDetailsModal = () => {
     setIsDetailsModalOpen(false);
     setSelectedBooking(null);
+  };
+
+  const handleCancelBooking = (cancellationReason) => {
+    if (selectedBooking) {
+      cancelMutation.mutate({ id: selectedBooking.id, cancellationReason });
+    }
   };
 
   return (
@@ -214,6 +242,7 @@ const StudentDashboardPage = () => {
         onClose={handleCloseDetailsModal}
         booking={selectedBooking}
         userType="student"
+        onCancel={handleCancelBooking}
       />
     </>
   );
