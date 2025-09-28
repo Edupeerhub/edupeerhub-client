@@ -32,8 +32,8 @@ const useCallAccess = (booking) => {
 
   // 1. Check if the current user is part of the booking
   const isUserInBooking =
-    (isStudent && booking.student.user.id === authUser.id) ||
-    (isTutor && booking.tutor.user.id === authUser.id);
+    (isStudent && booking?.student?.user.id === authUser.id) ||
+    (isTutor && booking?.tutor?.user?.id === authUser.id);
 
   if (!isUserInBooking) {
     return {

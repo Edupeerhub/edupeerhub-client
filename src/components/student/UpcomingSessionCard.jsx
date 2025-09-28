@@ -37,8 +37,8 @@ const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
               {upcomingSessions?.subject?.name}
             </p>
             <p className="text-gray-800">
-              {upcomingSessions.tutor.user.firstName}{" "}
-              {upcomingSessions.tutor.user.lastName}
+              {upcomingSessions.tutor?.user?.firstName}{" "}
+              {upcomingSessions.tutor?.user?.lastName}
             </p>
             <div className="flex items-center text-gray-500 text-sm mt-2">
               <img src={clockIcon} alt="Clock" className="w-4 h-4 mr-2" />
