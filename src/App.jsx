@@ -154,19 +154,6 @@ export default function App() {
           <Route path="booking-requests" element={<BookingRequestsPage />} />
         </Route>
 
-        {/* Chat & Video/Calling routes: accessible to both students and tutors */}
-        {/* Requires: logged-in, verified, onboarded */}
-        {/* <Route
-          element={
-            <PrivateRoute>
-              <Layout fullHeight={true} />
-            </PrivateRoute>
-          }
-        >
-          <Route path="/chat/:id" element={<ChatPage />} />
-          <Route path="/call/:id" element={<CallPage />} />
-        </Route> */}
-
         {/* Admin protected routes: require login, verified, onboarded, role = admin */}
         <Route
           path="/admin"

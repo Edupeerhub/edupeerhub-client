@@ -124,7 +124,7 @@ const CallPage = () => {
         <p className="text-lg text-gray-800 mb-6 text-center">{reason}</p>
         <Link
           to={dashboardLink}
-          className="bg-primary text-white px-6 py-3 rounded-full font-semibold transition-colors hover:bg-primary/80"
+          className="bg-primary text-white px-6 py-3 rounded-full font-semibold transition-colors hover:bg-primary-focus"
         >
           Go to Dashboard
         </Link>

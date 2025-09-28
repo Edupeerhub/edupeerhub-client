@@ -21,6 +21,12 @@ export const studentSidebarLinks = [
 
 export const tutorSidebarLinks = [
   { path: "/tutor/dashboard", label: "Dashboard", icon: DashboardIcon },
+  {
+    path: "/tutor/booking-requests",
+    label: "Booking Requests",
+    icon: StudentsIcon,
+  },
+
   { path: "/tutor/sessions", label: "My Sessions", icon: SessionIcon },
   {
     path: "/tutor/availability",

@@ -10,6 +10,7 @@ import {
   BookingDetailRow,
   SlotButton,
 } from "../../components/student/StudentBooking";
+import Spinner from "../../components/common/Spinner";
 
 function calculateDuration(start, end) {
   if (!start || !end) return null;
@@ -31,8 +32,13 @@ export default function BookingSession() {
   const [step, setStep] = useState(1);
   const [selectedSlotId, setSelectedSlotId] = useState(null);
 
-  const { tutorProfile, tutorLoading, tutorError, availableTimes } =
-    useStudentBooking(id, date);
+  const {
+    tutorProfile,
+    tutorLoading,
+    tutorError,
+    availableTimes,
+    availabilityLoading,
+  } = useStudentBooking(id, date);
 
   const bookingMutation = useMutation({
     mutationFn: bookSession,
@@ -96,9 +102,16 @@ export default function BookingSession() {
               <div className="flex-shrink-0 mb-2">
                 <h3 className="text-sm font-medium">Available Times</h3>
               </div>
-
               <div className="flex-1 overflow-y-auto">
-                {availableTimes.length === 0 ? (
+                {availabilityLoading && (
+                  <>
+                    <p className="text-gray-500 text-sm text-center py-1">
+                      Loading available times...
+                    </p>
+                    <Spinner />
+                  </>
+                )}
+                {availableTimes.length === 0 && !availabilityLoading ? (
                   <p className="text-gray-500 text-sm text-center py-8">
                     {date ? "No available times" : "Select a date first"}
                   </p>
@@ -201,7 +214,7 @@ export default function BookingSession() {
         <div className="px-3">
           <div className="flex-shrink-0 mb-4 ">
             <h1 className="text-xl font-bold text-center">
-              Booking Confirmed!
+              Booking Request Sent!
             </h1>
           </div>
 
@@ -239,9 +252,9 @@ export default function BookingSession() {
 
             <div className="bg-blue-50 p-3 rounded text-sm">
               <p className="text-blue-800">
-                Your booking session with {tutorProfile.user.firstName}{" "}
-                {tutorProfile.user.lastName} is confirmed. You will receive a
-                reminder 24 hours before the session.
+                Your booking request with {tutorProfile.user.firstName}{" "}
+                {tutorProfile.user.lastName} has been sent. You will receive an
+                email once the tutor confirms!
               </p>
             </div>
           </div>

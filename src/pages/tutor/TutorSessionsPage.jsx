@@ -1,97 +1,95 @@
 import React, { useState } from "react";
-import { ChevronDown, Filter } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getConfirmedUpcomingSessions,
-  fetchTutorAvailability,
+  fetchTutorBookings,
   cancelBookingAvailability,
+  updateBookingAvailabilityStatus,
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import { formatDate, formatTimeRange } from "../../utils/time";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
-import { handleToastSuccess, handleToastError } from "../../utils/toastDisplayHandler";
+import {
+  handleToastSuccess,
+  handleToastError,
+} from "../../utils/toastDisplayHandler";
+import SessionStats from "../../components/common/SessionStats";
+import SessionList from "../../components/common/SessionList";
+import ViewModal from "../../components/tutor/ViewModal";
+import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
 
 const TutorSessionsPage = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const queryClient = useQueryClient();
 
   const {
-    data: upcomingSessionsData,
-    isLoading: isLoadingUpcoming,
-    isError: isErrorUpcoming,
-    error: errorUpcoming,
+    data: tutorBookingsData,
+    isLoading: isLoadingTutorBookings,
+    isError: isErrorTutorBookings,
+    error: errorTutorBookings,
   } = useQuery({
-    queryKey: ["upcomingSessions"],
-    queryFn: getConfirmedUpcomingSessions,
-  });
-
-  const {
-    data: completedSessionsData,
-    isLoading: isLoadingCompleted,
-    isError: isErrorCompleted,
-    error: errorCompleted,
-  } = useQuery({
-    queryKey: ["completedSessions"],
-    queryFn: () => fetchTutorAvailability({ status: "completed" }),
-  });
-
-  const {
-    data: cancelledSessionsData,
-    isLoading: isLoadingCancelled,
-    isError: isErrorCancelled,
-    error: errorCancelled,
-  } = useQuery({
-    queryKey: ["cancelledSessions"],
-    queryFn: () => fetchTutorAvailability({ status: "cancelled" }),
+    queryKey: ["tutorSessions"],
+    queryFn: () =>
+      fetchTutorBookings({
+        status: ["confirmed", "completed", "cancelled", "pending"],
+      }),
   });
 
   const cancelMutation = useMutation({
-    mutationFn: cancelBookingAvailability,
+    mutationFn: ({ id, cancellationReason }) =>
+      cancelBookingAvailability(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["upcomingSessions"]);
-      queryClient.invalidateQueries(["completedSessions"]);
-      queryClient.invalidateQueries(["cancelledSessions"]);
-      handleToastSuccess('Booking cancelled successfully!');
-      setIsModalOpen(false);
+      queryClient.invalidateQueries(["tutorSessions"]);
+      handleToastSuccess("Booking cancelled successfully!");
+      setIsDetailsModalOpen(false);
     },
     onError: (err) => {
-      handleToastError(err, 'Failed to cancel booking.');
+      handleToastError(err, "Failed to cancel booking.");
     },
   });
 
-  const upcomingSessions = upcomingSessionsData
-    ? Array.isArray(upcomingSessionsData)
-      ? upcomingSessionsData
-      : [upcomingSessionsData]
-    : [];
+  const updateBookingStatusMutation = useMutation({
+    mutationFn: ({ availabilityId, status }) =>
+      updateBookingAvailabilityStatus(availabilityId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tutorSessions"]);
+      handleToastSuccess("Booking request updated successfully!");
+      setIsPendingModalOpen(false);
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to update booking request.");
+    },
+  });
 
-  const completedSessions = completedSessionsData
-    ? Array.isArray(completedSessionsData)
-      ? completedSessionsData
-      : [completedSessionsData]
-    : [];
-
-  const cancelledSessions = cancelledSessionsData
-    ? Array.isArray(cancelledSessionsData)
-      ? cancelledSessionsData
-      : [cancelledSessionsData]
-    : [];
-
-  const totalSessions =
-    upcomingSessions.length +
-    completedSessions.length +
-    cancelledSessions.length;
+  const upcomingSessions =
+    tutorBookingsData?.filter((b) => b.status === "confirmed") || [];
+  const completedSessions =
+    tutorBookingsData?.filter((b) => b.status === "completed") || [];
+  const cancelledSessions =
+    tutorBookingsData?.filter((b) => b.status === "cancelled") || [];
+  const pendingSessions =
+    tutorBookingsData?.filter((b) => b.status === "pending") || [];
 
   const handleViewDetails = (session) => {
-    setSelectedSession(session);
-    setIsModalOpen(true);
+    if (session.status === "pending") {
+      setSelectedSession(session);
+      setIsPendingModalOpen(true);
+    } else {
+      setSelectedSession(session);
+      setIsDetailsModalOpen(true);
+    }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedSession(null);
+  };
+
+  const handleClosePendingModal = () => {
+    setIsPendingModalOpen(false);
     setSelectedSession(null);
   };
 
@@ -101,12 +99,17 @@ const TutorSessionsPage = () => {
     }
   };
 
-  const handleRescheduleBooking = () => {
-    console.log('Reschedule booking:', selectedSession);
-    setIsModalOpen(false);
+  const handleOpenRescheduleModal = () => {
+    setIsDetailsModalOpen(false);
+    setIsRescheduleModalOpen(true);
   };
 
-  if (isLoadingUpcoming || isLoadingCompleted || isLoadingCancelled) {
+  const handleCloseRescheduleModal = () => {
+    setIsRescheduleModalOpen(false);
+    setSelectedSession(null);
+  };
+
+  if (isLoadingTutorBookings) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner size="large" />
@@ -114,83 +117,51 @@ const TutorSessionsPage = () => {
     );
   }
 
-  if (isErrorUpcoming || isErrorCompleted || isErrorCancelled) {
-    return (
-      <ErrorAlert
-        message={
-          errorUpcoming?.message ||
-          errorCompleted?.message ||
-          errorCancelled?.message
-        }
-      />
-    );
+  if (isErrorTutorBookings) {
+    return <ErrorAlert error={errorTutorBookings} />;
   }
 
-  const sessionsToDisplay =
-    activeTab === "upcoming" ? upcomingSessions : completedSessions;
-  const noSessionsMessage =
-    activeTab === "upcoming" ? "No upcoming sessions." : "No past sessions.";
+  const sessions = {
+    upcoming: upcomingSessions,
+    past: completedSessions,
+    pending: pendingSessions,
+    cancelled: cancelledSessions,
+  };
+
+  const sessionsToDisplay = sessions[activeTab] || [];
+
+  const noSessionsMessages = {
+    upcoming: "No upcoming sessions.",
+    past: "No past sessions.",
+    pending: "No pending requests.",
+    cancelled: "No cancelled sessions.",
+  };
+
+  const stats = [
+    {
+      title: "Total Sessions",
+      value: tutorBookingsData?.length || 0,
+    },
+    {
+      title: "Upcoming",
+      value: upcomingSessions.length,
+    },
+    {
+      title: "Completed",
+      value: completedSessions.length,
+    },
+    {
+      title: "Cancelled",
+      value: cancelledSessions.length,
+    },
+  ];
 
   return (
     <>
-      <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-0">
-            My Sessions
-          </h1>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 w-full sm:w-auto">
-            <Filter className="w-4 h-4" />
-            Filter by
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        </div>
+      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        <h1 className="text-2xl font-bold mb-4">My Sessions</h1>
+        <SessionStats stats={stats} isCompact={true} />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white border rounded-lg p-3 sm:p-4">
-            <div className="text-lg sm:text-2xl font-bold text-gray-800">
-              {totalSessions}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
-              <span className="hidden sm:inline">Total Sessions</span>
-              <span className="sm:hidden">Total</span>
-              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-            </div>
-          </div>
-          <div className="bg-white border rounded-lg p-3 sm:p-4">
-            <div className="text-lg sm:text-2xl font-bold text-gray-800">
-              {upcomingSessions.length}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
-              <span className="hidden sm:inline">Upcoming Sessions</span>
-              <span className="sm:hidden">Upcoming</span>
-              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-            </div>
-          </div>
-          <div className="bg-white border rounded-lg p-3 sm:p-4">
-            <div className="text-lg sm:text-2xl font-bold text-gray-800">
-              {completedSessions.length}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
-              <span className="hidden sm:inline">Complete Sessions</span>
-              <span className="sm:hidden">Complete</span>
-              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-            </div>
-          </div>
-          <div className="bg-white border rounded-lg p-3 sm:p-4">
-            <div className="text-lg sm:text-2xl font-bold text-gray-800">
-              {cancelledSessions.length}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
-              <span className="hidden sm:inline">Cancelled Sessions</span>
-              <span className="sm:hidden">Cancelled</span>
-              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
           <div className="flex gap-6 sm:gap-8">
             <button
@@ -201,7 +172,7 @@ const TutorSessionsPage = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              Upcoming sessions
+              Upcoming
             </button>
             <button
               onClick={() => setActiveTab("past")}
@@ -211,128 +182,58 @@ const TutorSessionsPage = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              Past sessions
+              Past
+            </button>
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "pending"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Pending
+            </button>
+            <button
+              onClick={() => setActiveTab("cancelled")}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "cancelled"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Cancelled
             </button>
           </div>
         </div>
 
-        {/* Sessions Table/Cards */}
-        <div className="bg-white rounded-lg border">
-          {/* Desktop Table Header - Hidden on mobile */}
-          <div className="hidden md:grid md:grid-cols-5 gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
-            <div>Student</div>
-            <div>Subject</div>
-            <div>Date</div>
-            <div>Time</div>
-            <div>Status</div>
-          </div>
-
-          {/* Sessions Content */}
-          <div className="divide-y divide-gray-100">
-            {sessionsToDisplay.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                {noSessionsMessage}
-              </div>
-            ) : (
-              sessionsToDisplay.map((session) => (
-                <div
-                  key={session.id}
-                  className="transition-colors hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleViewDetails(session)}
-                >
-                  {/* Desktop Table Row */}
-                  <div className="hidden md:grid md:grid-cols-5 gap-4 p-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={
-                          session.student.user.profileImageUrl ||
-                          `https://ui-avatars.com/api/?name=${session.student.user.firstName}+${session.student.user.lastName}&background=random&color=fff`
-                        }
-                        alt={`${session.student.user.firstName} ${session.student.user.lastName}`}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <div>
-                        <div className="font-medium text-gray-800">{`${session.student.user.firstName} ${session.student.user.lastName}`}</div>
-                        <div className="text-xs text-gray-500">
-                          {session.subject.name}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center text-gray-700">
-                      {session.subject.name}
-                    </div>
-                    <div className="flex items-center text-gray-700">
-                      {formatDate(session.scheduledStart)}
-                    </div>
-                    <div className="flex items-center text-gray-700">
-                      {formatTimeRange(
-                        session.scheduledStart,
-                        session.scheduledEnd
-                      )}
-                    </div>
-                    <div className="flex items-center">
-                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                        {session.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Mobile Card View */}
-                  <div className="md:hidden p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={
-                            session.student.user.profileImageUrl ||
-                            `https://ui-avatars.com/api/?name=${session.student.user.firstName}+${session.student.user.lastName}&background=random&color=fff`
-                          }
-                          alt={`${session.student.user.firstName} ${session.student.user.lastName}`}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <div className="font-medium text-gray-800">{`${session.student.user.firstName} ${session.student.user.lastName}`}</div>
-                          <div className="text-sm text-gray-600">
-                            {session.subject.name}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                        {session.status}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <span className="text-gray-500">Date:</span>
-                        <div className="text-gray-700 font-medium">
-                          {formatDate(session.scheduledStart)}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Time:</span>
-                        <div className="text-gray-700 font-medium">
-                          {formatTimeRange(
-                            session.scheduledStart,
-                            session.scheduledEnd
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <SessionList
+          sessions={sessionsToDisplay}
+          userType="tutor"
+          onViewDetails={handleViewDetails}
+          noSessionsMessage={noSessionsMessages[activeTab]}
+        />
       </div>
       <BookingDetailsModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
         booking={selectedSession}
         userType="tutor"
         onCancel={handleCancelBooking}
-        onReschedule={handleRescheduleBooking}
-        isPast={activeTab === 'past'}
+        onReschedule={handleOpenRescheduleModal}
+        isPast={activeTab === "past" || activeTab === "cancelled"}
+      />
+      <RescheduleBookingModal
+        isOpen={isRescheduleModalOpen}
+        onClose={handleCloseRescheduleModal}
+        booking={selectedSession}
+        onReschedule={() => queryClient.invalidateQueries(["tutorSessions"])}
+      />
+      <ViewModal
+        isOpen={isPendingModalOpen}
+        onClose={handleClosePendingModal}
+        session={selectedSession}
+        updateBookingStatusMutation={updateBookingStatusMutation}
       />
     </>
   );

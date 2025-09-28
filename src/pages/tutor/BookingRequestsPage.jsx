@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getPendingBookingRequests,
+  fetchTutorBookings,
   updateBookingAvailabilityStatus,
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
@@ -26,7 +26,7 @@ const BookingRequestsPage = () => {
     error,
   } = useQuery({
     queryKey: ["bookingRequests"],
-    queryFn: getPendingBookingRequests,
+    queryFn: () => fetchTutorBookings({ status: "pending" }),
   });
 
   const updateBookingStatusMutation = useMutation({
@@ -65,10 +65,10 @@ const BookingRequestsPage = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white">
+    <div className="w-full max-w-7xl flex flex-col p-6 bg-white">
       <h1 className="text-xl font-semibold mb-6">Booking Requests</h1>
 
-      <div className="space-y-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(250px,auto))] justify-start">
         {bookingRequests?.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-2">
@@ -99,56 +99,63 @@ const BookingRequestsPage = () => {
         {bookingRequests?.map((session) => (
           <div
             key={session.id}
-            className="border border-gray-200 rounded-lg p-4 relative cursor-pointer hover:bg-gray-50 transition-colors"
-            // onClick={() => handleView(session)}
+            className="border border-gray-200 rounded-lg p-3 sm:p-4 relative cursor-pointer hover:bg-gray-50 transition-colors flex flex-col"
           >
-            {/* Student info */}
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src={
-                  session.student?.user?.profileImageUrl ||
-                  "https://via.placeholder.com/150"
-                }
-                alt={`${session.student?.user?.firstName} ${session.student?.user?.lastName}`}
-                className="w-10 h-10 rounded-full object-cover"
-              />
+            {/* top section (student + date info) */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 sm:justify-between sm:items-center mb-4 flex-1">
+              {/* Student info */}
+              <div className="flex items-center gap-3">
+                <img
+                  src={
+                    session.student?.user?.profileImageUrl ||
+                    "https://via.placeholder.com/150"
+                  }
+                  alt={`${session.student?.user?.firstName} ${session.student?.user?.lastName}`}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    {session.student?.user?.firstName}{" "}
+                    {session.student?.user?.lastName}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {session.subject?.name}
+                  </p>
+                </div>
+              </div>
+
+              {/* Date and time */}
               <div>
-                <h3 className="font-medium text-gray-900">
-                  {session.student?.user?.firstName}{" "}
-                  {session.student?.user?.lastName}
-                </h3>
-                <p className="text-sm text-gray-600">{session.subject?.name}</p>
+                <p className="text-sm text-gray-600 mb-1">Date & Time</p>
+                <p className="font-medium text-gray-900">
+                  {formatDate(session.scheduledStart)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {formatTimeRange(
+                    session.scheduledStart,
+                    session.scheduledEnd
+                  )}
+                </p>
               </div>
             </div>
 
-            {/* Date and time */}
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-1">Date & Time</p>
-              <p className="font-medium text-gray-900">
-                {formatDate(session.scheduledStart)}
-              </p>
-              <p className="text-sm text-gray-600">
-                {formatTimeRange(session.scheduledStart, session.scheduledEnd)}
-              </p>
-            </div>
-
-            {/* Action buttons - now placeholders */}
-            <div className="flex gap-3">
+            {/* action buttons */}
+            <div className="flex mt-auto justify-around items-center">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleAcceptRequest(session.id);
                 }}
-                className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
+                className="bg-primary text-white px-6 py-2 sm:px-8 rounded-full text-sm font-medium hover:bg-primary-focus transition-colors"
               >
-                Accept Request
+                Accept
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDeclineRequest(session.id);
                 }}
-                className="border border-gray-300 text-gray-700 px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="border border-gray-300 text-gray-700 px-6 py-2 sm:px-8 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
               >
                 Decline
               </button>
