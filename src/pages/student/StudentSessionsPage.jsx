@@ -29,7 +29,9 @@ const StudentSessionsPage = () => {
   } = useQuery({
     queryKey: ["studentSessions"],
     queryFn: () =>
-      getAllStudentBookings({ status: ["confirmed", "completed"] }),
+      getAllStudentBookings({
+        status: ["confirmed", "completed", "pending", "cancelled"],
+      }),
   });
 
   const cancelMutation = useMutation({
@@ -94,9 +96,19 @@ const StudentSessionsPage = () => {
     studentBookingsData?.filter((b) => b.status === "confirmed") || [];
   const pastBookings =
     studentBookingsData?.filter((b) => b.status === "completed") || [];
+  const pendingBookings =
+    studentBookingsData?.filter((b) => b.status === "pending") || [];
+  const cancelledBookings =
+    studentBookingsData?.filter((b) => b.status === "cancelled") || [];
 
   const bookingsToDisplay =
-    activeTab === "upcoming" ? upcomingBookings : pastBookings;
+    activeTab === "upcoming"
+      ? upcomingBookings
+      : activeTab === "past"
+      ? pastBookings
+      : activeTab === "pending"
+      ? pendingBookings
+      : cancelledBookings;
 
   return (
     <>
@@ -123,6 +135,26 @@ const StudentSessionsPage = () => {
               }`}
             >
               Past sessions
+            </button>
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "pending"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Pending sessions
+            </button>
+            <button
+              onClick={() => setActiveTab("cancelled")}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "cancelled"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Cancelled sessions
             </button>
           </div>
         </div>
@@ -182,7 +214,11 @@ const StudentSessionsPage = () => {
                         className={`relative inline-block px-3 py-1 font-semibold leading-tight ${
                           booking.status === "confirmed"
                             ? "text-green-900"
-                            : "text-yellow-900"
+                            : booking.status === "completed"
+                            ? "text-gray-900"
+                            : booking.status === "pending"
+                            ? "text-yellow-900"
+                            : "text-red-900"
                         }`}
                       >
                         <span
@@ -190,7 +226,11 @@ const StudentSessionsPage = () => {
                           className={`absolute inset-0 ${
                             booking.status === "confirmed"
                               ? "bg-green-200"
-                              : "bg-yellow-200"
+                              : booking.status === "completed"
+                              ? "bg-gray-200"
+                              : booking.status === "pending"
+                              ? "bg-yellow-200"
+                              : "bg-red-200"
                           } opacity-50 rounded-full`}
                         ></span>
                         <span className="relative">{booking.status}</span>
@@ -228,7 +268,11 @@ const StudentSessionsPage = () => {
                       className={`relative inline-block px-3 py-1 font-semibold leading-tight ${
                         booking.status === "confirmed"
                           ? "text-green-900"
-                          : "text-yellow-900"
+                          : booking.status === "completed"
+                          ? "text-gray-900"
+                          : booking.status === "pending"
+                          ? "text-yellow-900"
+                          : "text-red-900"
                       }`}
                     >
                       <span
@@ -236,7 +280,11 @@ const StudentSessionsPage = () => {
                         className={`absolute inset-0 ${
                           booking.status === "confirmed"
                             ? "bg-green-200"
-                            : "bg-yellow-200"
+                            : booking.status === "completed"
+                            ? "bg-gray-200"
+                            : booking.status === "pending"
+                            ? "bg-yellow-200"
+                            : "bg-red-200"
                         } opacity-50 rounded-full`}
                       ></span>
                       <span className="relative">{booking.status}</span>
@@ -283,7 +331,7 @@ const StudentSessionsPage = () => {
         userType="student"
         onCancel={handleCancelBooking}
         onReschedule={handleOpenRescheduleModal}
-        isPast={activeTab === "past"}
+        isPast={activeTab === "past" || activeTab === "cancelled"}
       />
       <RescheduleBookingModal
         isOpen={isRescheduleModalOpen}
