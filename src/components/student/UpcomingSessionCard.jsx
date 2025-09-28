@@ -1,21 +1,35 @@
 import Upcoming from "../../assets/Student-icon/upcoming.svg";
 import clockIcon from "../../assets/Student-icon/clock.svg";
 import { Link } from "react-router-dom";
-import useCallAccess from "../../hooks/booking/useCallAccess"; // New import
+import useCallAccess from "../../hooks/booking/useCallAccess";
 import { formatSessionDate } from "../../utils/time";
 
-const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
-  const { canAccess, reason } = useCallAccess(upcomingSessions);
+const UpcomingSessionsCard = ({
+  upcomingSessions = [],
+  onViewDetails,
+  selectedDate,
+}) => {
+  const firstSession = upcomingSessions?.[0];
+  const { canAccess, reason } = useCallAccess(firstSession);
 
   // Conditional check to handle the empty state
-  if (!upcomingSessions) {
+  if (!upcomingSessions.length) {
     return (
       <div className="flex flex-row items-center justify-center p-4 bg-gray-100 rounded-2xl shadow-md h-44 w-full text-center">
         <div className="flex flex-col items-center justify-center h-full">
-          <h3 className="font-semibold text-lg text-gray-800">
-            No Upcoming Sessions
-          </h3>
-          <p className="text-gray-500 mb-4 mt-1">You're all caught up!</p>
+          {selectedDate ? (
+            <p className="text-gray-600 mb-4">
+              No sessions scheduled for this date
+            </p>
+          ) : (
+            <>
+              <h3 className="font-semibold text-lg text-gray-800">
+                No Upcoming Sessions
+              </h3>
+              <p className="text-gray-500 mb-4 mt-1">You're all caught up!</p>
+            </>
+          )}
+
           <Link
             to="/student/tutors"
             className="bg-primary text-white px-6 py-2 rounded-full font-semibold transition-colors hover:bg-primary-focus"
@@ -29,31 +43,37 @@ const UpcomingSessionsCard = ({ upcomingSessions, onViewDetails }) => {
 
   return (
     <div>
-      {/* <h3 className="font-semibold text-lg mb-4">Upcoming Sessions</h3> */}
+      {/* Show count if multiple sessions */}
+      {upcomingSessions.length > 1 && (
+        <p className="text-sm text-gray-600 mb-2">
+          Showing first of {upcomingSessions.length} sessions for this date
+        </p>
+      )}
+
       <div className="flex items-center justify-between rounded-lg md:p-4 h-44">
         <div className="flex flex-col justify-between h-full p-1">
           <div>
             <p className="text-blue-600 font-semibold">
-              {upcomingSessions?.subject?.name}
+              {firstSession?.subject?.name}
             </p>
             <p className="text-gray-800">
-              {upcomingSessions.tutor?.user?.firstName}{" "}
-              {upcomingSessions.tutor?.user?.lastName}
+              {firstSession.tutor?.user?.firstName}{" "}
+              {firstSession.tutor?.user?.lastName}
             </p>
             <div className="flex items-center text-gray-500 text-sm mt-2">
               <img src={clockIcon} alt="Clock" className="w-4 h-4 mr-2" />
-              <span>{formatSessionDate(upcomingSessions.scheduledStart)}</span>
+              <span>{formatSessionDate(firstSession.scheduledStart)}</span>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 mt-4">
             <button
               className="bg-primary text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto"
-              onClick={() => onViewDetails(upcomingSessions)}
+              onClick={() => onViewDetails(firstSession)}
             >
               View Details
             </button>
             {canAccess ? (
-              <Link to={`/student/call/${upcomingSessions.id}`}>
+              <Link to={`/student/call/${firstSession.id}`}>
                 <button className="bg-green-500 text-white px-3 sm:px-6 py-2 rounded-full font-semibold w-full sm:w-auto disabled:bg-gray-400">
                   Join
                 </button>
