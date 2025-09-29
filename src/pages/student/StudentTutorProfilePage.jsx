@@ -8,7 +8,7 @@ import BackButton from "../../components/common/BackButton";
 import TutorSchedule from "../../components/tutor/TutorSchedule";
 import Spinner from "../../components/common/Spinner";
 
-const TutorProfilePage = () => {
+const StudentTutorProfilePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -133,4 +133,4 @@ const TutorProfilePage = () => {
   );
 };
 
-export default TutorProfilePage;
+export default StudentTutorProfilePage;

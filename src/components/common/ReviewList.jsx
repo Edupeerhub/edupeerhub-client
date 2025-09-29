@@ -1,9 +1,10 @@
 import React from "react";
 import { Star } from "lucide-react";
+import { formatDate } from "../../utils/time";
 
 const ReviewList = ({ reviews = [] }) => {
   if (reviews.length === 0) {
-    return <p className="text-gray-500">No reviews yet</p>;
+    return <p className="text-gray-500">No reviews</p>;
   }
 
   return (
@@ -29,7 +30,9 @@ const ReviewList = ({ reviews = [] }) => {
                 {review.reviewer?.firstName ?? "Anonymous"}{" "}
                 {review.reviewer?.lastName ?? ""}
               </h1>
-              <p className="text-sm text-gray-500">{review.createdAt}</p>
+              <p className="text-sm text-gray-500">
+                {formatDate(review.createdAt)}
+              </p>
               <div className="flex mt-2">
                 {[...Array(5)].map((_, i) => (
                   <Star
