@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Portal from "../ui/Portal";
 
 const NotificationDropdown = ({
@@ -6,8 +7,16 @@ const NotificationDropdown = ({
   onMarkAllAsRead,
   onClose,
 }) => {
-  const handleNotificationClick = (notificationId) => {
-    onMarkAsRead(notificationId);
+  const navigate = useNavigate();
+
+  const handleNotificationClick = (notification) => {
+    onMarkAsRead(notification.id);
+
+    // Navigate if there's an action link
+    if (notification.action?.link) {
+      onClose();
+      navigate(notification.action.link);
+    }
   };
 
   const handleMarkAllAsRead = () => {
@@ -15,9 +24,18 @@ const NotificationDropdown = ({
     onClose();
   };
 
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
     <Portal>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        onClick={handleBackdropClick}
+      >
         <div className="w-11/12 max-w-md bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
           {/* Header */}
           <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -57,8 +75,7 @@ const NotificationDropdown = ({
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  onClick={() => handleNotificationClick(n.id)}
-                  className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="p-4 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-start gap-3">
                     <div
@@ -95,24 +112,44 @@ const NotificationDropdown = ({
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-800">
-                        <span className="font-semibold">{n.sender}</span>{" "}
+                      {/* Show sender only if not System */}
+                      {n.sender !== "System" && (
+                        <p className="text-sm font-semibold text-gray-800">
+                          {n.sender}
+                        </p>
+                      )}
+                      <p
+                        className={`text-sm text-gray-700 ${
+                          n.sender !== "System" ? "mt-0.5" : ""
+                        }`}
+                      >
                         {n.message}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(n.timestamp).toLocaleString()}
                       </p>
-                      {n.action && (
+                      <div className="flex gap-2 mt-2">
+                        {n.action && (
+                          <button
+                            className="text-xs text-blue-600 hover:underline font-medium"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(n);
+                            }}
+                          >
+                            {n.action.label} →
+                          </button>
+                        )}
                         <button
-                          className="text-xs text-blue-600 hover:underline mt-2"
+                          className="text-xs text-gray-500 hover:text-gray-700"
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.location.href = n.action.link;
+                            onMarkAsRead(n.id);
                           }}
                         >
-                          {n.action.label} →
+                          Mark as read
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>

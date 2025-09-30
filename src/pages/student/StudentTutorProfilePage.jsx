@@ -102,7 +102,7 @@ const StudentTutorProfilePage = () => {
         <div className="mt-6">
           <h2 className="font-bold text-lg">About Me</h2>
           <p className="text-sm mt-2 text-gray-500 leading-relaxed break-words">
-            {profile?.bio}
+            {profile?.bio || "No bio"}
           </p>
         </div>
 

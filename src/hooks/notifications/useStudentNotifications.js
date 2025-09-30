@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import {
   getAllStudentBookings,
   getUpcomingSession,
 } from "../../lib/api/common/bookingApi";
-import { useMemo } from "react";
 
-// hooks/useStudentNotifications.js
 export function useStudentNotifications() {
   const upcomingSession = useQuery({
     queryKey: ["upcomingSession"],
@@ -23,31 +22,53 @@ export function useStudentNotifications() {
   const notifications = useMemo(() => {
     const result = [];
 
-    // Transform upcomingSession
+    // Upcoming session notification
     if (upcomingSession.data) {
+      const session = upcomingSession.data;
+      const tutorName = session.tutor?.user?.firstName || "your tutor";
+      const startTime = new Date(session.scheduledStart).toLocaleString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }
+      );
+
       result.push({
-        id: `session-${upcomingSession.data.id}`,
+        id: `session-${session.id}`,
         type: "session",
         sender: "System",
-        message: `Upcoming session with ${upcomingSession.data.tutor?.user?.firstName}`,
-        timestamp: upcomingSession.data.scheduledStart,
+        message: `You have an upcoming session with ${tutorName} on ${startTime}`,
+        timestamp: session.scheduledStart,
         priority: "high",
+        action: {
+          label: "View Details",
+          link: `/student/sessions/${session.id}`,
+        },
       });
     }
 
-    // Transform bookings
+    // Booking status notifications
     if (bookings.data) {
       bookings.data.forEach((booking) => {
+        const tutorName = booking.tutor?.user?.firstName || "Tutor";
+        const isConfirmed = booking.status === "confirmed";
+
         result.push({
           id: `booking-${booking.id}`,
-          type: booking.status === "confirmed" ? "success" : "warning",
-          sender: booking.tutor?.user?.firstName || "Tutor",
-          message:
-            booking.status === "confirmed"
-              ? "confirmed your booking"
-              : "cancelled your booking",
+          type: isConfirmed ? "success" : "warning",
+          sender: tutorName,
+          message: isConfirmed
+            ? "confirmed your booking request"
+            : "cancelled your booking",
           timestamp: booking.updatedAt,
           priority: "medium",
+          action: {
+            label: "View Booking",
+            link: `/student/bookings/${booking.id}`,
+          },
         });
       });
     }
