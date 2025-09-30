@@ -1,6 +1,4 @@
-import { useNavigate } from "react-router-dom";
 import { useTutorProfile } from "../../hooks/tutor/useTutorProfile";
-
 import RatingSummary from "../../components/common/RatingSummary";
 import ReviewList from "../../components/common/ReviewList";
 import BackButton from "../../components/common/BackButton";
@@ -8,7 +6,6 @@ import Spinner from "../../components/common/Spinner";
 import useAuthUser from "../../hooks/auth/useAuthUser";
 
 const TutorPrivateProfilePage = () => {
-  const navigate = useNavigate();
   const { authUser } = useAuthUser();
   const id = authUser?.id;
 

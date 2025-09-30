@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   createBookingAvailability,
-  cancelBookingAvailability,
   deleteBookingAvailability,
   updateBookingAvailability,
   fetchTutorBookings,
@@ -13,8 +12,12 @@ import {
 } from "../../utils/toastDisplayHandler";
 import Button from "../../components/ui/Button";
 import Spinner from "../../components/common/Spinner";
-import { formatDate, formatTimeRange } from "../../utils/time";
-import Modal from "../../components/ui/Modal";
+import {
+  formatDate,
+  formatTimeRange,
+  fromUtcToLocalParts,
+  makeAvailabilityPayload,
+} from "../../utils/time";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import DropdownPicker from "../../components/ui/DropdownPicker";
 import {
@@ -35,11 +38,7 @@ const TutorAvailabilityPage = () => {
     startTime: "",
     endTime: "",
   });
-
   const [editingAvailability, setEditingAvailability] = useState(null);
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [cancellationReason, setCancellationReason] = useState("");
-  const [availabilityToCancel, setAvailabilityToCancel] = useState(null);
 
   const {
     data: availabilities,
@@ -66,11 +65,12 @@ const TutorAvailabilityPage = () => {
       return handleToastError(null, "Please select date, start, and end time.");
     }
 
-    const dataToSend = {
-      scheduledStart: new Date(`${formData.date}T${formData.startTime}:00`), // Send Date object
-      scheduledEnd: new Date(`${formData.date}T${formData.endTime}:00`), // Send Date object
-      tutorNotes: formData.tutorNotes,
-    };
+    const dataToSend = makeAvailabilityPayload(
+      formData.date,
+      formData.startTime,
+      formData.endTime,
+      formData.tutorNotes
+    );
 
     if (editingAvailability) {
       updateAvailabilityMutation.mutate({
@@ -84,19 +84,20 @@ const TutorAvailabilityPage = () => {
 
   const handleEdit = (availability) => {
     setEditingAvailability(availability);
-    const startDate = new Date(availability.scheduledStart);
-    const endDate = new Date(availability.scheduledEnd);
+    const { date: startDate, time: startTime } = fromUtcToLocalParts(
+      availability.scheduledStart
+    );
+    const { time: endTime } = fromUtcToLocalParts(availability.scheduledEnd);
 
     setFormData({
       scheduledStart: availability.scheduledStart,
       scheduledEnd: availability.scheduledEnd,
       tutorNotes: availability.tutorNotes || "",
-      date: startDate.toISOString().split("T")[0],
-      startTime: startDate.toTimeString().slice(0, 5),
-      endTime: endDate.toTimeString().slice(0, 5),
+      date: startDate,
+      startTime,
+      endTime,
     });
   };
-
   const handleCancelEdit = () => {
     setEditingAvailability(null);
     setFormData({
@@ -109,30 +110,6 @@ const TutorAvailabilityPage = () => {
     });
   };
 
-  const handleCancelAvailability = (id) => {
-    setAvailabilityToCancel(id);
-    setIsCancelModalOpen(true);
-  };
-
-  const handleConfirmCancel = () => {
-    if (availabilityToCancel && cancellationReason) {
-      cancelAvailabilityMutation.mutate({
-        id: availabilityToCancel,
-        cancellationReason,
-      });
-      setIsCancelModalOpen(false);
-      setCancellationReason("");
-      setAvailabilityToCancel(null);
-    }
-  };
-
-  const handleCloseCancelModal = () => {
-    setIsCancelModalOpen(false);
-    setCancellationReason("");
-    setAvailabilityToCancel(null);
-  };
-
-  // 🔹 Mutations (your originals, kept intact)
   const createAvailabilityMutation = useMutation({
     mutationFn: createBookingAvailability,
     onSuccess: () => {
@@ -170,18 +147,6 @@ const TutorAvailabilityPage = () => {
     },
     onError: (err) => {
       handleToastError(err, "Failed to update availability.");
-    },
-  });
-
-  const cancelAvailabilityMutation = useMutation({
-    mutationFn: ({ id, cancellationReason }) =>
-      cancelBookingAvailability(id, cancellationReason),
-    onSuccess: () => {
-      handleToastSuccess("Availability cancelled successfully!");
-      queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
-    },
-    onError: (err) => {
-      handleToastError(err, "Failed to cancel availability.");
     },
   });
 
@@ -392,48 +357,6 @@ const TutorAvailabilityPage = () => {
           </div>
         )}
       </div>
-
-      {/* Cancel Modal */}
-      <Modal
-        isOpen={isCancelModalOpen}
-        onClose={handleCloseCancelModal}
-        title="Cancel Availability"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            Are you sure you want to cancel this availability slot? Please
-            provide a reason for cancellation:
-          </p>
-          <textarea
-            value={cancellationReason}
-            onChange={(e) => setCancellationReason(e.target.value)}
-            rows="3"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            placeholder="Enter cancellation reason..."
-          ></textarea>
-          <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              onClick={handleCloseCancelModal}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
-            >
-              Close
-            </Button>
-            <Button
-              type="button"
-              onClick={handleConfirmCancel}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              disabled={cancelAvailabilityMutation.isLoading}
-            >
-              {cancelAvailabilityMutation.isLoading ? (
-                <Spinner size="small" />
-              ) : (
-                "Confirm Cancel"
-              )}
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

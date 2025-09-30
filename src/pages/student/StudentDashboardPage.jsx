@@ -17,28 +17,13 @@ import {
 import Spinner from "../../components/common/Spinner";
 import HorizontalScrollTutors from "../../components/student/HorizontalScrollTutors";
 import UpcomingSessionsCard from "../../components/student/UpcomingSessionCard";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
-import { formatDate, formatSessionDate } from "../../utils/time";
-
-const formatDashboardDate = (date, format) => {
-  if (format === "yyyy-MM-dd") {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-  if (format === "yyyy-MM") {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
-  }
-  return date.toISOString(); // only when you need to send to backend
-};
+import { formatCalendarDate, formatDate } from "../../utils/time";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
@@ -46,7 +31,7 @@ const StudentDashboardPage = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(
-    formatDashboardDate(new Date(), "yyyy-MM") // e.g. "2025-09"
+    formatCalendarDate(new Date(), "yyyy-MM") // e.g. "2025-09"
   );
 
   const queryClient = useQueryClient();
@@ -62,10 +47,7 @@ const StudentDashboardPage = () => {
     queryKey: ["studentBookings", currentMonth],
     queryFn: () => {
       const start = `${currentMonth}-01`;
-      const end = formatDashboardDate(
-        endOfMonth(parseISO(start)),
-        "yyyy-MM-dd"
-      );
+      const end = formatCalendarDate(endOfMonth(parseISO(start)), "yyyy-MM-dd");
       return getAllStudentBookings({
         start,
         end,
@@ -130,14 +112,14 @@ const StudentDashboardPage = () => {
 
   // Computed values
   const bookedDates = monthBookings.map((session) =>
-    formatDashboardDate(new Date(session.scheduledStart), "yyyy-MM-dd")
+    formatCalendarDate(new Date(session.scheduledStart), "yyyy-MM-dd")
   );
 
   const selectedDayBookings = useMemo(() => {
     if (!selectedDate) return [];
     return monthBookings.filter(
       (session) =>
-        formatDashboardDate(new Date(session.scheduledStart), "yyyy-MM-dd") ===
+        formatCalendarDate(new Date(session.scheduledStart), "yyyy-MM-dd") ===
         selectedDate
     );
   }, [selectedDate, monthBookings]);

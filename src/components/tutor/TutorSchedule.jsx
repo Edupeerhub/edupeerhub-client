@@ -7,7 +7,8 @@ const TutorSchedule = ({ availability, maxToShow = 3 }) => {
   if (!availability || availability.length === 0) {
     return (
       <p className="text-sm text-gray-500 break-words leading-relaxed">
-        No available times today
+        No times available today. Check the tutor's calendar by clicking “Book
+        Session”
       </p>
     );
   }

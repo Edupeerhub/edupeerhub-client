@@ -1,6 +1,4 @@
 import { useState } from "react";
-import StudentAvatar from "../../assets/images/onboarding/woman.png";
-import TeacherAvatar from "../../assets/images/onboarding/man.png";
 import Tutor from "../../assets/images/onboarding/tutor.svg";
 import Student from "../../assets/images/onboarding/student.svg";
 import RoleSelectionCard from "../../components/onboarding/RoleSelectionCard";
