@@ -81,7 +81,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
           {/* Close button - only visible on mobile */}
           <button
             onClick={onClose}
-            className="md:hidden ml-auto p-2 rounded-md text-gray-400 hover:text-white bg-gray-700 transition-colors "
+            className="md:hidden ml-auto p-2 rounded-md text-gray-100 hover:text-white bg-gray-400 transition-colors "
           >
             <svg
               className="w-5 h-5"
@@ -100,7 +100,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 p-4 space-y-7 mt-4 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-5 md:space-y-6 mt-1 overflow-y-auto">
           {links.map(({ path, label, icon: Icon }) => {
             const isDisabled = isTutorAndRestricted && label !== "Dashboard";
             return (

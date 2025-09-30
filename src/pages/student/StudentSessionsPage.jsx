@@ -117,6 +117,10 @@ const StudentSessionsPage = () => {
       value: pastBookings.length,
     },
     {
+      title: "Pending",
+      value: pendingBookings.length,
+    },
+    {
       title: "Cancelled",
       value: cancelledBookings.length,
     },
@@ -125,7 +129,7 @@ const StudentSessionsPage = () => {
   return (
     <>
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
-        <h1 className="text-2xl font-bold mb-4">My Bookings</h1>
+        <h1 className="text-2xl font-bold mb-4">My Sessions</h1>
         <SessionStats stats={stats} isCompact={true} />
         <div className="border-b border-gray-200 mb-6">
           <div className="flex gap-6 sm:gap-8">

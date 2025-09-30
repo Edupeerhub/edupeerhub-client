@@ -1,12 +1,18 @@
-import React from "react";
 import SessionListItem from "./SessionListItem";
 
-const SessionList = ({ sessions, userType, onViewDetails, noSessionsMessage }) => {
+const SessionList = ({
+  sessions,
+  userType,
+  onViewDetails,
+  noSessionsMessage,
+}) => {
   return (
     <div className="bg-white rounded-lg border">
       {/* Desktop Table Header - Hidden on mobile */}
       <div className="hidden md:grid md:grid-cols-6 gap-4 p-4 bg-gray-50 border-b text-sm font-medium text-gray-600">
-        <div className="col-span-2">{userType === 'tutor' ? 'Student' : 'Tutor'}</div>
+        <div className="col-span-2">
+          {userType === "tutor" ? "Student" : "Tutor"}
+        </div>
         <div>Subject</div>
         <div>Date</div>
         <div>Time</div>

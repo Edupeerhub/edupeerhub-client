@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
-import { Chevron } from "react-day-picker";
 
 const formatDate = (date, format) => {
   const months = [

@@ -1,4 +1,3 @@
-import React from "react";
 import { formatDate, formatTimeRange } from "../../utils/time";
 
 const SessionListItem = ({ session, userType, onViewDetails }) => {

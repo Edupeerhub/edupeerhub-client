@@ -17,13 +17,13 @@ import {
 import Spinner from "../../components/common/Spinner";
 import HorizontalScrollTutors from "../../components/student/HorizontalScrollTutors";
 import UpcomingSessionsCard from "../../components/student/UpcomingSessionCard";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
-import { formatDate, formatSessionDate } from "../../utils/time";
+import { formatDate } from "../../utils/time";
 
 const formatDashboardDate = (date, format) => {
   if (format === "yyyy-MM-dd") {

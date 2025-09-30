@@ -10,7 +10,7 @@ const FilterDropdown = ({
   isOpen,
   setIsOpen,
 }) => {
-  const SUBJECT_OPTIONS = ["Mathematics", "Physics", "Biology", "English"];
+  const SUBJECT_OPTIONS = ["2", "Physics", "Biology", "English"];
   const RATING_OPTIONS = ["5", "4", "3"];
   const hasActiveFilters =
     appliedFilters.subjects.length > 0 ||

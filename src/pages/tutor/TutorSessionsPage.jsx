@@ -151,6 +151,10 @@ const TutorSessionsPage = () => {
       value: completedSessions.length,
     },
     {
+      title: "Pending",
+      value: pendingSessions.length,
+    },
+    {
       title: "Cancelled",
       value: cancelledSessions.length,
     },

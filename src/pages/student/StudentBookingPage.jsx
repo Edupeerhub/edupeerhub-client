@@ -11,8 +11,9 @@ import {
   SlotButton,
 } from "../../components/student/StudentBooking";
 import Spinner from "../../components/common/Spinner";
+import { SingleSelectCardList } from "../../components/common/SingleSelectCardList";
 
-function calculateDuration(start, end) {
+function formatTimeDuration(start, end) {
   if (!start || !end) return null;
   const diff = (new Date(end) - new Date(start)) / 1000 / 60;
   if (diff <= 0) return null;
@@ -28,7 +29,7 @@ function calculateDuration(start, end) {
 export default function BookingSession() {
   const { id } = useParams();
   const [date, setDate] = useState(null);
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(null);
   const [step, setStep] = useState(1);
   const [selectedSlotId, setSelectedSlotId] = useState(null);
 
@@ -57,15 +58,17 @@ export default function BookingSession() {
       {step === 1 && (
         <>
           <div className="flex-shrink-0 mb-3">
-            <h1 className="text-xl font-bold">Select a Time</h1>
+            <h1 className="text-xl font-bold pl-2">Book a slot</h1>
           </div>
 
-          <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
+          <div className="flex-1 flex flex-col lg:flex-row gap-1 md:gap-4 min-h-0">
             {/* Left side - Subject and Calendar */}
             <div className="lg:w-1/2 flex flex-col min-h-0">
-              <div className="flex-shrink-0 mb-3">
-                <h3 className="text-sm font-medium mb-2">Select Subject</h3>
-                <select
+              <div className="flex-shrink-0">
+                <h3 className="text-sm font-medium mb-2 pl-2">
+                  Select Subject
+                </h3>
+                {/* <select
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   className="w-full px-2 py-1.5 text-sm border rounded"
@@ -82,7 +85,13 @@ export default function BookingSession() {
                       {subj.name}
                     </option>
                   ))}
-                </select>
+                </select> */}
+                <SingleSelectCardList
+                  options={tutorProfile?.subjects || []}
+                  selectedItem={subject}
+                  onSelect={(id) => setSubject(id)}
+                  className="min-w-[80px]" // optional: tweak spacing if needed
+                />
               </div>
 
               <div className="flex-1 flex justify-center items-start overflow-hidden">
@@ -100,7 +109,7 @@ export default function BookingSession() {
             {/* Right side - Time slots */}
             <div className="lg:w-1/2 flex flex-col min-h-0">
               <div className="flex-shrink-0 mb-2">
-                <h3 className="text-sm font-medium">Available Times</h3>
+                <h3 className="text-sm font-medium pl-2">Available Times</h3>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {availabilityLoading && (
@@ -112,7 +121,7 @@ export default function BookingSession() {
                   </>
                 )}
                 {availableTimes.length === 0 && !availabilityLoading ? (
-                  <p className="text-gray-500 text-sm text-center py-8">
+                  <p className="text-gray-500 text-sm text-center py-2">
                     {date ? "No available times" : "Select a date first"}
                   </p>
                 ) : (
@@ -131,7 +140,7 @@ export default function BookingSession() {
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex justify-center mt-3">
+          <div className="flex-shrink-0 flex justify-center mt-2">
             <button
               disabled={!date || !subject || !selectedSlotId}
               onClick={() => setStep(2)}
@@ -177,7 +186,7 @@ export default function BookingSession() {
                 label="Duration"
                 value={
                   selectedSlot &&
-                  calculateDuration(selectedSlot.start, selectedSlot.end)
+                  formatTimeDuration(selectedSlot.start, selectedSlot.end)
                 }
               />
               <BookingDetailRow label="Mode" value="Online Session" />
@@ -195,7 +204,7 @@ export default function BookingSession() {
               onClick={() =>
                 bookingMutation.mutate({
                   bookingId: selectedSlotId,
-                  subjectId: Number(subject),
+                  subjectId: subject,
                 })
               }
               disabled={
@@ -244,7 +253,7 @@ export default function BookingSession() {
                 label="Duration"
                 value={
                   selectedSlot &&
-                  calculateDuration(selectedSlot.start, selectedSlot.end)
+                  formatTimeDuration(selectedSlot.start, selectedSlot.end)
                 }
               />
               <BookingDetailRow label="Mode" value="Online Session" />
