@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
+import { useState, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { bookSession } from "../../lib/api/common/bookingApi";
@@ -12,6 +10,23 @@ import {
 } from "../../components/student/StudentBooking";
 import Spinner from "../../components/common/Spinner";
 import { SingleSelectCardList } from "../../components/common/SingleSelectCardList";
+import Calendar from "../../components/Calendar";
+
+// Helper function to format dates
+const formatBookingDate = (date, format) => {
+  if (format === "yyyy-MM-dd") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  if (format === "yyyy-MM") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  }
+  return date.toISOString();
+};
 
 function formatTimeDuration(start, end) {
   if (!start || !end) return null;
@@ -28,18 +43,22 @@ function formatTimeDuration(start, end) {
 
 export default function BookingSession() {
   const { id } = useParams();
-  const [date, setDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [subject, setSubject] = useState(null);
   const [step, setStep] = useState(1);
   const [selectedSlotId, setSelectedSlotId] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(
+    formatBookingDate(new Date(), "yyyy-MM")
+  );
 
+  // Use the hook with monthly fetching
   const {
     tutorProfile,
     tutorLoading,
     tutorError,
-    availableTimes,
+    availabilityData,
     availabilityLoading,
-  } = useStudentBooking(id, date);
+  } = useStudentBooking(id, null, currentMonth);
 
   const bookingMutation = useMutation({
     mutationFn: bookSession,
@@ -47,10 +66,65 @@ export default function BookingSession() {
     onError: handleToastError,
   });
 
+  // Get dates that have available slots for the calendar
+  const bookedDates = useMemo(() => {
+    if (!availabilityData || availabilityData.length === 0) return [];
+
+    const datesWithSlots = new Set();
+    availabilityData.forEach((slot) => {
+      const slotDate = formatBookingDate(
+        new Date(slot.scheduledStart),
+        "yyyy-MM-dd"
+      );
+      datesWithSlots.add(slotDate);
+    });
+
+    return Array.from(datesWithSlots);
+  }, [availabilityData]);
+
+  // Filter and format slots for the selected date
+  const availableTimes = useMemo(() => {
+    if (!selectedDate || !availabilityData) return [];
+
+    return availabilityData
+      .filter((slot) => {
+        const slotDate = formatBookingDate(
+          new Date(slot.scheduledStart),
+          "yyyy-MM-dd"
+        );
+        return slotDate === selectedDate;
+      })
+      .map((slot) => ({
+        id: slot.id,
+        start: slot.scheduledStart,
+        end: slot.scheduledEnd,
+        label: `${new Date(slot.scheduledStart).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })} - ${new Date(slot.scheduledEnd).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })}`,
+      }));
+  }, [selectedDate, availabilityData]);
+
   const selectedSlot = availableTimes.find((s) => s.id === selectedSlotId);
   const selectedSubjectName = tutorProfile?.subjects?.find(
     (s) => s.id === Number(subject)
   )?.name;
+
+  const handleDateClick = (date) => {
+    setSelectedDate(date);
+    setSelectedSlotId(null);
+  };
+
+  const handleMonthChange = (month) => {
+    setCurrentMonth(month);
+    if (selectedDate && !selectedDate.startsWith(month)) {
+      setSelectedDate(null);
+      setSelectedSlotId(null);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -68,39 +142,21 @@ export default function BookingSession() {
                 <h3 className="text-sm font-medium mb-2 pl-2">
                   Select Subject
                 </h3>
-                {/* <select
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border rounded"
-                >
-                  <option value="">-- Choose a subject --</option>
-                  {tutorLoading && (
-                    <option disabled>Loading subjects...</option>
-                  )}
-                  {tutorError && (
-                    <option disabled>Failed to load subjects</option>
-                  )}
-                  {tutorProfile?.subjects?.map((subj) => (
-                    <option key={subj.id} value={subj.id}>
-                      {subj.name}
-                    </option>
-                  ))}
-                </select> */}
                 <SingleSelectCardList
                   options={tutorProfile?.subjects || []}
                   selectedItem={subject}
                   onSelect={(id) => setSubject(id)}
-                  className="min-w-[80px]" // optional: tweak spacing if needed
+                  className="min-w-[80px]"
                 />
               </div>
 
               <div className="flex-1 flex justify-center items-start overflow-hidden">
                 <div className="scale-75 lg:scale-90">
-                  <DayPicker
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    className="rounded"
+                  <Calendar
+                    compact={true}
+                    bookingDates={bookedDates}
+                    onDateClick={handleDateClick}
+                    onMonthChange={handleMonthChange}
                   />
                 </div>
               </div>
@@ -122,7 +178,9 @@ export default function BookingSession() {
                 )}
                 {availableTimes.length === 0 && !availabilityLoading ? (
                   <p className="text-gray-500 text-sm text-center py-2">
-                    {date ? "No available times" : "Select a date first"}
+                    {selectedDate
+                      ? "No available times"
+                      : "Select a date first"}
                   </p>
                 ) : (
                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
@@ -142,7 +200,7 @@ export default function BookingSession() {
 
           <div className="flex-shrink-0 flex justify-center mt-2">
             <button
-              disabled={!date || !subject || !selectedSlotId}
+              disabled={!selectedDate || !subject || !selectedSlotId}
               onClick={() => setStep(2)}
               className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
             >
@@ -177,7 +235,10 @@ export default function BookingSession() {
             </div>
 
             <div className="space-y-2">
-              <BookingDetailRow label="Date" value={date?.toDateString()} />
+              <BookingDetailRow
+                label="Date"
+                value={selectedDate && new Date(selectedDate).toDateString()}
+              />
               <BookingDetailRow
                 label="Time"
                 value={selectedSlot && `${selectedSlot.label}`}
@@ -244,7 +305,10 @@ export default function BookingSession() {
             </div>
 
             <div className="space-y-2">
-              <BookingDetailRow label="Date" value={date?.toDateString()} />
+              <BookingDetailRow
+                label="Date"
+                value={selectedDate && new Date(selectedDate).toDateString()}
+              />
               <BookingDetailRow
                 label="Time"
                 value={selectedSlot && `${selectedSlot.label}`}
@@ -277,8 +341,8 @@ export default function BookingSession() {
             </Link>
             <button
               onClick={() => {
-                setDate(null);
-                setSubject("");
+                setSelectedDate(null);
+                setSubject(null);
                 setSelectedSlotId(null);
                 setStep(1);
               }}
