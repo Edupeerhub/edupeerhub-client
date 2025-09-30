@@ -29,6 +29,28 @@ export function formatDate(dateISO) {
 }
 
 /**
+ * Formats a JavaScript Date object into a specific string format for calendar or API use.
+ * Currently supports 'yyyy-MM-dd' and 'yyyy-MM'.
+ * * @param {Date} date - The JavaScript Date object to format.
+ * @param {'yyyy-MM-dd' | 'yyyy-MM'} format - The desired output format string.
+ * @returns {string} The formatted date string, or the result of date.toISOString() if the format is unsupported.
+ */
+export const formatCalendarDate = (date, format) => {
+  if (format === "yyyy-MM-dd") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  if (format === "yyyy-MM") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  }
+  return date.toISOString(); // only when you need to send to backend
+};
+
+/**
  * Format duration between two ISO strings into "Xhrs, Ymin".
  */
 export function formatDuration(startISO, endISO) {
@@ -80,6 +102,18 @@ export const formatSessionDate = (scheduledStart) => {
 
     return `${month} ${day}${suffix}, ${time}`;
   }
+};
+
+// Helper to format time from raw slot data
+export const formatSlotTime = (slot) => {
+  if (!slot) return "";
+  return `${new Date(slot.start).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  })} - ${new Date(slot.end).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  })}`;
 };
 
 /**
