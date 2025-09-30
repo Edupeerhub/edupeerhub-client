@@ -1,6 +1,20 @@
 import Portal from "../ui/Portal";
 
-const NotificationDropdown = ({ notifications, onClose }) => {
+const NotificationDropdown = ({
+  notifications,
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onClose,
+}) => {
+  const handleNotificationClick = (notificationId) => {
+    onMarkAsRead(notificationId);
+  };
+
+  const handleMarkAllAsRead = () => {
+    onMarkAllAsRead();
+    onClose();
+  };
+
   return (
     <Portal>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -12,7 +26,7 @@ const NotificationDropdown = ({ notifications, onClose }) => {
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 transition-colors"
             >
               ✕
             </button>
@@ -21,24 +35,84 @@ const NotificationDropdown = ({ notifications, onClose }) => {
           {/* Notifications list */}
           <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                No new notifications
+              <div className="p-8 text-center text-gray-500">
+                <div className="flex flex-col items-center gap-2">
+                  <svg
+                    className="w-12 h-12 text-gray-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                  <p>No new notifications</p>
+                </div>
               </div>
             ) : (
               notifications.map((n) => (
-                <div key={n.id} className="p-4 hover:bg-gray-50 cursor-pointer">
+                <div
+                  key={n.id}
+                  onClick={() => handleNotificationClick(n.id)}
+                  className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                >
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-blue-600 font-semibold">
-                        {n.sender.charAt(0)}
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        n.type === "session"
+                          ? "bg-blue-100"
+                          : n.type === "request"
+                          ? "bg-yellow-100"
+                          : n.type === "success"
+                          ? "bg-green-100"
+                          : n.type === "warning"
+                          ? "bg-red-100"
+                          : n.type === "alert"
+                          ? "bg-orange-100"
+                          : "bg-gray-100"
+                      }`}
+                    >
+                      <span
+                        className={`font-semibold text-sm ${
+                          n.type === "session"
+                            ? "text-blue-600"
+                            : n.type === "request"
+                            ? "text-yellow-600"
+                            : n.type === "success"
+                            ? "text-green-600"
+                            : n.type === "warning"
+                            ? "text-red-600"
+                            : n.type === "alert"
+                            ? "text-orange-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {n.sender.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-800">
                         <span className="font-semibold">{n.sender}</span>{" "}
                         {n.message}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">{n.time}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(n.timestamp).toLocaleString()}
+                      </p>
+                      {n.action && (
+                        <button
+                          className="text-xs text-blue-600 hover:underline mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = n.action.link;
+                          }}
+                        >
+                          {n.action.label} →
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -47,17 +121,18 @@ const NotificationDropdown = ({ notifications, onClose }) => {
           </div>
 
           {/* Footer */}
-          <div className="p-2 bg-gray-50 border-t border-gray-200 text-center">
-            <button
-              onClick={onClose}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Mark all as read
-            </button>
-          </div>
+          {notifications.length > 0 && (
+            <div className="p-3 bg-gray-50 border-t border-gray-200 text-center">
+              <button
+                onClick={handleMarkAllAsRead}
+                className="text-sm text-blue-600 hover:underline font-medium"
+              >
+                Mark all as read
+              </button>
+            </div>
+          )}
         </div>
       </div>
-      ,
     </Portal>
   );
 };

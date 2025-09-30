@@ -4,6 +4,7 @@ import useAuthUser from "../hooks/auth/useAuthUser";
 import ProfileDropdown from "../components/navbar/ProfileDropdown";
 import useLogout from "../hooks/auth/useLogout";
 import NotificationDropdown from "../components/navbar/NotificationDropdown";
+import { useNotifications } from "../hooks/notifications/useNotfications";
 
 const Navbar = ({ onToggleSidebar }) => {
   const { authUser } = useAuthUser();
@@ -13,26 +14,11 @@ const Navbar = ({ onToggleSidebar }) => {
   const profileDropdownRef = useRef(null);
   const notificationDropdownRef = useRef(null);
 
-  const dummyNotifications = [
-    {
-      id: 1,
-      sender: "John Doe",
-      message: "sent you a message.",
-      time: "5 minutes ago",
-    },
-    {
-      id: 2,
-      sender: "Jane Smith",
-      message: "accepted your booking request.",
-      time: "1 hour ago",
-    },
-    {
-      id: 3,
-      sender: "Admin",
-      message: "posted a new announcement.",
-      time: "3 hours ago",
-    },
-  ];
+  // Get notifications based on user role
+  const { unreadNotifications, unreadCount, markAsRead, markAllAsRead } =
+    useNotifications(authUser?.role);
+
+  const { logoutMutation } = useLogout();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -63,8 +49,6 @@ const Navbar = ({ onToggleSidebar }) => {
     setIsNotificationDropdownOpen(!isNotificationDropdownOpen);
     setIsProfileDropdownOpen(false);
   };
-
-  const { logoutMutation } = useLogout();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-20 bg-white shadow-md border-b border-gray-300">
@@ -100,16 +84,18 @@ const Navbar = ({ onToggleSidebar }) => {
               >
                 <div className="indicator">
                   <BellIcon className="h-5 w-5 sm:h-6 sm:w-6 text-base-content opacity-70" />
-                  {dummyNotifications.length > 0 && (
-                    <span className="indicator-item badge badge-secondary badge-xs">
-                      {dummyNotifications.length}
+                  {unreadCount > 0 && (
+                    <span className="indicator-item badge badge-secondary badge-sm">
+                      {unreadCount}
                     </span>
                   )}
                 </div>
               </button>
               {isNotificationDropdownOpen && (
                 <NotificationDropdown
-                  notifications={dummyNotifications}
+                  notifications={unreadNotifications}
+                  onMarkAsRead={markAsRead}
+                  onMarkAllAsRead={markAllAsRead}
                   onClose={() => setIsNotificationDropdownOpen(false)}
                 />
               )}
