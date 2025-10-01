@@ -4,12 +4,14 @@ import {
   getAllStudentBookings,
   getUpcomingSession,
 } from "../../lib/api/common/bookingApi";
+import { formatSessionDate } from "../../utils/time";
 
-export function useStudentNotifications() {
+export function useStudentNotifications(enabled = true) {
   const upcomingSession = useQuery({
     queryKey: ["upcomingSession"],
     queryFn: getUpcomingSession,
     staleTime: 30000,
+    enabled,
   });
 
   const bookings = useQuery({
@@ -17,24 +19,18 @@ export function useStudentNotifications() {
     queryFn: () =>
       getAllStudentBookings({ status: ["confirmed", "cancelled"] }),
     staleTime: 30000,
+    enabled,
   });
 
   const notifications = useMemo(() => {
+    if (!enabled) return [];
     const result = [];
 
     // Upcoming session notification
     if (upcomingSession.data) {
       const session = upcomingSession.data;
       const tutorName = session.tutor?.user?.firstName || "your tutor";
-      const startTime = new Date(session.scheduledStart).toLocaleString(
-        "en-US",
-        {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        }
-      );
+      const startTime = formatSessionDate(session.scheduledStart);
 
       result.push({
         id: `session-${session.id}`,
@@ -45,7 +41,7 @@ export function useStudentNotifications() {
         priority: "high",
         action: {
           label: "View Details",
-          link: `/student/sessions/${session.id}`,
+          link: `/student/call/${session.id}`,
         },
       });
     }
@@ -74,10 +70,10 @@ export function useStudentNotifications() {
     }
 
     return result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }, [upcomingSession.data, bookings.data]);
+  }, [enabled, upcomingSession.data, bookings.data]);
 
   return {
     notifications,
-    isLoading: upcomingSession.isLoading || bookings.isLoading,
+    isLoading: enabled && (upcomingSession.isLoading || bookings.isLoading),
   };
 }

@@ -15,8 +15,13 @@ const Navbar = ({ onToggleSidebar }) => {
   const notificationDropdownRef = useRef(null);
 
   // Get notifications based on user role
-  const { unreadNotifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications(authUser?.role);
+  const {
+    unreadNotifications,
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications(authUser?.role);
 
   const { logoutMutation } = useLogout();
 

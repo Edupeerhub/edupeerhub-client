@@ -1,29 +1,38 @@
+import { useState, useEffect } from "react";
 import { useStudentNotifications } from "./useStudentNotifications";
 import { useTutorNotifications } from "./useTutorNotifications";
 // import { useAdminNotifications } from "./useAdminNotifications";
-import { useState, useEffect } from "react";
 
 export function useNotifications(userRole) {
-  // Get role-specific notifications
-  const studentNotifs = useStudentNotifications();
-  const tutorNotifs = useTutorNotifications();
-  // const adminNotifs = useAdminNotifications();
+  // Only call the hook for the current user's role
+  const studentNotifs = useStudentNotifications(userRole === "student");
+  const tutorNotifs = useTutorNotifications(userRole === "tutor");
+  // const adminNotifs = useAdminNotifications(userRole === "admin");
 
-  const roleNotifications = {
-    student: studentNotifs,
-    tutor: tutorNotifs,
-    // admin: adminNotifs,
-  };
+  let selectedNotifs = { notifications: [], isLoading: false };
+  if (userRole === "student") selectedNotifs = studentNotifs;
+  if (userRole === "tutor") selectedNotifs = tutorNotifs;
+  // if (userRole === "admin") selectedNotifs = adminNotifs;
 
-  const { notifications = [], isLoading = false } =
-    roleNotifications[userRole] || {};
+  const { notifications = [], isLoading = false } = selectedNotifs;
 
-  // Read state management
-  const [readIds, setReadIds] = useState(() => {
+  // Load read IDs from localStorage (scoped by role)
+  const [readIds, setReadIds] = useState([]);
+
+  // Load when role changes
+  useEffect(() => {
+    if (!userRole) return; // don’t load until we know the role
     const saved = localStorage.getItem(`readNotifications_${userRole}`);
-    return saved ? JSON.parse(saved) : [];
-  });
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setReadIds((prev) => {
+        const merged = new Set([...prev, ...parsed]);
+        return [...merged];
+      });
+    }
+  }, [userRole]);
 
+  // Persist to localStorage
   useEffect(() => {
     if (!userRole) return;
     localStorage.setItem(
@@ -45,16 +54,19 @@ export function useNotifications(userRole) {
     }
   }, [notifications, readIds]);
 
+  // helper to normalize all IDs to strings
+  const normalizeId = (id) => String(id);
+
   const unreadNotifications = notifications.filter(
-    (n) => !readIds.includes(n.id)
+    (n) => !readIds.includes(normalizeId(n.id))
   );
 
   const markAsRead = (id) => {
-    setReadIds((prev) => [...prev, id]);
+    setReadIds((prev) => [...new Set([...prev, normalizeId(id)])]);
   };
 
   const markAllAsRead = () => {
-    setReadIds(notifications.map((n) => n.id));
+    setReadIds(notifications.map((n) => normalizeId(n.id)));
   };
 
   return {
