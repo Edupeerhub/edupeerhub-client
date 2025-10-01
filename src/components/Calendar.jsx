@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const formatDate = (date, format) => {
   const months = [
@@ -121,30 +122,44 @@ const Calendar = ({
   const days = [];
 
   // Previous month's trailing days
-  for (let i = 0; i < startDay; i++) {
+  const prevMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() - 1,
+    1
+  );
+  const prevMonthDays = daysInMonth(prevMonth);
+  for (let i = startDay; i > 0; i--) {
     days.push({
-      date: addDays(monthStart, i - startDay),
+      date: new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() - 1,
+        prevMonthDays - i + 1
+      ),
       isCurrentMonth: false,
     });
   }
 
   // Current month days
   for (let i = 1; i <= daysInCurrentMonth; i++) {
-    const date = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      i
-    );
-    days.push({ date, isCurrentMonth: true });
+    days.push({
+      date: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i),
+      isCurrentMonth: true,
+    });
   }
 
   // Next month's leading days
+  const nextMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    1
+  );
+  let nextDay = 1;
   while (days.length < 42) {
-    const lastDate = days[days.length - 1].date;
     days.push({
-      date: addDays(lastDate, 1),
+      date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), nextDay),
       isCurrentMonth: false,
     });
+    nextDay++;
   }
 
   const handleDayClick = useCallback(
@@ -291,43 +306,58 @@ const Calendar = ({
       </div>
 
       {/* Days grid */}
-      <div className="grid grid-cols-7 gap-y-1 text-center">
-        {days.map((dayObj, i) => {
-          const formatted = formatDate(dayObj.date, "yyyy-MM-dd");
-          const isToday = formatted === today;
-          const isSelected = formatted === selectedDate;
-          const isBooked = bookingDates.includes(formatted);
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentMonthString} // important: triggers animation on month change
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -50, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="grid grid-cols-7 gap-y-1 text-center"
+        >
+          {days.map((dayObj, i) => {
+            const formatted = formatDate(dayObj.date, "yyyy-MM-dd");
+            const isToday = formatted === today;
+            const isSelected = formatted === selectedDate;
+            const isBooked = bookingDates.includes(formatted);
 
-          let cls = `relative mx-auto flex ${daySizeClass} items-center justify-center rounded-full cursor-pointer transition `;
+            let cls = `relative mx-auto flex ${daySizeClass} items-center justify-center rounded-full cursor-pointer transition `;
 
-          // Not current month
-          if (!dayObj.isCurrentMonth) cls += "text-gray-300 ";
+            if (!dayObj.isCurrentMonth) cls += "text-gray-300";
+            if (isBooked && !isToday) cls += "bg-gray-500 text-white ";
+            if (isToday) cls += "bg-blue-500 text-white ";
+            if (isSelected) cls += "border-4 border-yellow-400 ";
+            if (!isToday && !isBooked && dayObj.isCurrentMonth && !isSelected) {
+              cls += "text-gray-700 hover:bg-gray-100 ";
+            }
 
-          // Background colors
-          if (isBooked && !isToday) cls += "bg-gray-500 text-white ";
-          if (isToday) cls += "bg-blue-500 text-white ";
-
-          // Selected ring
-          if (isSelected) cls += "border-4 border-yellow-400 ";
-
-          // Default text & hover for normal days
-          if (!isToday && !isBooked && dayObj.isCurrentMonth && !isSelected) {
-            cls += "text-gray-700 hover:bg-gray-100 ";
-          }
-
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => handleDayClick(dayObj.date)}
-              className={cls}
-              aria-pressed={isSelected}
-            >
-              {dayObj.date.getDate()}
-            </button>
-          );
-        })}
-      </div>
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  if (dayObj.isCurrentMonth) {
+                    handleDayClick(dayObj.date);
+                  } else {
+                    setCurrentMonth(
+                      new Date(
+                        dayObj.date.getFullYear(),
+                        dayObj.date.getMonth(),
+                        1
+                      )
+                    );
+                    handleDayClick(dayObj.date);
+                  }
+                }}
+                className={cls}
+                aria-pressed={isSelected}
+              >
+                {dayObj.date.getDate()}
+              </button>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

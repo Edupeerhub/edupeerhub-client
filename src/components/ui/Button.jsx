@@ -6,7 +6,7 @@ const Button = ({
   disabled = false,
   loading = false,
 }) => {
-  const baseStyles = "px-4 py-2 mt-5 rounded-full font-medium w-full";
+  const baseStyles = "px-4 py-2 rounded-full font-medium w-full";
   const enabledStyles = "bg-blue-500 text-white hover:bg-blue-600";
   const disabledStyles = "bg-gray-400 text-white cursor-not-allowed";
 

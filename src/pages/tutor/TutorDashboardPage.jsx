@@ -426,7 +426,7 @@ function SessionCard({ session, onClick }) {
           alt={`${session?.student?.user?.firstName} profile`}
           className="w-8 h-8 rounded-full"
         />
-        <div>
+        <div className="flex flex-col items-start">
           <p className="font-medium text-sm">{`${session?.student?.user?.firstName} ${session?.student?.user?.lastName}`}</p>
           <p className="text-xs text-gray-500">{session?.subject?.name}</p>
           <p className="text-xs text-gray-500">

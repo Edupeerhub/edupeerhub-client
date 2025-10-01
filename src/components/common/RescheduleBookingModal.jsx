@@ -8,13 +8,13 @@ import {
 } from "../../utils/toastDisplayHandler";
 import DropdownPicker from "../../components/ui/DropdownPicker";
 import {
-  generateDateOptions,
   generateTimeSlots,
   getAvailableEndTimes,
   calculateDuration,
   makeReschedulePayload,
   fromUtcToLocalParts,
 } from "../../utils/time";
+import { useDateOptions } from "../../hooks/tutor/useDateOptions";
 
 const RescheduleBookingModal = ({ booking, isOpen, onClose, onReschedule }) => {
   const [formData, setFormData] = useState({
@@ -50,6 +50,8 @@ const RescheduleBookingModal = ({ booking, isOpen, onClose, onReschedule }) => {
       });
     }
   }, [booking]);
+
+  const dateOptions = useDateOptions(formData.date);
 
   if (!isOpen || !booking) {
     return null;
@@ -96,7 +98,7 @@ const RescheduleBookingModal = ({ booking, isOpen, onClose, onReschedule }) => {
             label="Date"
             value={formData.date}
             onChange={(val) => handleChange("date", val)}
-            options={generateDateOptions()}
+            options={dateOptions}
             placeholder="Select a date"
           />
 
