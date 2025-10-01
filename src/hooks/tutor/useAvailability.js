@@ -2,8 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchStudentTutorAvailability } from "../../lib/api/common/bookingApi";
 
 const getTodayDate = () => {
-  const today = new Date();
-  return today.toISOString().split("T")[0]; // YYYY-MM-DD
+  return new Date().toLocaleDateString("en-CA"); // Returns YYYY-MM-DD in local timezone
 };
 
 export function useAvailability({

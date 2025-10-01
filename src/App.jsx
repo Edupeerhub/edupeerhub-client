@@ -15,7 +15,6 @@ import PublicOnlyRoute from "./components/routes/PublicRoute";
 import EmailVerificationRoute from "./components/routes/EmailVerificationRoute";
 import AdminRoute from "./components/routes/AdminRoute";
 import OnboardingRoute from "./components/routes/OnboardingRoute";
-import PrivateRoute from "./components/routes/PrivateRoute";
 import NotFoundPage from "./pages/general/NotFoundPage";
 import Layout from "./layouts/Layout";
 import {
@@ -30,7 +29,6 @@ import StudentTutorsPage from "./pages/student/StudentTutorsPage";
 import StudentSettingsPage from "./pages/student/StudentSettingsPage";
 import FAQPage from "./pages/general/FAQPage";
 import TutorSettingsPage from "./pages/tutor/TutorSettingsPage";
-import TutorProfilePage from "./pages/tutor/TutorProfilePage";
 import AboutPage from "./pages/landing/AboutPage";
 import FeaturePage from "./pages/landing/FeaturePage";
 import ContactPage from "./pages/landing/ContactPage";
@@ -48,6 +46,7 @@ import RecentChatsPage from "./pages/messaging/RecentChatsPage";
 import TutorPrivateProfilePage from "./pages/tutor/TutorPrivateProfilePage";
 import BookingRequestsPage from "./pages/tutor/BookingRequestsPage";
 import StudentSessionsPage from "./pages/student/StudentSessionsPage";
+import StudentTutorProfilePage from "./pages/student/StudentTutorProfilePage";
 
 export default function App() {
   const location = useLocation();
@@ -105,7 +104,10 @@ export default function App() {
           <Route path="dashboard" element={<StudentDashboardPage />} />
           <Route path="library" element={<StudentLibraryPage />} />
           <Route path="tutors" element={<StudentTutorsPage />} />
-          <Route path="tutor-profile/:id" element={<TutorProfilePage />} />
+          <Route
+            path="tutor-profile/:id"
+            element={<StudentTutorProfilePage />}
+          />
           <Route
             path="chats"
             element={<RecentChatsPage key={location.pathname} />}
@@ -153,19 +155,6 @@ export default function App() {
           <Route path="profile" element={<TutorPrivateProfilePage />} />
           <Route path="booking-requests" element={<BookingRequestsPage />} />
         </Route>
-
-        {/* Chat & Video/Calling routes: accessible to both students and tutors */}
-        {/* Requires: logged-in, verified, onboarded */}
-        {/* <Route
-          element={
-            <PrivateRoute>
-              <Layout fullHeight={true} />
-            </PrivateRoute>
-          }
-        >
-          <Route path="/chat/:id" element={<ChatPage />} />
-          <Route path="/call/:id" element={<CallPage />} />
-        </Route> */}
 
         {/* Admin protected routes: require login, verified, onboarded, role = admin */}
         <Route

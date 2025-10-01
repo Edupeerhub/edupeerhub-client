@@ -6,46 +6,40 @@ import {
 } from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import { formatDate, formatTimeRange } from "../../utils/time";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
 import {
   handleToastSuccess,
   handleToastError,
 } from "../../utils/toastDisplayHandler";
+import SessionStats from "../../components/common/SessionStats";
+import SessionList from "../../components/common/SessionList";
 
 const StudentSessionsPage = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const queryClient = useQueryClient();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+
   const [selectedBooking, setSelectedBooking] = useState(null);
 
   const {
-    data: upcomingBookings,
-    isLoading: isLoadingUpcoming,
-    isError: isErrorUpcoming,
-    error: errorUpcoming,
+    data: studentBookingsData,
+    isLoading: isLoadingStudentBookingsData,
+    isError: isErrorStudentBookingsData,
+    error: errorStudentBookingsData,
   } = useQuery({
-    queryKey: ["studentUpcomingBookings"],
-    queryFn: () => getAllStudentBookings({ status: "confirmed" }),
-  });
-
-  const {
-    data: pastBookings,
-    isLoading: isLoadingPast,
-    isError: isErrorPast,
-    error: errorPast,
-  } = useQuery({
-    queryKey: ["studentPastBookings"],
-    queryFn: () => getAllStudentBookings({ status: "completed" }),
+    queryKey: ["studentSessions"],
+    queryFn: () =>
+      getAllStudentBookings({
+        status: ["confirmed", "completed", "pending", "cancelled"],
+      }),
   });
 
   const cancelMutation = useMutation({
-    mutationFn: cancelStudentBooking,
+    mutationFn: ({ id, cancellationReason }) =>
+      cancelStudentBooking(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["studentUpcomingBookings"]);
-      queryClient.invalidateQueries(["studentPastBookings"]);
+      queryClient.invalidateQueries(["studentSessions"]);
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
@@ -64,31 +58,15 @@ const StudentSessionsPage = () => {
     setSelectedBooking(null);
   };
 
-  const handleOpenRescheduleModal = () => {
-    setIsDetailsModalOpen(false);
-    setIsRescheduleModalOpen(true);
-  };
-
-  const handleCloseRescheduleModal = () => {
-    setIsRescheduleModalOpen(false);
-    setSelectedBooking(null);
-  };
-
   const handleCancelBooking = (cancellationReason) => {
     if (selectedBooking) {
       cancelMutation.mutate({
-        bookingId: selectedBooking.id,
+        id: selectedBooking.id,
         cancellationReason,
       });
     }
   };
-
-  const handleRescheduleBooking = (rescheduleData) => {
-    console.log("Reschedule booking:", rescheduleData);
-    setIsRescheduleModalOpen(false);
-  };
-
-  if (isLoadingUpcoming || isLoadingPast) {
+  if (isLoadingStudentBookingsData) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner size="large" />
@@ -96,17 +74,63 @@ const StudentSessionsPage = () => {
     );
   }
 
-  if (isErrorUpcoming || isErrorPast) {
-    return <ErrorAlert error={errorUpcoming?.message || errorPast?.message} />;
+  if (isErrorStudentBookingsData) {
+    return <ErrorAlert error={errorStudentBookingsData?.message} />;
   }
 
-  const bookingsToDisplay =
-    activeTab === "upcoming" ? upcomingBookings : pastBookings;
+  const upcomingBookings =
+    studentBookingsData?.filter((b) => b.status === "confirmed") || [];
+  const pastBookings =
+    studentBookingsData?.filter((b) => b.status === "completed") || [];
+  const pendingBookings =
+    studentBookingsData?.filter((b) => b.status === "pending") || [];
+  const cancelledBookings =
+    studentBookingsData?.filter((b) => b.status === "cancelled") || [];
+
+  const sessions = {
+    upcoming: upcomingBookings,
+    past: pastBookings,
+    pending: pendingBookings,
+    cancelled: cancelledBookings,
+  };
+
+  const sessionsToDisplay = sessions[activeTab] || [];
+
+  const noSessionsMessages = {
+    upcoming: "No upcoming sessions.",
+    past: "No past sessions.",
+    pending: "No pending requests.",
+    cancelled: "No cancelled sessions.",
+  };
+
+  const stats = [
+    {
+      title: "Total Sessions",
+      value: studentBookingsData?.length || 0,
+    },
+    {
+      title: "Upcoming",
+      value: upcomingBookings.length,
+    },
+    {
+      title: "Completed",
+      value: pastBookings.length,
+    },
+    {
+      title: "Pending",
+      value: pendingBookings.length,
+    },
+    {
+      title: "Cancelled",
+      value: cancelledBookings.length,
+    },
+  ];
 
   return (
     <>
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">My Bookings</h1>
+      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        <h1 className="text-2xl font-bold mb-4">My Sessions</h1>
+        <SessionStats stats={stats} isCompact={true} />
         <div className="border-b border-gray-200 mb-6">
           <div className="flex gap-6 sm:gap-8">
             <button
@@ -117,7 +141,7 @@ const StudentSessionsPage = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              Upcoming sessions
+              Upcoming
             </button>
             <button
               onClick={() => setActiveTab("past")}
@@ -127,159 +151,36 @@ const StudentSessionsPage = () => {
                   : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
-              Past sessions
+              Past
+            </button>
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "pending"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Pending
+            </button>
+            <button
+              onClick={() => setActiveTab("cancelled")}
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "cancelled"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Cancelled
             </button>
           </div>
         </div>
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          {/* Desktop Table */}
-          <table className="min-w-full leading-normal hidden md:table">
-            <thead>
-              <tr>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Tutor
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Subject
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Time
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookingsToDisplay && bookingsToDisplay.length > 0 ? (
-                bookingsToDisplay.map((booking) => (
-                  <tr key={booking.id}>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                      <p className="text-gray-900 whitespace-no-wrap">
-                        {booking.tutor.user.firstName}{" "}
-                        {booking.tutor.user.lastName}
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                      <p className="text-gray-900 whitespace-no-wrap">
-                        {booking.subject.name}
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                      <p className="text-gray-900 whitespace-no-wrap">
-                        {formatDate(booking.scheduledStart)}
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                      <p className="text-gray-900 whitespace-no-wrap">
-                        {formatTimeRange(
-                          booking.scheduledStart,
-                          booking.scheduledEnd
-                        )}
-                      </p>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                      <span
-                        className={`relative inline-block px-3 py-1 font-semibold leading-tight ${
-                          booking.status === "confirmed"
-                            ? "text-green-900"
-                            : "text-yellow-900"
-                        }`}
-                      >
-                        <span
-                          aria-hidden
-                          className={`absolute inset-0 ${
-                            booking.status === "confirmed"
-                              ? "bg-green-200"
-                              : "bg-yellow-200"
-                          } opacity-50 rounded-full`}
-                        ></span>
-                        <span className="relative">{booking.status}</span>
-                      </span>
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
-                      <button
-                        onClick={() => handleViewDetails(booking)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="text-center py-10">
-                    You have no bookings.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          {/* Mobile Cards */}
-          <div className="md:hidden">
-            {bookingsToDisplay && bookingsToDisplay.length > 0 ? (
-              bookingsToDisplay.map((booking) => (
-                <div key={booking.id} className="p-4 border-b border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold">
-                      {booking.subject.name}
-                    </p>
-                    <span
-                      className={`relative inline-block px-3 py-1 font-semibold leading-tight ${
-                        booking.status === "confirmed"
-                          ? "text-green-900"
-                          : "text-yellow-900"
-                      }`}
-                    >
-                      <span
-                        aria-hidden
-                        className={`absolute inset-0 ${
-                          booking.status === "confirmed"
-                            ? "bg-green-200"
-                            : "bg-yellow-200"
-                        } opacity-50 rounded-full`}
-                      ></span>
-                      <span className="relative">{booking.status}</span>
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {booking.tutor.user.firstName} {booking.tutor.user.lastName}
-                  </p>
-                  <div className="flex justify-between mt-2">
-                    <div>
-                      <p className="text-sm text-gray-500">Date</p>
-                      <p>{formatDate(booking.scheduledStart)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Time</p>
-                      <p>
-                        {formatTimeRange(
-                          booking.scheduledStart,
-                          booking.scheduledEnd
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      onClick={() => handleViewDetails(booking)}
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-center py-10">You have no bookings.</p>
-            )}
-          </div>
-        </div>
+        <SessionList
+          sessions={sessionsToDisplay}
+          userType="student"
+          onViewDetails={handleViewDetails}
+          noSessionsMessage={noSessionsMessages[activeTab]}
+        />
       </div>
       <BookingDetailsModal
         isOpen={isDetailsModalOpen}
@@ -287,15 +188,7 @@ const StudentSessionsPage = () => {
         booking={selectedBooking}
         userType="student"
         onCancel={handleCancelBooking}
-        onReschedule={handleOpenRescheduleModal}
-        isPast={activeTab === "past"}
-      />
-      <RescheduleBookingModal
-        isOpen={isRescheduleModalOpen}
-        onClose={handleCloseRescheduleModal}
-        booking={selectedBooking}
-        userType="student"
-        onReschedule={handleRescheduleBooking}
+        isPast={activeTab === "past" || activeTab === "cancelled"}
       />
     </>
   );

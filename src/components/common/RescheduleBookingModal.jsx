@@ -1,64 +1,141 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/dist/style.css';
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { rescheduleBooking } from "../../lib/api/common/bookingApi";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
+import DropdownPicker from "../../components/ui/DropdownPicker";
+import {
+  generateTimeSlots,
+  getAvailableEndTimes,
+  calculateDuration,
+  makeReschedulePayload,
+  fromUtcToLocalParts,
+} from "../../utils/time";
+import { useDateOptions } from "../../hooks/tutor/useDateOptions";
 
-const RescheduleBookingModal = ({
-  booking,
-  userType,
-  isOpen,
-  onClose,
-  onReschedule,
-}) => {
-  const [date, setDate] = useState(null);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+const RescheduleBookingModal = ({ booking, isOpen, onClose, onReschedule }) => {
+  const [formData, setFormData] = useState({
+    date: "",
+    startTime: "",
+    endTime: "",
+  });
 
-  const isStudent = userType === 'student';
+  const rescheduleBookingMutation = useMutation({
+    mutationFn: (data) => rescheduleBooking(booking.id, data),
+    onSuccess: () => {
+      handleToastSuccess("Booking rescheduled successfully!");
+      onClose();
+      onReschedule();
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to reschedule booking.");
+    },
+  });
+
+  // 🔹 Pre-fill with existing booking schedule
+  useEffect(() => {
+    if (booking) {
+      const { date: startDate, time: startTime } = fromUtcToLocalParts(
+        booking.scheduledStart
+      );
+      const { time: endTime } = fromUtcToLocalParts(booking.scheduledEnd);
+
+      setFormData({
+        date: startDate,
+        startTime,
+        endTime,
+      });
+    }
+  }, [booking]);
+
+  const dateOptions = useDateOptions(formData.date);
 
   if (!isOpen || !booking) {
     return null;
   }
 
+  // 🔹 Handle field updates
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "startTime" ? { endTime: "" } : {}), // reset endTime if start changes
+    }));
+  };
+
+  // 🔹 Submit reschedule
   const handleReschedule = () => {
-    console.log({ bookingId: booking.id, date, startTime, endTime });
-    onReschedule();
+    const { date, startTime, endTime } = formData;
+    if (!date || !startTime || !endTime) {
+      handleToastError(null, "Please select a date, start time, and end time.");
+      return;
+    }
+
+    rescheduleBookingMutation.mutate(
+      makeReschedulePayload(date, startTime, endTime)
+    );
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">Reschedule Booking</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded-full"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="space-y-4">
-          <div className="flex justify-center">
-            <DayPicker mode="single" selected={date} onSelect={setDate} />
-          </div>
+          {/* Date Picker */}
+          <DropdownPicker
+            label="Date"
+            value={formData.date}
+            onChange={(val) => handleChange("date", val)}
+            options={dateOptions}
+            placeholder="Select a date"
+          />
+
+          {/* Time Pickers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Start Time</label>
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">End Time</label>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
+            <DropdownPicker
+              label="Start Time"
+              value={formData.startTime}
+              onChange={(val) => handleChange("startTime", val)}
+              options={generateTimeSlots()}
+              placeholder="Select start time"
+            />
+
+            <DropdownPicker
+              label="End Time"
+              value={formData.endTime}
+              onChange={(val) => handleChange("endTime", val)}
+              options={getAvailableEndTimes(formData.startTime)}
+              disabled={!formData.startTime}
+              placeholder={
+                formData.startTime
+                  ? "Select end time"
+                  : "Select start time first"
+              }
+            />
           </div>
+
+          {/* Duration Display */}
+          {formData.startTime && formData.endTime && (
+            <div className="bg-blue-50 p-3 rounded-md">
+              <p className="text-sm text-blue-700">
+                Session Duration:{" "}
+                {calculateDuration(formData.startTime, formData.endTime)}{" "}
+                minutes
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
@@ -67,8 +144,10 @@ const RescheduleBookingModal = ({
           </button>
           <button
             onClick={handleReschedule}
-            className="btn btn-primary"
-            disabled={!date || !startTime || !endTime}
+            className="btn btn-primary btn-primary-focus text-white"
+            disabled={
+              !formData.date || !formData.startTime || !formData.endTime
+            }
           >
             Confirm Reschedule
           </button>

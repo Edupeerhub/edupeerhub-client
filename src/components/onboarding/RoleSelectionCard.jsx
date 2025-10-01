@@ -1,5 +1,3 @@
-import React from "react";
-
 const RoleSelectionCard = ({
   role,
   description,
@@ -22,7 +20,7 @@ const RoleSelectionCard = ({
       <div className="flex justify-center mb-2 md:mb-6">
         <img
           src={image}
-          className="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden"
+          className="w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden"
         />
       </div>
 

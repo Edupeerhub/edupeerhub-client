@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import dropdownIcon from "../assets/Calendar-icon/chevron-down.svg";
+import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const formatDate = (date, format) => {
   const months = [
@@ -31,19 +33,36 @@ const formatDate = (date, format) => {
     "Dec",
   ];
 
-  if (format === "YYYY-MM-DD") {
+  // if (format === "yyyy-MM-dd") {
+  //   const year = date.getUTCFullYear();
+  //   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  //   const day = String(date.getUTCDate()).padStart(2, "0");
+  //   return `${year}-${month}-${day}`;
+  // }
+  // if (format === "yyyy-MM") {
+  //   const year = date.getFullYear();
+  //   const month = String(date.getMonth() + 1).padStart(2, "0");
+  //   return `${year}-${month}`;
+  // }
+  if (format === "yyyy-MM-dd") {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
-  if (format === "MMMM YYYY") {
+  if (format === "yyyy-MM") {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  }
+  if (format === "MMMM yyyy") {
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   }
   if (format === "MMM") {
     return shortMonths[date.getMonth()];
   }
-  return date.toString();
+  // return date.toString();
+  return date.toISOString(); // only when you need to send to backend
 };
 
 const startOfMonth = (date) => {
@@ -66,16 +85,35 @@ const addDays = (date, days) => {
   return newDate;
 };
 
-const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
+const Calendar = ({
+  bookingDates = [],
+  compact = true,
+  onMonthChange,
+  onDateClick,
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  React.useEffect(() => {
-    if (onMonthChange) onMonthChange(currentMonth);
-  }, [currentMonth, onMonthChange]);
+  // Memoize the formatted month to prevent unnecessary re-renders
+  const currentMonthString = formatDate(currentMonth, "yyyy-MM");
 
-  const today = formatDate(new Date(), "YYYY-MM-DD");
+  // Use useCallback to prevent function recreation on every render
+  const handleMonthChangeCallback = useCallback(
+    (monthString) => {
+      if (onMonthChange) {
+        onMonthChange(monthString);
+      }
+    },
+    [onMonthChange]
+  );
+
+  // Only call onMonthChange when the month actually changes
+  useEffect(() => {
+    handleMonthChangeCallback(currentMonthString);
+  }, [currentMonthString, handleMonthChangeCallback]);
+
+  const today = formatDate(new Date(), "yyyy-MM-dd");
 
   // Build days grid
   const monthStart = startOfMonth(currentMonth);
@@ -84,65 +122,89 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
   const days = [];
 
   // Previous month's trailing days
-  for (let i = 0; i < startDay; i++) {
+  const prevMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() - 1,
+    1
+  );
+  const prevMonthDays = daysInMonth(prevMonth);
+  for (let i = startDay; i > 0; i--) {
     days.push({
-      date: addDays(monthStart, i - startDay),
+      date: new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() - 1,
+        prevMonthDays - i + 1
+      ),
       isCurrentMonth: false,
     });
   }
 
   // Current month days
   for (let i = 1; i <= daysInCurrentMonth; i++) {
-    const date = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      i
-    );
-    days.push({ date, isCurrentMonth: true });
-  }
-
-  // Next month's leading days
-  while (days.length < 42) {
-    const lastDate = days[days.length - 1].date;
     days.push({
-      date: addDays(lastDate, 1),
-      isCurrentMonth: false,
+      date: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i),
+      isCurrentMonth: true,
     });
   }
 
-  const handleDayClick = (day) => {
-    setSelectedDate(formatDate(day, "YYYY-MM-DD"));
-  };
+  // Next month's leading days
+  const nextMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    1
+  );
+  let nextDay = 1;
+  while (days.length < 42) {
+    days.push({
+      date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), nextDay),
+      isCurrentMonth: false,
+    });
+    nextDay++;
+  }
 
-  const handlePreviousMonth = () => {
+  const handleDayClick = useCallback(
+    (day) => {
+      const formattedDate = formatDate(day, "yyyy-MM-dd");
+      setSelectedDate(formattedDate);
+      if (onDateClick) {
+        onDateClick(formattedDate);
+      }
+    },
+    [onDateClick]
+  );
+
+  const handlePreviousMonth = useCallback(() => {
     setCurrentMonth((prev) => addMonths(prev, -1));
-  };
+  }, []);
 
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     setCurrentMonth((prev) => addMonths(prev, 1));
-  };
+  }, []);
 
-  const handlePreviousYear = () => {
+  const handlePreviousYear = useCallback(() => {
     setCurrentMonth((prev) => {
       const newDate = new Date(prev);
       newDate.setFullYear(newDate.getFullYear() - 1);
       return newDate;
     });
-  };
+  }, []);
 
-  const handleNextYear = () => {
+  const handleNextYear = useCallback(() => {
     setCurrentMonth((prev) => {
       const newDate = new Date(prev);
       newDate.setFullYear(newDate.getFullYear() + 1);
       return newDate;
     });
-  };
+  }, []);
 
-  const handleMonthSelect = (monthIndex) => {
-    const newDate = new Date(currentMonth.getFullYear(), monthIndex, 1);
-    setCurrentMonth(newDate);
-    setShowDropdown(false);
-  };
+  const handleMonthSelect = useCallback(
+    (monthIndex) => {
+      const newDate = new Date(currentMonth.getFullYear(), monthIndex, 1);
+      setCurrentMonth(newDate);
+      setShowDropdown(false);
+    },
+    [currentMonth]
+  );
 
   // compact sizing
   const daySizeClass = compact ? "h-7 w-7 text-xs" : "h-9 w-9 text-sm";
@@ -160,7 +222,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
             aria-label="Previous month"
             className="px-2 py-1 text-sm hover:text-blue-600 justify-self-start"
           >
-            ◀
+            <ChevronLeft size={24} strokeWidth={3} />
           </button>
 
           {/* Middle: Month + Dropdown */}
@@ -171,7 +233,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
               className="flex items-center space-x-2 font-semibold hover:text-blue-600"
             >
               <span className={compact ? "text-sm" : ""}>
-                {formatDate(currentMonth, "MMMM YYYY")}
+                {formatDate(currentMonth, "MMMM yyyy")}
               </span>
               <img
                 src={dropdownIcon}
@@ -187,13 +249,13 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
                 {/* Year controls */}
                 <div className="flex items-center justify-between mb-2">
                   <button onClick={handlePreviousYear} className="px-2">
-                    ◀
+                    <ChevronLeft size={24} strokeWidth={3} />
                   </button>
                   <span className="font-semibold">
                     {currentMonth.getFullYear()}
                   </span>
                   <button onClick={handleNextYear} className="px-2">
-                    ▶
+                    <ChevronRight size={24} strokeWidth={3} />
                   </button>
                 </div>
 
@@ -231,7 +293,7 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
             aria-label="Next month"
             className="px-2 py-1 text-sm hover:text-blue-600 justify-self-end"
           >
-            ▶
+            <ChevronRight size={24} strokeWidth={3} />
           </button>
         </div>
       </div>
@@ -244,33 +306,58 @@ const Calendar = ({ bookingDates = [], compact = true, onMonthChange }) => {
       </div>
 
       {/* Days grid */}
-      <div className="grid grid-cols-7 gap-y-1 text-center">
-        {days.map((dayObj, i) => {
-          const formatted = formatDate(dayObj.date, "YYYY-MM-DD");
-          const isToday = formatted === today;
-          const isSelected = formatted === selectedDate;
-          const isBooked = bookingDates.includes(formatted);
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentMonthString} // important: triggers animation on month change
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -50, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="grid grid-cols-7 gap-y-1 text-center"
+        >
+          {days.map((dayObj, i) => {
+            const formatted = formatDate(dayObj.date, "yyyy-MM-dd");
+            const isToday = formatted === today;
+            const isSelected = formatted === selectedDate;
+            const isBooked = bookingDates.includes(formatted);
 
-          let cls = `mx-auto flex ${daySizeClass} items-center justify-center rounded-full cursor-pointer transition `;
-          if (!dayObj.isCurrentMonth) cls += "text-gray-300 ";
-          else if (isSelected) cls += "bg-blue-500 text-white ";
-          else if (isToday) cls += "border border-blue-500 text-blue-500 ";
-          else if (isBooked) cls += "bg-green-100 text-green-700 ";
-          else cls += "text-gray-700 hover:bg-gray-100 ";
+            let cls = `relative mx-auto flex ${daySizeClass} items-center justify-center rounded-full cursor-pointer transition `;
 
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => handleDayClick(dayObj.date)}
-              className={cls}
-              aria-pressed={isSelected}
-            >
-              {dayObj.date.getDate()}
-            </button>
-          );
-        })}
-      </div>
+            if (!dayObj.isCurrentMonth) cls += "text-gray-300";
+            if (isBooked && !isToday) cls += "bg-gray-500 text-white ";
+            if (isToday) cls += "bg-blue-500 text-white ";
+            if (isSelected) cls += "border-4 border-yellow-400 ";
+            if (!isToday && !isBooked && dayObj.isCurrentMonth && !isSelected) {
+              cls += "text-gray-700 hover:bg-gray-100 ";
+            }
+
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  if (dayObj.isCurrentMonth) {
+                    handleDayClick(dayObj.date);
+                  } else {
+                    setCurrentMonth(
+                      new Date(
+                        dayObj.date.getFullYear(),
+                        dayObj.date.getMonth(),
+                        1
+                      )
+                    );
+                    handleDayClick(dayObj.date);
+                  }
+                }}
+                className={cls}
+                aria-pressed={isSelected}
+              >
+                {dayObj.date.getDate()}
+              </button>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

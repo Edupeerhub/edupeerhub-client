@@ -1,20 +1,44 @@
-import { useNavigate } from "react-router-dom";
 import { BellIcon, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import useAuthUser from "../hooks/auth/useAuthUser";
 import ProfileDropdown from "../components/navbar/ProfileDropdown";
 import useLogout from "../hooks/auth/useLogout";
+import NotificationDropdown from "../components/navbar/NotificationDropdown";
+import { useNotifications } from "../hooks/notifications/useNotfications";
 
 const Navbar = ({ onToggleSidebar }) => {
   const { authUser } = useAuthUser();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
+    useState(false);
+  const profileDropdownRef = useRef(null);
+  const notificationDropdownRef = useRef(null);
+
+  // Get notifications based on user role
+  const {
+    unreadNotifications,
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications(authUser?.role);
+
+  const { logoutMutation } = useLogout();
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target)
+      ) {
         setIsProfileDropdownOpen(false);
+      }
+      if (
+        notificationDropdownRef.current &&
+        !notificationDropdownRef.current.contains(event.target)
+      ) {
+        setIsNotificationDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -23,9 +47,13 @@ const Navbar = ({ onToggleSidebar }) => {
 
   const handleProfileMenuClick = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
+    setIsNotificationDropdownOpen(false);
   };
 
-  const { logoutMutation } = useLogout();
+  const handleNotificationMenuClick = () => {
+    setIsNotificationDropdownOpen(!isNotificationDropdownOpen);
+    setIsProfileDropdownOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-20 bg-white shadow-md border-b border-gray-300">
@@ -54,12 +82,32 @@ const Navbar = ({ onToggleSidebar }) => {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            <button className="btn btn-ghost btn-circle btn-sm sm:btn-md">
-              <BellIcon className="h-5 w-5 sm:h-6 sm:w-6 text-base-content opacity-70" />
-            </button>
+            <div className="relative" ref={notificationDropdownRef}>
+              <button
+                onClick={handleNotificationMenuClick}
+                className="btn btn-ghost btn-circle btn-sm sm:btn-md"
+              >
+                <div className="indicator">
+                  <BellIcon className="h-5 w-5 sm:h-6 sm:w-6 text-base-content opacity-70" />
+                  {unreadCount > 0 && (
+                    <span className="indicator-item badge badge-secondary badge-sm">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+              </button>
+              {isNotificationDropdownOpen && (
+                <NotificationDropdown
+                  notifications={unreadNotifications}
+                  onMarkAsRead={markAsRead}
+                  onMarkAllAsRead={markAllAsRead}
+                  onClose={() => setIsNotificationDropdownOpen(false)}
+                />
+              )}
+            </div>
 
             {/* Profile */}
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative" ref={profileDropdownRef}>
               <div
                 onClick={handleProfileMenuClick}
                 className="flex items-center gap-2 sm:gap-3 bg-gray-50 hover:bg-gray-100 rounded-full pl-1 pr-2 sm:pr-4 py-1 cursor-pointer transition-colors border border-gray-200"

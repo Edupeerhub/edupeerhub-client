@@ -1,6 +1,6 @@
 import { useState } from "react";
-import StudentAvatar from "../../assets/images/onboarding/woman.png";
-import TeacherAvatar from "../../assets/images/onboarding/man.png";
+import Tutor from "../../assets/images/onboarding/tutor.svg";
+import Student from "../../assets/images/onboarding/student.svg";
 import RoleSelectionCard from "../../components/onboarding/RoleSelectionCard";
 import { useNavigate } from "react-router-dom";
 
@@ -9,9 +9,9 @@ const RoleSelectionPage = () => {
   const navigate = useNavigate();
 
   const handleRoleSelection = (role) => {
-    if (role === "Tutor") {
+    if (role === "tutor") {
       navigate("/tutor/onboarding");
-    } else if (role === "Student") {
+    } else if (role === "student") {
       navigate("/student/onboarding");
     }
   };
@@ -19,16 +19,17 @@ const RoleSelectionPage = () => {
   const roles = [
     {
       id: "tutor",
-      role: "Tutor",
-      description: "You want to share your knowledge and help students succeed",
-      image: TeacherAvatar,
+      role: "I'm a Tutor",
+      description:
+        "I want to share my expertise and coach students to succeed in crucial exams like WAEC and JAMB.",
+      image: Tutor,
     },
     {
       id: "student",
-      role: "Student",
+      role: "I'm a Student",
       description:
-        "You are focused on building knowledge and creating a bright future",
-      image: StudentAvatar,
+        "I want to find qualified tutors to help me prepare for WAEC, JAMB and other important exams.",
+      image: Student,
     },
   ];
 
@@ -42,7 +43,8 @@ const RoleSelectionPage = () => {
             for?
           </h1>
           <p className="text-sm md:text-lg text-gray-600 max-w-2xl mx-auto">
-            Sign up as a student or teacher to begin your journey
+            Connecting Nigerian students with qualified tutors fro WAEC, JAMB
+            and exam preparation.
           </p>
         </div>
 
@@ -54,7 +56,7 @@ const RoleSelectionPage = () => {
               role={roleData.role}
               description={roleData.description}
               image={roleData.image}
-              onClick={() => handleRoleSelection(roleData.role)}
+              onClick={() => handleRoleSelection(roleData.id)}
               isHovered={hoveredCard === roleData.id}
               onHover={() => setHoveredCard(roleData.id)}
               onLeave={() => setHoveredCard(null)}

@@ -20,23 +20,28 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
 
   const getTutorStatus = () => {
     if (!tutor) return null;
-    if (tutor.approvalStatus === 'approved' && user.accountStatus === 'active') {
-      return 'active';
+    if (
+      tutor.approvalStatus === "approved" &&
+      user.accountStatus === "active"
+    ) {
+      return "active";
     }
     return tutor.approvalStatus;
-  }
+  };
 
   const tutorStatus = getTutorStatus();
 
-  const isTutorAndRestricted = authUser?.role === 'tutor' && (tutorStatus === 'pending' || tutorStatus === 'rejected');
+  const isTutorAndRestricted =
+    authUser?.role === "tutor" &&
+    (tutorStatus === "pending" || tutorStatus === "rejected");
 
   const baseClasses =
     "btn btn-ghost justify-start w-full gap-3 px-3 normal-case transition-colors duration-200";
 
   const handleLinkClick = (e, label) => {
-    if (isTutorAndRestricted && label !== 'Dashboard') {
-        e.preventDefault();
-        return;
+    if (isTutorAndRestricted && label !== "Dashboard") {
+      e.preventDefault();
+      return;
     }
     if (window.innerWidth < 1024) {
       onClose();
@@ -76,7 +81,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
           {/* Close button - only visible on mobile */}
           <button
             onClick={onClose}
-            className="md:hidden ml-auto p-2 rounded-md text-gray-400 hover:text-white bg-gray-700 transition-colors "
+            className="md:hidden ml-auto p-2 rounded-md text-gray-100 hover:text-white bg-gray-400 transition-colors "
           >
             <svg
               className="w-5 h-5"
@@ -95,37 +100,37 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 p-4 space-y-7 mt-4 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-5 md:space-y-4 mt-1 overflow-y-auto">
           {links.map(({ path, label, icon: Icon }) => {
-            const isDisabled = isTutorAndRestricted && label !== 'Dashboard';
+            const isDisabled = isTutorAndRestricted && label !== "Dashboard";
             return (
-                <NavLink
+              <NavLink
                 key={path}
-                to={isDisabled ? '#' : path}
+                to={isDisabled ? "#" : path}
                 onClick={(e) => handleLinkClick(e, label)}
                 className={({ isActive }) =>
-                    `${baseClasses} ${
+                  `${baseClasses} ${
                     isActive && !isDisabled
-                        ? " text-[#0568FF] bg-[#CDE1FF]"
-                        : isDisabled
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-[#2C3A47] hover:text-[#0568FF] hover:bg-[#CDE1FF]"
-                    }`
+                      ? " text-[#0568FF] bg-[#CDE1FF]"
+                      : isDisabled
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-[#2C3A47] hover:text-[#0568FF] hover:bg-[#CDE1FF]"
+                  }`
                 }
-                >
+              >
                 {Icon && (
-                    <Icon
+                  <Icon
                     className="size-5 opacity-70"
                     style={{
-                        fill: "cuurrentColor",
-                        stroke: "currentColor",
+                      fill: "cuurrentColor",
+                      stroke: "currentColor",
                     }}
-                    />
+                  />
                 )}
                 <span>{label}</span>
-                </NavLink>
+              </NavLink>
             );
-            })}
+          })}
         </nav>
         <div className="p-4">
           <button

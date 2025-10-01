@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { formatDate, formatTimeRange, formatDuration } from "../../utils/time";
 import { Link } from "react-router-dom";
-import useCallAccess from "../../hooks/booking/useCallAccess"; // New import
+import useCallAccess from "../../hooks/booking/useCallAccess";
 
 const BookingDetailsModal = ({
   booking,
@@ -14,8 +14,7 @@ const BookingDetailsModal = ({
   isPast,
 }) => {
   const [cancellationReason, setCancellationReason] = useState("");
-  // Use the new hook for access control
-  const { canAccess, reason } = useCallAccess(booking); // New line
+  const { canAccess, reason } = useCallAccess(booking);
 
   if (!isOpen || !booking) {
     return null;
@@ -23,7 +22,7 @@ const BookingDetailsModal = ({
 
   const isStudent = userType === "student";
   const otherParty = isStudent ? booking.tutor : booking.student;
-  const otherPartyName = `${otherParty.user.firstName} ${otherParty.user.lastName}`;
+  const otherPartyName = `${otherParty?.user?.firstName} ${otherParty?.user?.lastName}`;
 
   const handleCancel = () => {
     onCancel(cancellationReason);
@@ -52,18 +51,21 @@ const BookingDetailsModal = ({
             </div>
             <div>
               <p className="text-sm text-gray-500">Subject</p>
-              <p className="font-semibold">{booking.subject.name}</p>
+              <p className="font-semibold">{booking?.subject?.name}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Date</p>
               <p className="font-semibold">
-                {formatDate(booking.scheduledStart)}
+                {formatDate(booking?.scheduledStart)}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Time</p>
               <p className="font-semibold">
-                {formatTimeRange(booking.scheduledStart, booking.scheduledEnd)}
+                {formatTimeRange(
+                  booking?.scheduledStart,
+                  booking?.scheduledEnd
+                )}
               </p>
             </div>
           </div>
@@ -71,7 +73,7 @@ const BookingDetailsModal = ({
             <div>
               <p className="text-sm text-gray-500">Duration</p>
               <p className="font-semibold">
-                {formatDuration(booking.scheduledStart, booking.scheduledEnd)}
+                {formatDuration(booking?.scheduledStart, booking?.scheduledEnd)}
               </p>
             </div>
             <div>
@@ -80,26 +82,26 @@ const BookingDetailsModal = ({
                 className={`relative inline-block px-3 py-1 font-semibold leading-tight ${
                   booking.status === "confirmed"
                     ? "text-green-900"
-                    : "text-red-900"
+                    : "text-yellow-900"
                 }`}
               >
                 <span
                   aria-hidden
                   className={`absolute inset-0 ${
-                    booking.status === "confirmed"
+                    booking?.status === "confirmed"
                       ? "bg-green-200"
-                      : "bg-red-200"
+                      : "bg-yellow-200"
                   } opacity-50 rounded-full`}
                 ></span>
-                <span className="relative">{booking.status}</span>
+                <span className="relative">{booking?.status}</span>
               </span>
             </div>
             {!isPast && (
               <div>
                 <p className="text-sm text-gray-500">Meeting Link</p>
-                {canAccess ? ( // Conditional rendering based on canAccess
+                {canAccess ? (
                   <Link
-                    to={`/${userType}/call/${booking.id}`}
+                    to={`/${userType}/call/${booking?.id}`}
                     className="text-blue-600 hover:underline"
                   >
                     Join Call
@@ -109,7 +111,7 @@ const BookingDetailsModal = ({
                     className="text-gray-500 cursor-not-allowed"
                     title={reason}
                   >
-                    Join Call (Disabled: {reason})
+                    Join Call ({reason})
                   </span>
                 )}
               </div>
@@ -137,9 +139,21 @@ const BookingDetailsModal = ({
             >
               Cancel Booking
             </button>
-            <button onClick={onReschedule} className="btn btn-primary flex-1">
-              Reschedule Booking
-            </button>
+            {isStudent ? (
+              <Link
+                to={`/student/chat/${booking.tutor?.user?.id}`}
+                className="btn bg-primary hover:bg-primary-focus text-white flex-1 text-center"
+              >
+                Message Tutor
+              </Link>
+            ) : (
+              <button
+                onClick={onReschedule}
+                className="btn btn-primary flex-1 text-white"
+              >
+                Reschedule Booking
+              </button>
+            )}
           </div>
         )}
       </div>

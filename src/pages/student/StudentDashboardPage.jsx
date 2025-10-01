@@ -4,40 +4,84 @@ import streakIcon from "../../assets/Student-icon/streak.svg";
 import quizIcon from "../../assets/Student-icon/quiz.svg";
 import scoreIcon from "../../assets/Student-icon/score.svg";
 import greaterThanIcon from "../../assets/Student-icon/greater-than.svg";
-
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getRecommendedTutors } from "../../lib/api/tutor/tutorApi";
 import { Link } from "react-router-dom";
 import OverviewPanel from "../../components/student/OverviewPanel";
-import { getUpcomingSession } from "../../lib/api/common/bookingApi";
+import { endOfMonth, parseISO } from "date-fns";
+import {
+  cancelStudentBooking,
+  getUpcomingSession,
+  getAllStudentBookings,
+} from "../../lib/api/common/bookingApi";
 import Spinner from "../../components/common/Spinner";
-import TutorSearchCard from "../../components/student/TutorSearchCard";
 import HorizontalScrollTutors from "../../components/student/HorizontalScrollTutors";
 import UpcomingSessionsCard from "../../components/student/UpcomingSessionCard";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
-import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
+import {
+  handleToastError,
+  handleToastSuccess,
+} from "../../utils/toastDisplayHandler";
+import { formatCalendarDate, formatDate } from "../../utils/time";
 
 const StudentDashboardPage = () => {
   const { authUser } = useAuthUser();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(
+    formatCalendarDate(new Date(), "yyyy-MM") // e.g. "2025-09"
+  );
 
+  const queryClient = useQueryClient();
+
+  // Recommended tutors query
   const { data, isLoading, error } = useQuery({
     queryKey: ["recommendedTutors"],
     queryFn: () => getRecommendedTutors(),
   });
 
+  // Monthly bookings query - fetch bookings for the current month
+  const { data: monthBookings = [], isLoading: monthLoading } = useQuery({
+    queryKey: ["studentBookings", currentMonth],
+    queryFn: () => {
+      const start = `${currentMonth}-01`;
+      const end = formatCalendarDate(endOfMonth(parseISO(start)), "yyyy-MM-dd");
+      return getAllStudentBookings({
+        start,
+        end,
+        status: ["confirmed"],
+      });
+    },
+    keepPreviousData: true,
+  });
+
+  // Global upcoming sessions query - for default display
   const {
     data: upcomingSessions,
     isLoading: upcomingSessionsLoading,
     error: upcomingSessionsError,
   } = useQuery({
-    queryKey: ["upcomingSessions"],
-    queryFn: () => getUpcomingSession(),
+    queryKey: ["upcomingSession"],
+    queryFn: getUpcomingSession,
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: ({ id, cancellationReason }) =>
+      cancelStudentBooking(id, cancellationReason),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["upcomingSession"]);
+      queryClient.invalidateQueries(["studentBookings"]);
+      handleToastSuccess("Booking cancelled successfully!");
+      setIsDetailsModalOpen(false);
+    },
+    onError: (err) => {
+      handleToastError(err, "Failed to cancel booking.");
+    },
+  });
+
+  // Event handlers
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
     setIsDetailsModalOpen(true);
@@ -48,20 +92,46 @@ const StudentDashboardPage = () => {
     setSelectedBooking(null);
   };
 
-  const handleOpenRescheduleModal = () => {
-    setIsDetailsModalOpen(false);
-    setIsRescheduleModalOpen(true);
+  const handleCancelBooking = (cancellationReason) => {
+    if (selectedBooking) {
+      cancelMutation.mutate({ id: selectedBooking.id, cancellationReason });
+    }
   };
 
-  const handleCloseRescheduleModal = () => {
-    setIsRescheduleModalOpen(false);
-    setSelectedBooking(null);
+  // Calendar handlers
+  const handleDateClick = (date) => {
+    setSelectedDate(date);
   };
 
-  const handleRescheduleBooking = (rescheduleData) => {
-    console.log("Reschedule booking:", rescheduleData);
-    setIsRescheduleModalOpen(false);
+  const handleMonthChange = (month) => {
+    setCurrentMonth(month);
+    if (selectedDate && !selectedDate.startsWith(month)) {
+      setSelectedDate(null);
+    }
   };
+
+  // Computed values
+  const bookedDates = monthBookings.map((session) =>
+    formatCalendarDate(new Date(session.scheduledStart), "yyyy-MM-dd")
+  );
+
+  const selectedDayBookings = useMemo(() => {
+    if (!selectedDate) return [];
+    return monthBookings.filter(
+      (session) =>
+        formatCalendarDate(new Date(session.scheduledStart), "yyyy-MM-dd") ===
+        selectedDate
+    );
+  }, [selectedDate, monthBookings]);
+
+  const sessionsToDisplay = useMemo(() => {
+    if (selectedDate) {
+      // Always return selectedDayBookings, even if it's empty
+      return selectedDayBookings;
+    }
+    // No date selected → show upcoming sessions
+    return upcomingSessions ? [upcomingSessions] : [];
+  }, [selectedDate, selectedDayBookings, upcomingSessions]);
 
   return (
     <>
@@ -87,34 +157,56 @@ const StudentDashboardPage = () => {
 
             {/* Upcoming Sessions */}
             <div className="bg-white rounded-lg border shadow p-4">
-              {upcomingSessionsLoading && (
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-lg">
+                  {selectedDate
+                    ? `Sessions for ${formatDate(selectedDate)}`
+                    : "Upcoming Sessions"}
+                </h3>
+                {selectedDate && (
+                  <Link
+                    to="/student/sessions"
+                    className="text-blue-600 text-sm hover:underline"
+                  >
+                    Show all upcoming
+                  </Link>
+                )}
+              </div>
+
+              {(upcomingSessionsLoading || monthLoading) && (
                 <div className="flex flex-col justify-center items-center py-8">
                   <Spinner />
-                  <p className="text-gray-600">Loading upcoming sessions...</p>
+                  <p className="text-gray-600">Loading sessions...</p>
                 </div>
               )}
-              {upcomingSessionsError && (
+
+              {upcomingSessionsError && !selectedDate && (
                 <div className="flex justify-center items-center py-8">
                   <p className="font-semibold text-red-600">
                     Error loading upcoming sessions
                   </p>
                 </div>
               )}
-              {!upcomingSessionsLoading && !upcomingSessionsError && (
-                <UpcomingSessionsCard
-                  upcomingSessions={upcomingSessions}
-                  onViewDetails={handleViewDetails}
-                />
-              )}
+
+              {!(upcomingSessionsLoading || monthLoading) &&
+                !upcomingSessionsError && (
+                  <UpcomingSessionsCard
+                    upcomingSessions={sessionsToDisplay}
+                    onViewDetails={handleViewDetails}
+                    selectedDate={selectedDate}
+                  />
+                )}
             </div>
           </div>
 
-          <div className="bg-[#F9FAFB] border rounded-lg shadow p-2 md:p-4 space-y-4 flex flex-col self-start ">
+          <div className="bg-[#F9FAFB] border rounded-lg shadow p-2 md:p-4 space-y-4 flex flex-col self-start">
             {/* Calendar */}
             <div className="flex-none">
               <Calendar
                 compact={true}
-                bookingDates={["2025-09-10", "2025-09-14"]}
+                bookingDates={bookedDates}
+                onDateClick={handleDateClick}
+                onMonthChange={handleMonthChange}
               />
             </div>
 
@@ -124,7 +216,9 @@ const StudentDashboardPage = () => {
             <div className="flex-none px-2 sm:px-0">
               <h3 className="font-semibold text-lg mb-4">Currently Enrolled</h3>
               <div className="flex items-center justify-between w-full">
-                <p className="text-gray-500 text-sm font-semibold">No subject</p>
+                <p className="text-gray-500 text-sm font-semibold">
+                  No subject
+                </p>
                 <img
                   src={greaterThanIcon}
                   alt=">"
@@ -148,7 +242,7 @@ const StudentDashboardPage = () => {
           </div>
         </div>
 
-        {/* ===== Recommended Tutors ===== */}
+        {/* Recommended Tutors */}
         <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full max-w-[21rem] sm:max-w-[60rem] mx-auto border shadow-md overflow-x-hidden">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-lg px-2 md:px-0">
@@ -161,12 +255,14 @@ const StudentDashboardPage = () => {
               View All
             </Link>
           </div>
+
           {isLoading && (
             <div className="flex flex-col justify-center items-center py-8">
               <Spinner />
               <p className="text-gray-600">Loading tutors...</p>
             </div>
           )}
+
           {error && (
             <div className="flex justify-center items-center py-8">
               <div className="flex flex-col items-center gap-3 text-center">
@@ -196,7 +292,7 @@ const StudentDashboardPage = () => {
               </div>
             </div>
           )}
-          {/* Empty state */}
+
           {!isLoading && !error && data?.rows?.length === 0 && (
             <div className="flex justify-center items-center py-8">
               <div className="flex flex-col items-center gap-3 text-center">
@@ -220,25 +316,18 @@ const StudentDashboardPage = () => {
             </div>
           )}
 
-          {/* Success state */}
           {!isLoading && !error && data?.rows?.length > 0 && (
             <HorizontalScrollTutors tutors={data.rows} />
           )}
         </div>
       </div>
+
       <BookingDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={handleCloseDetailsModal}
         booking={selectedBooking}
         userType="student"
-        onReschedule={handleOpenRescheduleModal}
-      />
-      <RescheduleBookingModal
-        isOpen={isRescheduleModalOpen}
-        onClose={handleCloseRescheduleModal}
-        booking={selectedBooking}
-        userType="student"
-        onReschedule={handleRescheduleBooking}
+        onCancel={handleCancelBooking}
       />
     </>
   );

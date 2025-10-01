@@ -10,7 +10,7 @@ const FilterDropdown = ({
   isOpen,
   setIsOpen,
 }) => {
-  const SUBJECT_OPTIONS = ["Mathematics", "Physics", "Biology", "English"];
+  const SUBJECT_OPTIONS = ["2", "Physics", "Biology", "English"];
   const RATING_OPTIONS = ["5", "4", "3"];
   const hasActiveFilters =
     appliedFilters.subjects.length > 0 ||
@@ -32,7 +32,7 @@ const FilterDropdown = ({
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm transition ${
           hasActiveFilters
-            ? "bg-primary text-white hover:bg-primary/80"
+            ? "bg-primary text-white hover:bg-primary-focus"
             : "bg-gray-100 hover:bg-gray-200"
         }`}
       >
