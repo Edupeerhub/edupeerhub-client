@@ -21,11 +21,11 @@ import {
 import ErrorAlert from "../../components/common/ErrorAlert";
 import DropdownPicker from "../../components/ui/DropdownPicker";
 import {
-  generateDateOptions,
   generateTimeSlots,
   getAvailableEndTimes,
   calculateDuration,
 } from "../../utils/time";
+import { useDateOptions } from "../../hooks/tutor/useDateOptions";
 
 const TutorAvailabilityPage = () => {
   const queryClient = useQueryClient();
@@ -50,7 +50,6 @@ const TutorAvailabilityPage = () => {
     queryFn: () => fetchTutorBookings({ status: "open" }),
   });
 
-  // 🔹 Handlers
   const handleTimeChange = (field, value) => {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
@@ -89,15 +88,19 @@ const TutorAvailabilityPage = () => {
     );
     const { time: endTime } = fromUtcToLocalParts(availability.scheduledEnd);
 
-    setFormData({
+    // Set form data with proper values
+    const newFormData = {
       scheduledStart: availability.scheduledStart,
       scheduledEnd: availability.scheduledEnd,
       tutorNotes: availability.tutorNotes || "",
       date: startDate,
       startTime,
       endTime,
-    });
+    };
+
+    setFormData(newFormData);
   };
+
   const handleCancelEdit = () => {
     setEditingAvailability(null);
     setFormData({
@@ -161,9 +164,11 @@ const TutorAvailabilityPage = () => {
     },
   });
 
+  const dateOptions = useDateOptions(formData.date);
+
   if (isLoadingAvailabilities) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center min-h-[60vh]">
         <Spinner size="large" />
       </div>
     );
@@ -174,188 +179,219 @@ const TutorAvailabilityPage = () => {
   }
 
   return (
-    <div className="max-w-full sm:max-w-md md:max-w-2xl lg:max-w-6xl mx-auto p-2 sm:p-3">
+    <div className="max-w-7xl mx-auto px-2">
       {createAvailabilityMutation.error && (
         <ErrorAlert error={createAvailabilityMutation.error} />
       )}
-      <h1 className="text-2xl font-semibold mb-6 pl-2">
-        Manage Your Availability
-      </h1>
 
-      <div className="mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          {editingAvailability
-            ? "Edit Availability Slot"
-            : "Create New Availability Slot"}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Custom Date Picker */}
-            <DropdownPicker
-              label="Date"
-              value={formData.date}
-              onChange={(value) => setFormData((p) => ({ ...p, date: value }))}
-              options={generateDateOptions()}
-              placeholder="Select a date"
-            />
-
-            {/* Start Time Picker */}
-            <DropdownPicker
-              label="Start Time"
-              value={formData.startTime}
-              onChange={(value) => handleTimeChange("startTime", value)}
-              options={generateTimeSlots()}
-              placeholder="Select start time"
-            />
-
-            {/* End Time Picker */}
-            <DropdownPicker
-              label="End Time"
-              value={formData.endTime}
-              onChange={(value) => handleTimeChange("endTime", value)}
-              options={getAvailableEndTimes(formData.startTime)}
-              disabled={!formData.startTime}
-              placeholder={
-                formData.startTime
-                  ? "Select end time"
-                  : "Select start time first"
-              }
-            />
-          </div>
-
-          {formData.startTime && formData.endTime && (
-            <div className="bg-blue-50 p-3 rounded-md">
-              <p className="text-sm text-blue-700">
-                Session Duration:{" "}
-                {calculateDuration(formData.startTime, formData.endTime)}{" "}
-                minutes
-              </p>
-            </div>
-          )}
-
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column - Header & Form */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Header */}
           <div>
-            <label
-              htmlFor="tutorNotes"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Tutor Notes (Optional)
-            </label>
-            <textarea
-              id="tutorNotes"
-              name="tutorNotes"
-              value={formData.tutorNotes}
-              onChange={(e) =>
-                setFormData((p) => ({ ...p, tutorNotes: e.target.value }))
-              }
-              rows="4"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="e.g., Available for advanced topics in Algebra."
-            ></textarea>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Manage Your Availability
+            </h1>
+            <p className="text-gray-600">
+              Set your schedule to let students know when you're available for
+              tutoring.
+            </p>
           </div>
 
-          <div className="flex justify-end gap-3">
-            {editingAvailability && (
-              <Button
-                type="button"
-                onClick={handleCancelEdit}
-                className="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-500 hover:bg-gray-400 border border-gray-300 rounded-md shadow-sm"
-              >
-                Cancel Edit
-              </Button>
-            )}
-            <Button
-              type="submit"
-              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              disabled={
-                createAvailabilityMutation.isLoading ||
-                updateAvailabilityMutation.isLoading
-              }
-            >
-              {editingAvailability ? (
-                updateAvailabilityMutation.isLoading ? (
-                  <Spinner size="small" />
-                ) : (
-                  "Update Availability"
-                )
-              ) : createAvailabilityMutation.isLoading ? (
-                <Spinner size="small" />
-              ) : (
-                "Add Availability"
-              )}
-            </Button>
-          </div>
-        </form>
-      </div>
+          {/* Create/Edit Form */}
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              {editingAvailability ? "Edit Slot" : "Create New Slot"}
+            </h2>
 
-      {/* Availabilities List */}
-      <div className="mt-10 border-t-2 pt-3 ">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 pl-2">
-          Your Current Availabilities
-        </h2>
-        {availabilities?.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">
-            No availabilities set yet. Add one above!
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {availabilities?.map((availability) => (
-              <div
-                key={availability.id}
-                className="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <p className="text-lg font-semibold text-gray-800">
-                      {formatDate(availability.scheduledStart)}
-                    </p>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        availability.status === "open"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {availability.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3">
-                    {formatTimeRange(
-                      availability.scheduledStart,
-                      availability.scheduledEnd
-                    )}
-                  </p>
-                  {availability.tutorNotes && (
-                    <p className="text-sm text-gray-500 mt-1 italic">
-                      Notes: {availability.tutorNotes}
-                    </p>
-                  )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <DropdownPicker
+                label="Date"
+                value={formData.date}
+                onChange={(value) =>
+                  setFormData((p) => ({ ...p, date: value }))
+                }
+                options={dateOptions}
+                placeholder="Select Date"
+              />
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="sm:flex-[2]">
+                  <DropdownPicker
+                    label="Start Time"
+                    value={formData.startTime}
+                    onChange={(value) => handleTimeChange("startTime", value)}
+                    options={generateTimeSlots()}
+                    placeholder="Select start time"
+                  />
                 </div>
-                <div className="mt-4 flex justify-end gap-2">
-                  <Button
-                    onClick={() => handleEdit(availability)}
-                    className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      deleteAvailabilityMutation.mutate(availability.id)
+
+                <div className="sm:flex-[3]">
+                  <DropdownPicker
+                    label="End Time"
+                    value={formData.endTime}
+                    onChange={(value) => handleTimeChange("endTime", value)}
+                    options={getAvailableEndTimes(formData.startTime)}
+                    disabled={!formData.startTime}
+                    placeholder={
+                      formData.startTime
+                        ? "Select end time"
+                        : "Select start time first"
                     }
-                    className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    disabled={deleteAvailabilityMutation.isLoading}
-                  >
-                    {deleteAvailabilityMutation.isLoading ? (
-                      <Spinner size="small" />
-                    ) : (
-                      "Delete"
-                    )}
-                  </Button>
+                  />
                 </div>
               </div>
-            ))}
+
+              {formData.startTime && formData.endTime && (
+                <div className="text-sm text-gray-600 bg-green-100 rounded-50 px-3 py-2 rounded-md">
+                  Duration:{" "}
+                  {calculateDuration(formData.startTime, formData.endTime)}{" "}
+                  minutes
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 sm:mb-1">
+                  Notes (Optional)
+                </label>
+                <textarea
+                  value={formData.tutorNotes}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, tutorNotes: e.target.value }))
+                  }
+                  rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none text-sm"
+                  placeholder="e.g., Available for advanced topics in Algebra."
+                />
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row sm:gap-2 sm:pt-2">
+                {editingAvailability && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="flex-1 px-4 py-2 rounded-full text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <Button
+                  type="submit"
+                  disabled={
+                    createAvailabilityMutation.isLoading ||
+                    updateAvailabilityMutation.isLoading
+                  }
+                  className={`${
+                    editingAvailability ? "flex-1" : "w-full"
+                  } bg-primary hover:bg-primary/90`}
+                >
+                  {editingAvailability ? (
+                    updateAvailabilityMutation.isLoading ? (
+                      <Spinner size="small" />
+                    ) : (
+                      "Update Availability"
+                    )
+                  ) : createAvailabilityMutation.isLoading ? (
+                    <Spinner size="small" />
+                  ) : (
+                    "Add Availability"
+                  )}
+                </Button>
+              </div>
+            </form>
           </div>
-        )}
+        </div>
+
+        {/* Right Column - Availability List */}
+        <div className="lg:col-span-7">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Upcoming Availability
+          </h2>
+
+          {availabilities?.length === 0 ? (
+            <div className="bg-white rounded-lg p-12 text-center shadow-sm border border-gray-200">
+              <p className="text-gray-500">
+                No availabilities set yet. Add one to get started!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {availabilities?.map((availability) => (
+                <div
+                  key={availability.id}
+                  className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {formatDate(availability.scheduledStart)}
+                        </h3>
+                        {availability.status === "open" && (
+                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                            Open
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-gray-600 mb-3">
+                        <svg
+                          className="w-4 h-4 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span className="text-sm">
+                          {formatTimeRange(
+                            availability.scheduledStart,
+                            availability.scheduledEnd
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="min-h-[20px]">
+                        {availability.tutorNotes && (
+                          <p className="text-sm text-gray-600">
+                            Note: {availability.tutorNotes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex sm:flex-col gap-2 sm:ml-4">
+                      <button
+                        onClick={() => handleEdit(availability)}
+                        className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-md transition-colors whitespace-nowrap"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          deleteAvailabilityMutation.mutate(availability.id)
+                        }
+                        disabled={deleteAvailabilityMutation.isLoading}
+                        className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50 whitespace-nowrap"
+                      >
+                        {deleteAvailabilityMutation.isLoading ? (
+                          <Spinner size="small" />
+                        ) : (
+                          "Delete"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
