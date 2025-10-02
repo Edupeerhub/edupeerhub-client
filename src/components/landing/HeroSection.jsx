@@ -1,17 +1,10 @@
 import Button from "./LandingButton";
 import { ASSETS } from "../../config/assets";
-import useAuthUser from "../../hooks/auth/useAuthUser";
+import useAuthStatus from "../../hooks/auth/useAuthStatus";
 
 const HeroSection = () => {
-  const { authUser } = useAuthUser();
-  const isAuthenticated = !!authUser;
+  const { isAuthenticated, roleLink } = useAuthStatus();
 
-  const roleLink =
-    authUser?.role === "tutor"
-      ? "/tutor"
-      : authUser?.role === "student"
-      ? "/student"
-      : "/admin";
   return (
     <section
       id="home"

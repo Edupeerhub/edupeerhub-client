@@ -1,7 +1,10 @@
 import Button from "./LandingButton";
 import { ASSETS } from "../../config/assets";
+import useAuthStatus from "../../hooks/auth/useAuthStatus";
 
 const CTASection = () => {
+  const { isAuthenticated, roleLink } = useAuthStatus();
+
   return (
     <section
       className="relative py-24 md:py-32"
@@ -25,9 +28,15 @@ const CTASection = () => {
           collaboration.
         </p>
 
-        <Button to="/signup" variant="primary" size="lg">
-          Register with us today!
-        </Button>
+        {isAuthenticated ? (
+          <Button to={roleLink} variant="primary" size="md">
+            Go to Dashboard
+          </Button>
+        ) : (
+          <Button to="/signup" variant="primary" size="lg">
+            Register with us today!
+          </Button>
+        )}
       </div>
     </section>
   );

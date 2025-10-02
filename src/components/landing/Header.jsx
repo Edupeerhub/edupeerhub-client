@@ -1,22 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, GraduationCap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Button from "./LandingButton";
 import { ASSETS } from "../../config/assets";
-import useAuthUser from "../../hooks/auth/useAuthUser";
-import Logo from "../../assets/images/edupeerhub-logo.svg?react";
+import useAuthStatus from "../../hooks/auth/useAuthStatus";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { authUser } = useAuthUser();
-  const isAuthenticated = !!authUser;
-
-  const roleLink =
-    authUser?.role === "tutor"
-      ? "/tutor"
-      : authUser?.role === "student"
-      ? "/student"
-      : "/admin";
+  const { isAuthenticated, roleLink } = useAuthStatus();
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);

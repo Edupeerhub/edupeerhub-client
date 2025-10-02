@@ -13,7 +13,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { data: user } = useQuery({
     queryKey: ["userProfile"],
     queryFn: getUserProfile,
-    enabled: !!authUser,
+    enabled: !!authUser && authUser.role === "tutor",
   });
 
   const tutor = user?.tutor;
