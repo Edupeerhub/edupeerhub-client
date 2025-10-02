@@ -1,23 +1,22 @@
-import Header from "../../components/landing/Header";
-import Hero from "../../components/landing/Hero";
-import Courses from "../../components/landing/Courses";
-import WhyUs from "../../components/landing/WhyUs";
-import FAQ from "../../components/landing/FAQ";
-import Journey from "../../components/landing/Journey";
-import Footer from "../../components/landing/Footer";
+import LandingLayout from "../../layouts/LandingLayout";
+import HeroSection from "../../components/landing/HeroSection";
+import HowItWorksSection from "../../components/landing/HowItWorksSection";
+import AboutSection from "../../components/landing/AboutSection";
+import TestimonialsSection from "../../components/landing/TestimonialsSection";
+import FAQSection from "../../components/landing/FAQSection";
+import CTASection from "../../components/landing/CTASection";
 
-const HomePage = () => {
+const LandingPage = () => {
   return (
-    <>
-      <Header />
-      <Hero />
-      <Courses />
-      <WhyUs />
-      <FAQ />
-      <Journey />
-      <Footer />
-    </>
+    <LandingLayout>
+      <HeroSection />
+      <HowItWorksSection />
+      <AboutSection />
+      <TestimonialsSection />
+      <FAQSection />
+      <CTASection />
+    </LandingLayout>
   );
 };
 
-export default HomePage;
+export default LandingPage;
