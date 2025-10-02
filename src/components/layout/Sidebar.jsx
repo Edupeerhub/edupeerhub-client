@@ -1,10 +1,10 @@
 import { NavLink } from "react-router-dom";
-import LogoutIcon from "../assets/images/layout-icons/logout.svg?react";
-import Logo from "../assets/images/edupeerhub-logo1.svg?react";
-import useLogout from "../hooks/auth/useLogout";
+import LogoutIcon from "../../assets/images/layout-icons/logout.svg?react";
+import Logo from "../../assets/images/edupeerhub-logo1.svg?react";
+import useLogout from "../../hooks/auth/useLogout";
 import { useQuery } from "@tanstack/react-query";
-import { getUserProfile } from "../lib/api/user/userApi";
-import useAuthUser from "../hooks/auth/useAuthUser";
+import { getUserProfile } from "../../lib/api/user/userApi";
+import useAuthUser from "../../hooks/auth/useAuthUser";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { logoutMutation } = useLogout();
@@ -13,7 +13,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { data: user } = useQuery({
     queryKey: ["userProfile"],
     queryFn: getUserProfile,
-    enabled: !!authUser,
+    enabled: !!authUser && authUser.role === "tutor",
   });
 
   const tutor = user?.tutor;

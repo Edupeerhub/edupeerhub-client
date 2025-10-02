@@ -1,10 +1,10 @@
 import { BellIcon, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import useAuthUser from "../hooks/auth/useAuthUser";
-import ProfileDropdown from "../components/navbar/ProfileDropdown";
-import useLogout from "../hooks/auth/useLogout";
-import NotificationDropdown from "../components/navbar/NotificationDropdown";
-import { useNotifications } from "../hooks/notifications/useNotfications";
+import useAuthUser from "../../hooks/auth/useAuthUser";
+import ProfileDropdown from "../navbar/ProfileDropdown";
+import useLogout from "../../hooks/auth/useLogout";
+import NotificationDropdown from "../navbar/NotificationDropdown";
+import { useNotifications } from "../../hooks/notifications/useNotfications";
 
 const Navbar = ({ onToggleSidebar }) => {
   const { authUser } = useAuthUser();
@@ -17,7 +17,7 @@ const Navbar = ({ onToggleSidebar }) => {
   // Get notifications based on user role
   const {
     unreadNotifications,
-    notifications,
+    // notifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
