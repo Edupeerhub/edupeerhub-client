@@ -146,7 +146,10 @@ const RescheduleBookingModal = ({ booking, isOpen, onClose, onReschedule }) => {
             onClick={handleReschedule}
             className="btn btn-primary btn-primary-focus text-white"
             disabled={
-              !formData.date || !formData.startTime || !formData.endTime
+              !formData.date ||
+              !formData.startTime ||
+              !formData.endTime ||
+              rescheduleBookingMutation.isLoading
             }
           >
             Confirm Reschedule

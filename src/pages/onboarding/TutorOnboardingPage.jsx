@@ -129,6 +129,7 @@ const TutorOnboardingPage = () => {
           onBack={() => setCurrentStep((s) => s - 1)}
           onNext={() => setCurrentStep((s) => s + 1)}
           onSubmit={handleSubmit}
+          isLoading={isPending}
           disableNext={
             (currentStep === 1 && formData.subjects.length === 0) ||
             (currentStep === 2 && formData.education.trim() === "") ||
