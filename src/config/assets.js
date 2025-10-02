@@ -51,7 +51,7 @@ export const ASSETS = {
 
   // Logo (you can replace this with your actual logo path)
   logo: {
-    image: "/images/logo.svg", // Set to '/images/logo.png' when you have your logo, or leave null to use icon
+    image: "/images/logo.png", // Set to '/images/logo.png' when you have your logo, or leave null to use icon
     alt: "EduPeerHub Logo",
   },
 };
