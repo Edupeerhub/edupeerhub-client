@@ -7,6 +7,7 @@ const StepNavigation = ({
   onNext,
   onSubmit,
   disableNext,
+  isLoading,
 }) => (
   <div className=" flex gap-2">
     {currentStep > 1 && (
@@ -41,6 +42,7 @@ const StepNavigation = ({
             : "bg-blue-500 text-white hover:bg-blue-600"
         }`}
         disabled={disableNext}
+        loading={isLoading}
       >
         Submit
       </Button>

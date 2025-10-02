@@ -8,12 +8,9 @@ import StepNavigation from "../../components/onboarding/StepNavigation";
 import { getExams, getSubjects } from "../../lib/api/common/subjectsApi";
 import useCreateStudent from "../../hooks/student/useCreateStudent";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import { useNavigate } from "react-router-dom";
 import { handleToastError } from "../../utils/toastDisplayHandler";
 
 const StudentOnboardingPage = () => {
-  const navigate = useNavigate();
-
   const [subjectInfo, setSubjectInfo] = useState(null);
   const [examInfo, setExamInfo] = useState(null);
 
@@ -159,6 +156,7 @@ const StudentOnboardingPage = () => {
           onBack={() => setCurrentStep((s) => s - 1)}
           onNext={() => setCurrentStep((s) => s + 1)}
           onSubmit={handleSubmit}
+          isLoading={isPending}
           disableNext={
             (currentStep === 1 && formData.learningGoals.length === 0) ||
             (currentStep === 2 && formData.subjects.length === 0) ||

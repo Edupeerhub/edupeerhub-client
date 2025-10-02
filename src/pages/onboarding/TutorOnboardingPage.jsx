@@ -117,11 +117,11 @@ const TutorOnboardingPage = () => {
           </p>
         )}
 
-        {/* {currentStep === 3 && !formData.credentials && (
+        {currentStep === 3 && !formData.credentials && (
           <p className="text-sm text-red-500 mt-2">
             Please upload your credentials.
           </p>
-        )} */}
+        )}
 
         <StepNavigation
           currentStep={currentStep}
@@ -129,10 +129,11 @@ const TutorOnboardingPage = () => {
           onBack={() => setCurrentStep((s) => s - 1)}
           onNext={() => setCurrentStep((s) => s + 1)}
           onSubmit={handleSubmit}
+          isLoading={isPending}
           disableNext={
             (currentStep === 1 && formData.subjects.length === 0) ||
-            (currentStep === 2 && formData.education.trim() === "")
-            // || (currentStep === 3 && !formData.credentials)
+            (currentStep === 2 && formData.education.trim() === "") ||
+            (currentStep === 3 && !formData.credentials)
           }
         />
       </div>

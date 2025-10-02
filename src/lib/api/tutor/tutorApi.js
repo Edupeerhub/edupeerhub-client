@@ -1,8 +1,21 @@
 import { axiosInstance } from "../axios";
 
 export const createTutor = async (data) => {
-  const response = await axiosInstance.post("/tutor", data);
-  return response.data.data;
+  const formData = new FormData();
+
+  formData.append("education", data.education);
+  // Subjects → stringify so backend can JSON.parse
+  formData.append("subjects", JSON.stringify(data.subjects));
+
+  formData.append("file", data.credentials);
+
+  const res = await axiosInstance.post("/tutor", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data;
 };
 
 export const getTutors = async (params = {}) => {
