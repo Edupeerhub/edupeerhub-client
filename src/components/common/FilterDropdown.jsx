@@ -9,9 +9,12 @@ const FilterDropdown = ({
   resetFilters,
   isOpen,
   setIsOpen,
+  subjects,
+  subjectLoading,
+  subjectError,
 }) => {
-  const SUBJECT_OPTIONS = ["2", "Physics", "Biology", "English"];
-  const RATING_OPTIONS = ["5", "4", "3"];
+  const SUBJECT_OPTIONS = subjects;
+  const RATING_OPTIONS = ["5", "4", "3", "2", "1"];
   const hasActiveFilters =
     appliedFilters.subjects.length > 0 ||
     appliedFilters.availability.length > 0 ||
@@ -56,17 +59,23 @@ const FilterDropdown = ({
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-2">Subjects</p>
             <div className="space-y-1">
-              {SUBJECT_OPTIONS.map((subject) => (
-                <label key={subject} className="flex items-center text-sm">
-                  <input
-                    type="checkbox"
-                    checked={filters.subjects.includes(subject)}
-                    onChange={() => handleFilterChange("subjects", subject)}
-                    className="mr-2 rounded"
-                  />
-                  {subject}
-                </label>
-              ))}
+              {subjectLoading && <p>Loading subjects...</p>}
+              {subjectError && <p>Error loading subjects.</p>}
+              {!subjectLoading &&
+                !subjectError &&
+                SUBJECT_OPTIONS.map((subject) => (
+                  <label key={subject.id} className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={filters.subjects.includes(subject.id)}
+                      onChange={() =>
+                        handleFilterChange("subjects", subject.id)
+                      }
+                      className="mr-2 rounded"
+                    />
+                    {subject.name}
+                  </label>
+                ))}
             </div>
           </div>
 
@@ -81,7 +90,7 @@ const FilterDropdown = ({
                     onChange={() => handleFilterChange("ratings", rating)}
                     className="mr-2 rounded"
                   />
-                  {rating}+ Stars
+                  {rating} + Stars
                 </label>
               ))}
             </div>
