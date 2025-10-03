@@ -23,7 +23,7 @@ export const getTutors = async (params = {}) => {
 
   // Add search parameter
   if (params.search) {
-    queryParams.append("search", params.search);
+    queryParams.append("name", params.search);
   }
 
   // Add filter parameters as comma-separated strings
@@ -36,7 +36,7 @@ export const getTutors = async (params = {}) => {
   }
 
   if (params.ratings && params.ratings.length > 0) {
-    queryParams.append("rating", params.ratings.join(","));
+    queryParams.append("ratings", params.ratings.join(","));
   }
 
   // Add pagination parameters if provided
