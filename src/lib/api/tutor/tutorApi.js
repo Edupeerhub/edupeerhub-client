@@ -31,15 +31,11 @@ export const getTutors = async (params = {}) => {
     queryParams.append("subjects", params.subjects.join(","));
   }
 
-  if (params.availability && params.availability.length > 0) {
-    queryParams.append("availability", params.availability.join(","));
-  }
-
   if (params.ratings && params.ratings.length > 0) {
     queryParams.append("ratings", params.ratings.join(","));
   }
 
-  // Add pagination parameters if provided
+  // Add pagination parameters
   if (params.page) {
     queryParams.append("page", params.page);
   }
@@ -52,7 +48,8 @@ export const getTutors = async (params = {}) => {
   const url = queryString ? `/tutor?${queryString}` : "/tutor";
 
   const response = await axiosInstance.get(url);
-  return response.data.data;
+
+  return response.data;
 };
 
 export const getRecommendedTutors = async () => {

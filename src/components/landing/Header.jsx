@@ -4,10 +4,12 @@ import { Menu, X } from "lucide-react";
 import Button from "./LandingButton";
 import { ASSETS } from "../../config/assets";
 import useAuthStatus from "../../hooks/auth/useAuthStatus";
+import useLogout from "../../hooks/auth/useLogout";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, roleLink } = useAuthStatus();
+  const { logoutMutation } = useLogout();
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
@@ -53,11 +55,16 @@ const Header = () => {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2 md:space-x-4">
             {isAuthenticated ? (
-              <Button to={roleLink} variant="primary" size="md">
-                Go to Dashboard
-              </Button>
+              <>
+                <Button to={roleLink} variant="primary" size="md">
+                  Dashboard
+                </Button>
+                <Button onClick={logoutMutation} variant="ghost" size="sm">
+                  Logout
+                </Button>
+              </>
             ) : (
               <>
                 <Button to="/login" variant="ghost" size="sm">
