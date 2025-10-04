@@ -30,6 +30,32 @@ function formatDate(value) {
   }
 }
 
+function SearchBar({ value, onChange }) {
+  return (
+    <div className="mb-6">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Search tutors"
+        className="w-full md:w-1/2 px-4 py-3 border rounded-lg bg-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100"
+        aria-label="Search tutors"
+      />
+    </div>
+  );
+}
+
+function ViewButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-4 py-2 rounded-full border bg-white text-blue-600 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-100"
+      aria-label="View details"
+    >
+      View
+    </button>
+  );
+}
+
 export default function AdminTutorsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const {

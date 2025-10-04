@@ -39,6 +39,41 @@ function getUserName(user) {
   return user.name || "—";
 }
 
+function StatCard({ title, value, delta, deltaClass }) {
+  return (
+    <div className="bg-white rounded-lg p-5 shadow-sm border">
+      <div className="text-sm text-gray-500">{title}</div>
+      <div className="mt-3 text-2xl font-semibold text-gray-900">{value}</div>
+      <div className={`mt-2 text-sm ${deltaClass}`}>{delta}</div>
+    </div>
+  );
+}
+
+function TableHeader({ cols }) {
+  return (
+    <thead>
+      <tr className="bg-blue-50">
+        {cols.map((c) => (
+          <th key={c} className="px-6 py-4 text-left text-sm text-gray-700">
+            {c}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+}
+
+function ViewButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-4 py-2 rounded-full border bg-white text-blue-600 shadow-sm hover:bg-gray-50"
+    >
+      View
+    </button>
+  );
+}
+
 export default function AdminDashboardPage() {
   const {
     data: counts,

@@ -4,30 +4,39 @@ import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { useAdmins, useCreateAdmin } from "../../hooks/admin";
 
-const settingsSections = [
+// panels
+import AdminProfileSettingsPanel from "./settings/AdminProfileSettingsPanel";
+import AdminPlatformPreferencesPanel from "./settings/AdminPlatformPreferencesPanel";
+import AdminSecuritySettingsPanel from "./settings/AdminSecuritySettingsPanel";
+import AdminNotificationsPanel from "./settings/AdminNotificationsPanel";
+
+/**
+ * AdminSettingsPage:
+ * - Renders the main list (default)
+ * - When user clicks a list row, setActivePanel to show that panel
+ * - Panels receive onBack={() => setActivePanel(null)} to return to list
+ */
+
+const SECTIONS = [
   {
     key: "profile",
     title: "Profile Setting",
     desc: "Manage your personal information, contact details, and account settings.",
-    path: "/admin/settings/profile",
   },
   {
     key: "platform",
     title: "Platform Preferences",
     desc: "Customize the platform's preferences.",
-    path: "/admin/settings/platform",
   },
   {
     key: "security",
     title: "Security Settings",
     desc: "Enhance your account security and privacy settings.",
-    path: "/admin/settings/security",
   },
   {
     key: "notifications",
     title: "Notifications",
     desc: "Configure your notification settings for emails, in-app alerts, and more.",
-    path: "/admin/settings/notifications",
   },
 ];
 

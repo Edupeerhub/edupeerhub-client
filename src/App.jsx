@@ -26,9 +26,7 @@ import StudentRoute from "./components/routes/StudentRoute";
 import TutorRoute from "./components/routes/TutorRoute";
 import StudentLibraryPage from "./pages/student/StudentLibraryPage";
 import StudentTutorsPage from "./pages/student/StudentTutorsPage";
-import StudentSettingsPage from "./pages/student/StudentSettingsPage";
 import FAQPage from "./pages/general/FAQPage";
-import TutorSettingsPage from "./pages/tutor/TutorSettingsPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import StudentBookingPage from "./pages/student/StudentBookingPage";
@@ -46,6 +44,7 @@ import TutorPrivateProfilePage from "./pages/tutor/TutorPrivateProfilePage";
 import BookingRequestsPage from "./pages/tutor/BookingRequestsPage";
 import StudentSessionsPage from "./pages/student/StudentSessionsPage";
 import StudentTutorProfilePage from "./pages/student/StudentTutorProfilePage";
+import AccountSettingsPage from "./pages/general/AccountSettingsPage";
 
 export default function App() {
   const location = useLocation();
@@ -119,7 +118,7 @@ export default function App() {
           <Route path="booking/:id" element={<StudentBookingPage />} />
           <Route path="sessions" element={<StudentSessionsPage />} />
           <Route path="faq" element={<FAQPage />} />
-          <Route path="settings" element={<StudentSettingsPage />} />
+          <Route path="settings" element={<AccountSettingsPage />} />
         </Route>
 
         {/* Tutor protected routes: require login, verified, onboarded, role = tutor */}
@@ -147,7 +146,7 @@ export default function App() {
             path="call/:id"
             element={<CallPage key={location.pathname} />}
           />
-          <Route path="settings" element={<TutorSettingsPage />} />
+          <Route path="settings" element={<AccountSettingsPage />} />
           <Route path="profile" element={<TutorPrivateProfilePage />} />
           <Route path="booking-requests" element={<BookingRequestsPage />} />
         </Route>
