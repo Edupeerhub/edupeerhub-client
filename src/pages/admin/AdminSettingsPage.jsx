@@ -1,32 +1,41 @@
 // src/pages/admin/AdminSettingsPage.jsx
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import AdminLayout from "../../layouts/Layout";
+import SettingsBackBar from "../../components/SettingsBackBar";
 
-const settingsSections = [
+// panels
+import AdminProfileSettingsPanel from "./settings/AdminProfileSettingsPanel";
+import AdminPlatformPreferencesPanel from "./settings/AdminPlatformPreferencesPanel";
+import AdminSecuritySettingsPanel from "./settings/AdminSecuritySettingsPanel";
+import AdminNotificationsPanel from "./settings/AdminNotificationsPanel";
+
+/**
+ * AdminSettingsPage:
+ * - Renders the main list (default)
+ * - When user clicks a list row, setActivePanel to show that panel
+ * - Panels receive onBack={() => setActivePanel(null)} to return to list
+ */
+
+const SECTIONS = [
   {
     key: "profile",
     title: "Profile Setting",
     desc: "Manage your personal information, contact details, and account settings.",
-    path: "/admin/settings/profile",
   },
   {
     key: "platform",
     title: "Platform Preferences",
     desc: "Customize the platform's preferences.",
-    path: "/admin/settings/platform",
   },
   {
     key: "security",
     title: "Security Settings",
     desc: "Enhance your account security and privacy settings.",
-    path: "/admin/settings/security",
   },
   {
     key: "notifications",
     title: "Notifications",
     desc: "Configure your notification settings for emails, in-app alerts, and more.",
-    path: "/admin/settings/notifications",
   },
 ];
 
@@ -61,26 +70,47 @@ function SectionRow({ title, desc, onClick }) {
 }
 
 export default function AdminSettingsPage() {
-  const navigate = useNavigate();
+  const [activePanel, setActivePanel] = useState(null); // null | 'profile' | 'platform' | 'security' | 'notifications'
 
+  // show main list
+  if (!activePanel) {
+    return (
+      <div className="max-w-5xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-extrabold text-gray-900">
+            Manage your account, system preferences, and platform controls.
+          </h1>
+        </div>
+
+        <div className="space-y-6">
+          {SECTIONS.map((s) => (
+            <SectionRow
+              key={s.key}
+              title={s.title}
+              desc={s.desc}
+              onClick={() => setActivePanel(s.key)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // render chosen panel inline
   return (
     <div className="max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900">
-          Manage your account, system preferences, and platform controls.
-        </h1>
-      </div>
-
-      <div className="space-y-6">
-        {settingsSections.map((s) => (
-          <SectionRow
-            key={s.key}
-            title={s.title}
-            desc={s.desc}
-            onClick={() => navigate(s.path)}
-          />
-        ))}
-      </div>
+      {activePanel === "profile" && (
+        <AdminProfileSettingsPanel onBack={() => setActivePanel(null)} />
+      )}
+      {activePanel === "platform" && (
+        <AdminPlatformPreferencesPanel onBack={() => setActivePanel(null)} />
+      )}
+      {activePanel === "security" && (
+        <AdminSecuritySettingsPanel onBack={() => setActivePanel(null)} />
+      )}
+      {activePanel === "notifications" && (
+        <AdminNotificationsPanel onBack={() => setActivePanel(null)} />
+      )}
     </div>
   );
 }

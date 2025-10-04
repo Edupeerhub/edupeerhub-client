@@ -67,25 +67,59 @@ const students = [
   },
 ];
 
+function StatCard({ title, value, delta, deltaClass }) {
+  return (
+    <div className="bg-white rounded-lg p-5 shadow-sm border">
+      <div className="text-sm text-gray-500">{title}</div>
+      <div className="mt-3 text-2xl font-semibold text-gray-900">{value}</div>
+      <div className={`mt-2 text-sm ${deltaClass}`}>{delta}</div>
+    </div>
+  );
+}
+
+function TableHeader({ cols }) {
+  return (
+    <thead>
+      <tr className="bg-blue-50">
+        {cols.map((c) => (
+          <th key={c} className="px-6 py-4 text-left text-sm text-gray-700">
+            {c}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+}
+
+function ViewButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-4 py-2 rounded-full border bg-white text-blue-600 shadow-sm hover:bg-gray-50"
+    >
+      View
+    </button>
+  );
+}
+
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-8">
-      {/* stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {statCards.map((s) => (
-          <div
-            key={s.title}
-            className="bg-white rounded-xl p-5 shadow-sm border"
-          >
-            <div className="text-sm text-gray-500">{s.title}</div>
-            <div className="mt-3 text-2xl font-semibold">{s.value}</div>
-            <div className={`mt-2 text-sm ${s.deltaClass}`}>{s.delta}</div>
-          </div>
+    <div className="max-w-7xl">
+      {/* top stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        {stats.map((s) => (
+          <StatCard
+            key={s.id}
+            title={s.title}
+            value={s.value}
+            delta={s.delta}
+            deltaClass={s.deltaClass}
+          />
         ))}
       </div>
 
-      {/* Pending tutors */}
-      <section className="bg-white p-6 rounded-xl shadow-sm border">
+      {/* Pending Tutors Approval */}
+      <section className="mb-10 bg-white rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Pending Tutors Approval</h3>
           <a className="text-sm text-blue-600" href="#view-all">
@@ -94,16 +128,10 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-blue-50">
-                <th className="p-4">Name</th>
-                <th className="p-4">University</th>
-                <th className="p-4">Date Applied</th>
-                <th className="p-4 text-right">Action</th>
-              </tr>
-            </thead>
-
+          <table className="w-full">
+            <TableHeader
+              cols={["Name", "University", "Date Applied", "Action"]}
+            />
             <tbody>
               {pendingTutors.map((t, idx) => (
                 <tr
@@ -112,20 +140,30 @@ export default function AdminDashboardPage() {
                     idx < pendingTutors.length - 1 ? "border-b" : ""
                   }`}
                 >
-                  <td className="p-4 flex items-center gap-3">
+                  <td className="px-6 py-4 flex items-center gap-4">
                     <img
+                      src={`https://i.pravatar.cc/40?img=${t.avatarId}`}
                       alt={t.name}
-                      src={`https://i.pravatar.cc/40?img=${t.id}`}
-                      className="w-8 h-8 rounded-full"
+                      className="w-10 h-10 rounded-full object-cover"
                     />
                     <div className="text-sm text-gray-700">{t.name}</div>
                   </td>
-                  <td className="p-4 text-gray-600">{t.university}</td>
-                  <td className="p-4 text-gray-600">{t.date}</td>
-                  <td className="p-4 text-right">
-                    <button className="px-4 py-2 bg-white border rounded-full shadow-sm text-blue-600">
-                      View
-                    </button>
+
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {t.university}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{t.date}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="inline-flex items-center justify-end">
+                      <div className="rounded-l-full bg-white shadow-sm p-2" />
+                      <div className="ml-3">
+                        <ViewButton
+                          onClick={() =>
+                            alert(`Open tutor ${t.id} - replace with routing`)
+                          }
+                        />
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -135,7 +173,7 @@ export default function AdminDashboardPage() {
       </section>
 
       {/* Registered students */}
-      <section className="bg-white p-6 rounded-xl shadow-sm border">
+      <section className="bg-white rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Registered students</h3>
           <a className="text-sm text-blue-600" href="#view-all">
@@ -144,27 +182,28 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-blue-50">
-                <th className="p-4">Name</th>
-                <th className="p-4">Date Applied</th>
-                <th className="p-4">Completed sections</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Action</th>
-              </tr>
-            </thead>
-
+          <table className="w-full">
+            <TableHeader
+              cols={[
+                "Name",
+                "Date Applied",
+                "Completed sections",
+                "Status",
+                "Action",
+              ]}
+            />
             <tbody>
               {students.map((s, idx) => (
                 <tr
                   key={s.id}
                   className={`${idx < students.length - 1 ? "border-b" : ""}`}
                 >
-                  <td className="p-4 text-gray-700">{s.name}</td>
-                  <td className="p-4 text-gray-600">{s.date}</td>
-                  <td className="p-4 text-gray-600">{s.completed}</td>
-                  <td className="p-4">
+                  <td className="px-6 py-4 text-sm text-gray-700">{s.name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{s.date}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {s.completed}
+                  </td>
+                  <td className="px-6 py-4">
                     <span
                       className={`inline-block px-3 py-1 text-xs rounded-full ${
                         s.status === "Active"
@@ -175,10 +214,12 @@ export default function AdminDashboardPage() {
                       {s.status}
                     </span>
                   </td>
-                  <td className="p-4 text-right">
-                    <button className="px-4 py-2 bg-white border rounded-full shadow-sm text-blue-600">
-                      View
-                    </button>
+                  <td className="px-6 py-4 text-right">
+                    <ViewButton
+                      onClick={() =>
+                        alert(`Open student ${s.id} - replace with routing`)
+                      }
+                    />
                   </td>
                 </tr>
               ))}
