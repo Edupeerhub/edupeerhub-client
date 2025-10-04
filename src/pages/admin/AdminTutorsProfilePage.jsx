@@ -1,49 +1,13 @@
-import React from "react";
-import AdminLayout from "../../layouts/Layout";
-import { useNavigate } from "react-router-dom";
-
-/**
- * AdminTutorsProfilePage.jsx
- * Replace mockData with API data as needed.
- */
-
-const mockTutor = {
-  id: 1,
-  name: "Mr. Ola Williams",
-  avatar: "https://i.pravatar.cc/150?img=3",
-  university: "University of Lagos",
-  appliedAt: "2025-09-15",
-  bio: "I'm a dedicated tutor with 5+ years of experience, specializing in Mathematics and Further Math. My goal is to make learning engaging and effective, helping students build confidence and achieve their academic goals.",
-  tags: ["Maths", "Chem"],
-  availability: {
-    label: "Available",
-    day: "Monday",
-    time: "10:00 AM - 12:00 PM",
-  },
-  documents: [
-    {
-      id: "d1",
-      title: "Resume",
-      subtitle: "Resume.pdf",
-      type: "pdf",
-      url: "#",
-    },
-    {
-      id: "d2",
-      title: "Transcript",
-      subtitle: "Transcript.pdf",
-      type: "pdf",
-      url: "#",
-    },
-    {
-      id: "d3",
-      title: "Introduction",
-      subtitle: "Video.mp4",
-      type: "video",
-      url: "#",
-    },
-  ],
-};
+import React, { useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Spinner from "../../components/common/Spinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import {
+  useApproveTutor,
+  useRejectTutor,
+  useTutor,
+  useTutorDocument,
+} from "../../hooks/admin";
 
 function BackButton({ onClick }) {
   return (
@@ -51,6 +15,7 @@ function BackButton({ onClick }) {
       onClick={onClick}
       className="inline-flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50 text-sm"
       aria-label="Back"
+      type="button"
     >
       <svg
         className="w-4 h-4"
@@ -73,8 +38,7 @@ function BackButton({ onClick }) {
 function Tag({ children }) {
   return (
     <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full bg-blue-50 text-blue-700 mr-2">
-      <span className="w-2 h-2 rounded-full bg-blue-700 inline-block" />{" "}
-      {children}
+      <span className="w-2 h-2 rounded-full bg-blue-700 inline-block" /> {children}
     </span>
   );
 }
@@ -84,51 +48,25 @@ function DocumentRow({ doc, onView }) {
     <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm border mb-4">
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-md bg-gray-50 flex items-center justify-center">
-          {doc.type === "video" ? (
-            <svg
-              className="w-6 h-6 text-gray-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14"
-              />
-              <rect
-                x="3"
-                y="6"
-                width="10"
-                height="12"
-                rx="2"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          ) : (
-            <svg
-              className="w-6 h-6 text-gray-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-              />
-              <path
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14 2v6h6"
-              />
-            </svg>
-          )}
+          <svg
+            className="w-6 h-6 text-gray-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M14 2v6h6"
+            />
+          </svg>
         </div>
 
         <div>
@@ -142,6 +80,7 @@ function DocumentRow({ doc, onView }) {
           onClick={() => onView(doc)}
           className="px-4 py-2 rounded-full border text-sm hover:bg-gray-50"
           aria-label={`View ${doc.title}`}
+          type="button"
         >
           View
         </button>
@@ -150,135 +89,318 @@ function DocumentRow({ doc, onView }) {
   );
 }
 
-export default function AdminTutorsProfilePage() {
-  const tutor = mockTutor;
-  const nav = useNavigate();
+function getTutorName(tutor) {
+  if (!tutor) return "—";
+  if (tutor.fullName) return tutor.fullName;
+  const nameParts = [tutor.firstName, tutor.lastName].filter(Boolean);
+  if (nameParts.length) return nameParts.join(" ");
+  return tutor.name || "—";
+}
 
-  function handleViewDocument(doc) {
-    // Replace with real URL + viewer logic. Using window.open for demo.
-    if (doc.url && doc.url !== "#") {
-      window.open(doc.url, "_blank", "noopener");
-    } else {
-      // Demo placeholder
-      alert(`Open ${doc.title} (${doc.subtitle}) — replace with actual viewer`);
+function getTutorEmail(tutor) {
+  return tutor?.email ?? tutor?.user?.email ?? tutor?.raw?.user?.email ?? "—";
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "—";
     }
+    return date.toLocaleDateString();
+  } catch (error) {
+    return "—";
+  }
+}
+
+function extractFileName(url) {
+  if (typeof url !== "string" || url.length === 0) {
+    return "Document";
   }
 
-  function handleApprove() {
-    // Wire this to API: approve tutor
-    const ok = window.confirm("Approve this tutor?");
-    if (!ok) return;
-    // TODO: call API and show toast / update UI
-    alert("Tutor approved (mock).");
+  try {
+    const decoded = decodeURIComponent(url);
+    const parts = decoded.split("/");
+    return parts[parts.length - 1] || decoded;
+  } catch (error) {
+    const parts = url.split("/");
+    return parts[parts.length - 1] || url;
   }
+}
 
-  function handleReject() {
-    const ok = window.confirm("Reject this tutor?");
-    if (!ok) return;
-    // TODO: call API for rejection + reason flow
-    alert("Tutor rejected (mock).");
-  }
+export default function AdminTutorsProfilePage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const pendingTutorQuery = useTutor({ id, isPending: true, enabled: Boolean(id) });
+  const shouldFetchActiveTutor =
+    Boolean(id) &&
+    (pendingTutorQuery.isError ||
+      (!pendingTutorQuery.isFetching && !pendingTutorQuery.data));
+
+  const activeTutorQuery = useTutor({
+    id,
+    enabled: shouldFetchActiveTutor,
+  });
+
+  const tutor = pendingTutorQuery.data ?? activeTutorQuery.data;
+  const isPendingTutor = Boolean(pendingTutorQuery.data);
+
+  const inlineDocumentUrl =
+    typeof pendingTutorQuery.data?.documentUrl === "string"
+      ? pendingTutorQuery.data.documentUrl
+      : typeof activeTutorQuery.data?.documentUrl === "string"
+      ? activeTutorQuery.data.documentUrl
+      : null;
+
+  const {
+    data: fetchedDocumentUrl,
+    isLoading: isLoadingDocument,
+    isError: isDocumentError,
+    error: documentError,
+  } = useTutorDocument({
+    id,
+    enabled: Boolean(id) && !inlineDocumentUrl,
+  });
+
+  const resolvedDocumentUrl =
+    inlineDocumentUrl ?? (typeof fetchedDocumentUrl === "string" ? fetchedDocumentUrl : null);
+
+  const approveTutorMutation = useApproveTutor({
+    onSuccess: () => navigate(-1),
+  });
+  const rejectTutorMutation = useRejectTutor({
+    onSuccess: () => navigate(-1),
+  });
+
+  const isLoading = pendingTutorQuery.isLoading || activeTutorQuery.isLoading;
+  const error = pendingTutorQuery.error || activeTutorQuery.error;
+
+  const subjects = useMemo(() => {
+    const subjectList =
+      (Array.isArray(tutor?.tutor?.subjects) && tutor.tutor.subjects) ||
+      (Array.isArray(tutor?.subjects) && tutor.subjects) ||
+      [];
+
+    return subjectList.map((subject) =>
+      typeof subject === "string" ? subject : subject?.name ?? subject?.title ?? "Subject",
+    );
+  }, [tutor]);
+
+  const bio =
+    tutor?.tutor?.bio ||
+    tutor?.bio ||
+    tutor?.tutorProfile?.bio ||
+    "Tutor did not provide a biography.";
+
+  const documents = useMemo(() => {
+    const tutorDocuments =
+      (Array.isArray(tutor?.tutor?.documents) && tutor.tutor.documents) ||
+      (Array.isArray(tutor?.documents) && tutor.documents) ||
+      [];
+
+    if (tutorDocuments.length > 0) {
+      return tutorDocuments.map((document) => ({
+        id: document.id ?? document.url ?? document.name,
+        title: document.title ?? document.name ?? "Document",
+        subtitle: document.subtitle ?? document.fileName ?? document.url ?? "",
+        url: document.url ?? document.link ?? resolvedDocumentUrl,
+      }));
+    }
+
+    if (typeof resolvedDocumentUrl === "string" && resolvedDocumentUrl.length > 0) {
+      const subtitle = extractFileName(resolvedDocumentUrl);
+      return [
+        {
+          id: "primary-document",
+          title: "Verification Document",
+          subtitle,
+          url: resolvedDocumentUrl,
+        },
+      ];
+    }
+
+    return [];
+  }, [resolvedDocumentUrl, tutor]);
+
+  const handleViewDocument = (doc) => {
+    if (!doc?.url || typeof doc.url !== "string") {
+      window.alert("Document URL unavailable.");
+      return;
+    }
+    window.open(doc.url, "_blank", "noopener");
+  };
+
+  const handleApprove = () => {
+    if (!id) return;
+    const confirmed = window.confirm("Approve this tutor?");
+    if (!confirmed) return;
+    approveTutorMutation.mutate(id);
+  };
+
+  const handleReject = () => {
+    if (!id) return;
+    const confirmed = window.confirm("Reject this tutor?");
+    if (!confirmed) return;
+    const reason = window.prompt("Please provide a rejection reason:");
+    if (!reason || !reason.trim()) {
+      window.alert("Rejection reason is required.");
+      return;
+    }
+    rejectTutorMutation.mutate({
+      tutorId: id,
+      rejectionReason: reason.trim(),
+    });
+  };
 
   return (
     <div className="max-w-5xl">
-      {/* Header row */}
       <div className="flex items-center gap-6 mb-8">
-        <BackButton onClick={() => nav(-1)} />
-
+        <BackButton onClick={() => navigate(-1)} />
         <div className="flex-1">
           <h1 className="text-xl font-semibold">Tutor profile review</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Review tutor information, documents, and take action on pending applications.
+          </p>
         </div>
       </div>
 
-      {/* Profile top */}
-      <section className="flex items-start gap-8 mb-8">
-        <img
-          src={tutor.avatar}
-          alt={`${tutor.name} avatar`}
-          className="w-28 h-28 rounded-full object-cover shadow-sm"
-        />
+      {error ? <ErrorAlert error={error} /> : null}
 
-        <div className="flex-1">
-          <div className="text-sm text-gray-500 mb-2">
-            Application Date: {tutor.appliedAt}
-          </div>
-          <div className="text-2xl font-semibold text-gray-900">
-            {tutor.name}
-          </div>
-          <div className="text-sm text-gray-500 mt-1">{tutor.university}</div>
-        </div>
-      </section>
-
-      {/* Details */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-4">Details</h2>
-
-        {/* Bio */}
-        <div className="bg-white rounded-xl border p-5 shadow-sm mb-6">
-          <div className="text-sm font-medium mb-2">Bio</div>
-          <p className="text-gray-600 leading-relaxed">{tutor.bio}</p>
-
-          <div className="mt-4">
-            {tutor.tags.map((t) => (
-              <Tag key={t}>{t}</Tag>
-            ))}
-          </div>
-        </div>
-
-        {/* Availability */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div>
-            <div className="text-sm text-gray-500">Availability</div>
-            <div className="text-sm text-gray-800 mt-1">
-              {tutor.availability.label}
+      {isLoading ? (
+        <Spinner />
+      ) : !tutor ? (
+        <p className="text-sm text-gray-500">Tutor not found.</p>
+      ) : (
+        <>
+          <section className="flex flex-wrap md:flex-nowrap items-start gap-8 mb-8">
+            <div className="w-28 h-28 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-semibold text-blue-700">
+              {getTutorName(tutor)
+                .split(" ")
+                .map((part) => part[0])
+                .join("")
+                .slice(0, 2) || "T"}
             </div>
-          </div>
 
-          <div>
-            <div className="text-sm text-gray-500">Day</div>
-            <div className="text-sm text-gray-800 mt-1">
-              {tutor.availability.day}
+            <div className="flex-1 min-w-[200px]">
+              <div className="text-sm text-gray-500 mb-2">
+                Application Date: {formatDate(tutor?.createdAt || tutor?.appliedAt)}
+              </div>
+              <div className="text-2xl font-semibold text-gray-900">
+                {getTutorName(tutor)}
+              </div>
+              <div className="text-sm text-gray-500 mt-1">
+                {tutor?.tutorProfile?.university ||
+                  tutor?.university ||
+                  tutor?.tutor?.education ||
+                  tutor?.education ||
+                  "University information unavailable"}
+              </div>
+              <div className="text-sm text-gray-500 mt-1">
+                Email: {getTutorEmail(tutor)}
+              </div>
+              <div className="text-sm text-gray-500 mt-1">
+                Status: {
+                  tutor?.tutor?.approvalStatus ||
+                  tutor?.status ||
+                  tutor?.accountStatus ||
+                  (isPendingTutor ? "pending" : "—")
+                }
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <div className="text-sm text-gray-500">Time</div>
-            <div className="text-sm text-gray-800 mt-1">
-              {tutor.availability.time}
+          <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-4">Details</h2>
+
+            <div className="bg-white rounded-xl border p-5 shadow-sm mb-6">
+              <div className="text-sm font-medium mb-2">Bio</div>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{bio}</p>
+
+              {subjects.length ? (
+                <div className="mt-4 flex flex-wrap">
+                  {subjects.map((subject, index) => (
+                    <Tag key={`${subject}-${index}`}>{subject}</Tag>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          </div>
-        </div>
 
-        {/* Documents */}
-        <div>
-          <div className="text-base font-medium mb-4">Documents</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div>
+                <div className="text-sm text-gray-500">Availability</div>
+              <div className="text-sm text-gray-800 mt-1">
+                  {tutor?.tutorProfile?.availability?.label ||
+                    tutor?.tutor?.availability?.label ||
+                    "Not specified"}
+              </div>
+              </div>
 
-          <div>
-            {tutor.documents.map((d) => (
-              <DocumentRow key={d.id} doc={d} onView={handleViewDocument} />
-            ))}
-          </div>
-        </div>
-      </section>
+              <div>
+                <div className="text-sm text-gray-500">Day</div>
+              <div className="text-sm text-gray-800 mt-1">
+                  {tutor?.tutorProfile?.availability?.day ||
+                    tutor?.tutor?.availability?.day ||
+                    "Not specified"}
+              </div>
+              </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-4 mt-6">
-        <button
-          onClick={handleApprove}
-          className="px-6 py-3 rounded-full bg-blue-600 text-white shadow hover:brightness-95"
-          aria-label="Approve tutor"
-        >
-          Approve
-        </button>
+              <div>
+                <div className="text-sm text-gray-500">Time</div>
+              <div className="text-sm text-gray-800 mt-1">
+                  {tutor?.tutorProfile?.availability?.time ||
+                    tutor?.tutor?.availability?.time ||
+                    "Not specified"}
+              </div>
+              </div>
+            </div>
 
-        <button
-          onClick={handleReject}
-          className="px-6 py-3 rounded-full border text-gray-700 hover:bg-gray-50"
-          aria-label="Reject tutor"
-        >
-          Reject
-        </button>
-      </div>
+            <div>
+              <div className="text-base font-medium mb-4">Documents</div>
+              {isDocumentError ? <ErrorAlert error={documentError} /> : null}
+              {isLoadingDocument ? <Spinner /> : null}
+              {!isLoadingDocument && documents.length === 0 ? (
+                <p className="text-sm text-gray-500">No documents available.</p>
+              ) : (
+                <div>
+                  {documents.map((document) => (
+                    <DocumentRow
+                      key={document.id}
+                      doc={document}
+                      onView={handleViewDocument}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {isPendingTutor ? (
+            <div className="flex items-center gap-4 mt-6">
+              <button
+                onClick={handleApprove}
+                className="px-6 py-3 rounded-full bg-blue-600 text-white shadow hover:brightness-95 disabled:opacity-60"
+                aria-label="Approve tutor"
+                disabled={approveTutorMutation.isPending}
+                type="button"
+              >
+                {approveTutorMutation.isPending ? "Approving..." : "Approve"}
+              </button>
+
+              <button
+                onClick={handleReject}
+                className="px-6 py-3 rounded-full border text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+                aria-label="Reject tutor"
+                disabled={rejectTutorMutation.isPending}
+                type="button"
+              >
+                {rejectTutorMutation.isPending ? "Rejecting..." : "Reject"}
+              </button>
+            </div>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }
