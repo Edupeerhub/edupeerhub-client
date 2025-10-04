@@ -1,14 +1,13 @@
-import React from "react";
 import Header from "../components/landing/Header";
 import Footer from "../components/landing/Footer";
 
 const LandingLayout = ({ children }) => {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
-    </>
+    </div>
   );
 };
 

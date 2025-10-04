@@ -1,23 +1,20 @@
 import React from "react";
 import AdminLayout from "../../layouts/Layout";
 
-const stats = [
+const statCards = [
   {
-    id: 1,
     title: "Total Tutors",
     value: "1,250",
     delta: "+5%",
     deltaClass: "text-green-600",
   },
   {
-    id: 2,
     title: "Total Students",
     value: "50",
     delta: "+10%",
     deltaClass: "text-green-600",
   },
   {
-    id: 3,
     title: "Pending Tutor Application",
     value: "15",
     delta: "-20%",
@@ -31,21 +28,18 @@ const pendingTutors = [
     name: "Mr. Ola Williams",
     university: "University of Lagos",
     date: "2025-09-15",
-    avatarId: 12,
   },
   {
     id: 2,
     name: "Ms. Nkechi Onu",
     university: "University of Nigeria, Nsukka",
     date: "2025-09-15",
-    avatarId: 6,
   },
   {
     id: 3,
     name: "Ms. Esther Ali",
     university: "Ahmadu Bello University",
     date: "2025-09-15",
-    avatarId: 8,
   },
 ];
 

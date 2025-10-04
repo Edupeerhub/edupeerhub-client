@@ -3,8 +3,17 @@ import { axiosInstance } from "../axios";
 // =====================
 // User Routes
 // =====================
-export const getAllUsers = async () => {
-  const { data } = await axiosInstance.get("/admin/users");
+export const getAllUsers = async (role) => {
+  const params = {};
+
+  if (role) {
+    params.role = role;
+  }
+
+  const { data } = await axiosInstance.get("/admin/users", {
+    params: params,
+  });
+
   return data.data;
 };
 
@@ -18,6 +27,11 @@ export const restoreUser = async (id) => {
   return data.data;
 };
 
+export const getUserCounts = async () => {
+  const { data } = await axiosInstance.get("/admin/users/counts");
+  return data.data;
+};
+
 // =====================
 // Pending Tutor Routes
 // =====================
@@ -27,6 +41,14 @@ export const getPendingTutors = async () => {
 };
 export const getPendingTutorById = async (id) => {
   const { data } = await axiosInstance.get(`/admin/tutors/${id}/pending`);
+  return data.data;
+};
+
+export const getTutorDocumentUrl = async (tutorId) => {
+  const url = `/admin/tutors/${tutorId}/file`;
+
+  const { data } = await axiosInstance.get(url);
+
   return data.data;
 };
 

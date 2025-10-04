@@ -1,89 +1,141 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import Logo from "../../assets/images/edupeerhub-logo1.svg?react";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { Menu, X } from "lucide-react";
+import Button from "./LandingButton";
+import { ASSETS } from "../../config/assets";
+import useAuthStatus from "../../hooks/auth/useAuthStatus";
+import useLogout from "../../hooks/auth/useLogout";
 
 const Header = () => {
-  const [open, setOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, roleLink } = useAuthStatus();
+  const { logoutMutation } = useLogout();
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+      setIsMenuOpen(false);
+    }
+  };
+
+  const navLinks = [
+    { label: "Home", href: "home" },
+    { label: "Features", href: "features" },
+    { label: "About", href: "about" },
+    { label: "Contact Us", href: "contact" },
+  ];
 
   return (
-    <header className="w-full fixed top-0 left-0 bg-white shadow z-50 font-poppins">
-      <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-        {/* Logo */}
-        <Link to="/">
-          <Logo />
-        </Link>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#deeaf6] shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="flex flex-col items-center">
+              <img
+                src={ASSETS.logo?.image}
+                alt={ASSETS.logo?.alt}
+                className="h-8 md:h-8"
+              />
+              <p className="hidden sm:block text-xl md:text-xl font-bold text-blue-600">
+                edupeerhub
+              </p>
+            </div>
+          </Link>
 
-        {/* Desktop Menu */}
-        <ul className="hidden md:flex items-center space-x-6 font-medium">
-          <li>
-            <Link to="/" className="hover:text-blue-500">
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link to="/about" className="hover:text-blue-500">
-              About
-            </Link>
-          </li>
-          <li>
-            <Link to="/features" className="hover:text-blue-500">
-              Features
-            </Link>
-          </li>
-          <li>
-            <Link to="/contact" className="hover:text-blue-500">
-              Contact Us
-            </Link>
-          </li>
-          <Link
-            to="/signup"
-            className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500"
-          >
-            SIGN UP
-          </Link>
-          <Link
-            to="/login"
-            className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-          >
-            LOGIN
-          </Link>
-        </ul>
+          <nav className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => scrollToSection(link.href)}
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
 
-        {/* Mobile Toggle */}
-        <button onClick={() => setOpen(!open)} className="md:hidden">
-          {open ? <FaTimes size={24} /> : <FaBars size={24} />}
-        </button>
-      </nav>
+          <div className="hidden md:flex items-center space-x-2 md:space-x-4">
+            {isAuthenticated ? (
+              <>
+                <Button to={roleLink} variant="primary" size="md">
+                  Dashboard
+                </Button>
+                <Button onClick={logoutMutation} variant="ghost" size="sm">
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button to="/login" variant="ghost" size="sm">
+                  Log In
+                </Button>
+                <Button to="/signup" variant="primary" size="md">
+                  Sign Up
+                </Button>
+              </>
+            )}
+          </div>
 
-      {/* Mobile Menu */}
-      {open && (
-        <ul className="md:hidden flex flex-col bg-gray-100 px-6 py-4 space-y-4">
-          <Link to="/" onClick={() => setOpen(false)}>
-            Home
-          </Link>
-          <Link to="/about" onClick={() => setOpen(false)}>
-            About
-          </Link>
-          <Link to="/features" onClick={() => setOpen(false)}>
-            Features
-          </Link>
-          <Link to="/contact" onClick={() => setOpen(false)}>
-            Contact Us
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-blue-400 text-white px-4 py-2 rounded"
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
+            aria-label="Toggle menu"
           >
-            SIGN UP
-          </Link>
-          <Link
-            to="/login"
-            className="bg-gray-200 text-gray-700 px-4 py-2 rounded"
-          >
-            LOGIN
-          </Link>
-        </ul>
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {isMenuOpen && (
+        <div className="md:hidden bg-white border-t border-gray-200">
+          <nav className="px-4 py-4 space-y-3">
+            {navLinks.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => scrollToSection(link.href)}
+                className="block w-full text-left py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              >
+                {link.label}
+              </button>
+            ))}
+            <div className="pt-4 space-y-2 border-t border-gray-200">
+              {isAuthenticated ? (
+                <Button
+                  to={roleLink}
+                  variant="primary"
+                  size="md"
+                  className="w-full"
+                >
+                  Go to Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    to="/login"
+                    variant="ghost"
+                    size="md"
+                    className="w-full"
+                  >
+                    Log In
+                  </Button>
+                  <Button
+                    to="/signup"
+                    variant="primary"
+                    size="md"
+                    className="w-full"
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
       )}
     </header>
   );

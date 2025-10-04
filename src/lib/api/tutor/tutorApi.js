@@ -1,8 +1,21 @@
 import { axiosInstance } from "../axios";
 
 export const createTutor = async (data) => {
-  const response = await axiosInstance.post("/tutor", data);
-  return response.data.data;
+  const formData = new FormData();
+
+  formData.append("education", data.education);
+  // Subjects → stringify so backend can JSON.parse
+  formData.append("subjects", JSON.stringify(data.subjects));
+
+  formData.append("file", data.credentials);
+
+  const res = await axiosInstance.post("/tutor", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return res.data;
 };
 
 export const getTutors = async (params = {}) => {
@@ -10,7 +23,7 @@ export const getTutors = async (params = {}) => {
 
   // Add search parameter
   if (params.search) {
-    queryParams.append("search", params.search);
+    queryParams.append("name", params.search);
   }
 
   // Add filter parameters as comma-separated strings
@@ -18,15 +31,11 @@ export const getTutors = async (params = {}) => {
     queryParams.append("subjects", params.subjects.join(","));
   }
 
-  if (params.availability && params.availability.length > 0) {
-    queryParams.append("availability", params.availability.join(","));
-  }
-
   if (params.ratings && params.ratings.length > 0) {
-    queryParams.append("rating", params.ratings.join(","));
+    queryParams.append("ratings", params.ratings.join(","));
   }
 
-  // Add pagination parameters if provided
+  // Add pagination parameters
   if (params.page) {
     queryParams.append("page", params.page);
   }
@@ -39,7 +48,8 @@ export const getTutors = async (params = {}) => {
   const url = queryString ? `/tutor?${queryString}` : "/tutor";
 
   const response = await axiosInstance.get(url);
-  return response.data.data;
+
+  return response.data;
 };
 
 export const getRecommendedTutors = async () => {

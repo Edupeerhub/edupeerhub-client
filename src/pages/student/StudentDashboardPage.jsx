@@ -293,7 +293,7 @@ const StudentDashboardPage = () => {
             </div>
           )}
 
-          {!isLoading && !error && data?.rows?.length === 0 && (
+          {!isLoading && !error && data?.length === 0 && (
             <div className="flex justify-center items-center py-8">
               <div className="flex flex-col items-center gap-3 text-center">
                 <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
@@ -316,8 +316,8 @@ const StudentDashboardPage = () => {
             </div>
           )}
 
-          {!isLoading && !error && data?.rows?.length > 0 && (
-            <HorizontalScrollTutors tutors={data.rows} />
+          {!isLoading && !error && data?.length > 0 && (
+            <HorizontalScrollTutors tutors={data} />
           )}
         </div>
       </div>
