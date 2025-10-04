@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
@@ -30,27 +30,42 @@ function formatDate(value) {
 export default function AdminStudentsPage() {
   const [page, setPage] = useState(1);
   const {
-    data: students,
+    data,
     isLoading,
     isFetching,
     isError,
     error,
-  } = useUsers({ role: "student" });
+  } = useUsers({ role: "student", page, limit: PAGE_SIZE });
+
+  const students = data?.users ?? [];
+  const meta = data?.meta;
+
+  const totalStudents = meta?.total ?? students.length ?? 0;
+  const pageSize = meta?.limit ?? PAGE_SIZE;
+  const computedTotalPages = pageSize
+    ? Math.ceil(totalStudents / pageSize)
+    : Math.ceil(totalStudents / PAGE_SIZE);
+  const totalPages = Math.max(1, computedTotalPages || 1);
+  const currentPage = meta?.page ?? page;
+  const currentCount = meta?.count ?? students.length ?? 0;
+  const hasResults = totalStudents > 0 && currentCount > 0;
+  const effectivePageSize = pageSize || PAGE_SIZE;
+  const rangeStart = hasResults ? (currentPage - 1) * effectivePageSize + 1 : 0;
+  const rangeEnd = hasResults
+    ? (currentPage - 1) * effectivePageSize + currentCount
+    : 0;
 
   useEffect(() => {
-    setPage(1);
-  }, [students]);
-
-  const totalStudents = students?.length ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalStudents / PAGE_SIZE));
-
-  const pagedStudents = useMemo(() => {
-    if (!Array.isArray(students) || students.length === 0) {
-      return [];
+    if (meta?.page && meta.page !== page) {
+      setPage(meta.page);
     }
-    const startIndex = (page - 1) * PAGE_SIZE;
-    return students.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [students, page]);
+  }, [meta?.page]);
+
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
   const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
@@ -69,7 +84,7 @@ export default function AdminStudentsPage() {
 
         {isLoading ? (
           <Spinner />
-        ) : pagedStudents.length === 0 ? (
+        ) : students.length === 0 ? (
           <p className="text-sm text-gray-500">No students found.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -84,12 +99,12 @@ export default function AdminStudentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {pagedStudents.map((student, index) => {
+                {students.map((student, index) => {
                   const status = student?.accountStatus || student?.status || "—";
                   return (
                     <tr
                       key={student?.id ?? index}
-                      className={index < pagedStudents.length - 1 ? "border-b" : ""}
+                      className={index < students.length - 1 ? "border-b" : ""}
                     >
                       <td className="p-4 text-gray-700">{getUserName(student)}</td>
                       <td className="p-4 text-gray-600">{student?.email ?? "—"}</td>
@@ -133,26 +148,26 @@ export default function AdminStudentsPage() {
 
         <div className="flex items-center justify-between mt-6">
           <div className="text-sm text-gray-500">
-            Showing {(pagedStudents.length && (page - 1) * PAGE_SIZE + 1) || 0} to
-            {" "}
-            {(page - 1) * PAGE_SIZE + pagedStudents.length} of {totalStudents} students
+            {totalStudents === 0
+              ? "Showing 0 students"
+              : `Showing ${rangeStart} to ${rangeEnd} of ${totalStudents} students`}
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handlePrev}
-              disabled={page === 1}
+              disabled={currentPage === 1}
               className="px-3 py-2 border rounded-md disabled:opacity-50"
             >
               Previous
             </button>
             <span className="text-sm text-gray-600">
-              Page {page} of {totalPages}
+              Page {currentPage} of {totalPages}
             </span>
             <button
               type="button"
               onClick={handleNext}
-              disabled={page === totalPages}
+              disabled={currentPage === totalPages}
               className="px-3 py-2 border rounded-md disabled:opacity-50"
             >
               Next

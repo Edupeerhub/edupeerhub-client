@@ -53,20 +53,24 @@ export default function AdminDashboardPage() {
     error: pendingTutorsError,
   } = usePendingTutors();
   const {
-    data: students,
+    data: studentsData,
     isLoading: isLoadingStudents,
     isError: isStudentsError,
     error: studentsError,
-  } = useUsers({ role: "student" });
+  } = useUsers({ role: "student", limit: PREVIEW_LIMIT });
+
+  const students = studentsData?.users ?? [];
+
+  const pendingCount = counts?.totalPendingTutors ?? counts?.pendingTutorCount ?? counts?.pendingTutors ?? 0;
+  const tutorCount = counts?.totalTutors ?? counts?.tutorCount ?? counts?.tutors ?? 0;
+  const studentCount = counts?.totalStudents ?? counts?.studentCount ?? counts?.students ?? 0;
 
   const statCards = useMemo(
     () => [
       {
         title: "Total Tutors",
-        value: formatNumber(
-          counts?.totalTutors ?? counts?.tutorCount ?? counts?.tutors,
-        ),
-        delta: counts?.tutorGrowth ?? "—",
+        value: formatNumber(tutorCount),
+        delta: counts?.tutorGrowth ?? null,
         deltaClass:
           typeof counts?.tutorGrowth === "number" && counts?.tutorGrowth < 0
             ? "text-red-500"
@@ -74,10 +78,8 @@ export default function AdminDashboardPage() {
       },
       {
         title: "Total Students",
-        value: formatNumber(
-          counts?.totalStudents ?? counts?.studentCount ?? counts?.students,
-        ),
-        delta: counts?.studentGrowth ?? "—",
+        value: formatNumber(studentCount),
+        delta: counts?.studentGrowth ?? null,
         deltaClass:
           typeof counts?.studentGrowth === "number" && counts?.studentGrowth < 0
             ? "text-red-500"
@@ -85,10 +87,8 @@ export default function AdminDashboardPage() {
       },
       {
         title: "Pending Tutor Application",
-        value: formatNumber(
-          counts?.pendingTutors ?? counts?.pendingTutorCount ?? 0,
-        ),
-        delta: counts?.pendingTutorGrowth ?? "—",
+        value: formatNumber(pendingCount),
+        delta: counts?.pendingTutorGrowth ?? null,
         deltaClass:
           typeof counts?.pendingTutorGrowth === "number" &&
           counts?.pendingTutorGrowth < 0
@@ -157,7 +157,7 @@ export default function AdminDashboardPage() {
               <thead>
                 <tr className="bg-blue-50">
                   <th className="p-4">Name</th>
-                  <th className="p-4">University</th>
+                  <th className="p-4">Education</th>
                   <th className="p-4">Date Applied</th>
                   <th className="p-4 text-right">Action</th>
                 </tr>
@@ -185,7 +185,9 @@ export default function AdminDashboardPage() {
                           {getUserName(tutor)}
                         </div>
                       </td>
-                      <td className="p-4 text-gray-600">{university}</td>
+                  <td className="p-4 text-gray-600">
+                    {tutor?.education ?? tutor?.raw?.education ?? university}
+                  </td>
                       <td className="p-4 text-gray-600">
                         {formatDate(tutor?.createdAt || tutor?.appliedAt)}
                       </td>

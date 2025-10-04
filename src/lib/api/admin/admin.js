@@ -3,15 +3,27 @@ import { axiosInstance } from "../axios";
 // =====================
 // User Routes
 // =====================
-export const getAllUsers = async (role) => {
+export const getAllUsers = async (role, query = {}) => {
   const params = {};
 
   if (role) {
     params.role = role;
   }
 
+  if (query?.page) {
+    params.page = query.page;
+  }
+
+  if (query?.limit) {
+    params.limit = query.limit;
+  }
+
+  if (query?.search) {
+    params.search = query.search;
+  }
+
   const { data } = await axiosInstance.get("/admin/users", {
-    params: params,
+    params,
   });
 
   return data.data;

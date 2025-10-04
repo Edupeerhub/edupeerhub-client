@@ -8,3 +8,4 @@ export * from "./useTutor";
 export * from "./useTutorDocument";
 export * from "./useUserCounts";
 export * from "./useUsers";
+export * from "./useAdminUser";

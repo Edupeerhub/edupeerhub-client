@@ -98,7 +98,7 @@ function getTutorName(tutor) {
 }
 
 function getTutorEmail(tutor) {
-  return tutor?.email ?? tutor?.user?.email ?? "—";
+  return tutor?.email ?? tutor?.user?.email ?? tutor?.raw?.user?.email ?? "—";
 }
 
 function formatDate(value) {
@@ -150,21 +150,30 @@ export default function AdminTutorsProfilePage() {
   const error = pendingTutorQuery.error || activeTutorQuery.error;
 
   const subjects = useMemo(() => {
-    if (Array.isArray(tutor?.subjects)) return tutor.subjects;
-    if (Array.isArray(tutor?.tutorProfile?.subjects)) {
-      return tutor.tutorProfile.subjects;
-    }
-    return [];
+    const subjectList =
+      (Array.isArray(tutor?.tutor?.subjects) && tutor.tutor.subjects) ||
+      (Array.isArray(tutor?.subjects) && tutor.subjects) ||
+      [];
+
+    return subjectList.map((subject) =>
+      typeof subject === "string" ? subject : subject?.name ?? subject?.title ?? "Subject",
+    );
   }, [tutor]);
 
   const bio =
+    tutor?.tutor?.bio ||
     tutor?.bio ||
     tutor?.tutorProfile?.bio ||
     "Tutor did not provide a biography.";
 
   const documents = useMemo(() => {
-    if (Array.isArray(tutor?.documents) && tutor.documents.length > 0) {
-      return tutor.documents.map((document) => ({
+    const tutorDocuments =
+      (Array.isArray(tutor?.tutor?.documents) && tutor.tutor.documents) ||
+      (Array.isArray(tutor?.documents) && tutor.documents) ||
+      [];
+
+    if (tutorDocuments.length > 0) {
+      return tutorDocuments.map((document) => ({
         id: document.id ?? document.url ?? document.name,
         title: document.title ?? document.name ?? "Document",
         subtitle: document.subtitle ?? document.fileName ?? document.url ?? "",
@@ -247,13 +256,22 @@ export default function AdminTutorsProfilePage() {
                 {getTutorName(tutor)}
               </div>
               <div className="text-sm text-gray-500 mt-1">
-                {tutor?.tutorProfile?.university || tutor?.university || "University information unavailable"}
+                {tutor?.tutorProfile?.university ||
+                  tutor?.university ||
+                  tutor?.tutor?.education ||
+                  tutor?.education ||
+                  "University information unavailable"}
               </div>
               <div className="text-sm text-gray-500 mt-1">
                 Email: {getTutorEmail(tutor)}
               </div>
               <div className="text-sm text-gray-500 mt-1">
-                Status: {tutor?.tutor?.approvalStatus || tutor?.status || (isPendingTutor ? "pending" : "—")}
+                Status: {
+                  tutor?.tutor?.approvalStatus ||
+                  tutor?.status ||
+                  tutor?.accountStatus ||
+                  (isPendingTutor ? "pending" : "—")
+                }
               </div>
             </div>
           </section>
@@ -277,23 +295,29 @@ export default function AdminTutorsProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div>
                 <div className="text-sm text-gray-500">Availability</div>
-                <div className="text-sm text-gray-800 mt-1">
-                  {tutor?.tutorProfile?.availability?.label || "Not specified"}
-                </div>
+              <div className="text-sm text-gray-800 mt-1">
+                  {tutor?.tutorProfile?.availability?.label ||
+                    tutor?.tutor?.availability?.label ||
+                    "Not specified"}
+              </div>
               </div>
 
               <div>
                 <div className="text-sm text-gray-500">Day</div>
-                <div className="text-sm text-gray-800 mt-1">
-                  {tutor?.tutorProfile?.availability?.day || "Not specified"}
-                </div>
+              <div className="text-sm text-gray-800 mt-1">
+                  {tutor?.tutorProfile?.availability?.day ||
+                    tutor?.tutor?.availability?.day ||
+                    "Not specified"}
+              </div>
               </div>
 
               <div>
                 <div className="text-sm text-gray-500">Time</div>
-                <div className="text-sm text-gray-800 mt-1">
-                  {tutor?.tutorProfile?.availability?.time || "Not specified"}
-                </div>
+              <div className="text-sm text-gray-800 mt-1">
+                  {tutor?.tutorProfile?.availability?.time ||
+                    tutor?.tutor?.availability?.time ||
+                    "Not specified"}
+              </div>
               </div>
             </div>
 

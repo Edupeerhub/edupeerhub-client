@@ -33,11 +33,13 @@ function formatDate(value) {
 export default function AdminTutorsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const {
-    data: tutors,
+    data: tutorsData,
     isLoading: isLoadingTutors,
     isError: isTutorsError,
     error: tutorsError,
-  } = useUsers({ role: "tutor" });
+  } = useUsers({ role: "tutor", limit: 50 });
+
+  const tutors = tutorsData?.users ?? [];
 
   const {
     data: pendingTutors,
@@ -115,7 +117,8 @@ export default function AdminTutorsPage() {
             </thead>
             <tbody>
               {filteredTutors.map((tutor, index) => {
-                const status = tutor?.tutor?.approvalStatus || tutor?.status || "—";
+                const status =
+                  tutor?.tutor?.approvalStatus || tutor?.status || tutor?.accountStatus || "—";
                 return (
                   <tr
                     key={tutor?.id ?? index}
@@ -171,7 +174,7 @@ export default function AdminTutorsPage() {
               <tr>
                 <th className="p-4 text-left">Name</th>
                 <th className="p-4 text-left">Email</th>
-                <th className="p-4 text-left">University</th>
+                <th className="p-4 text-left">Education</th>
                 <th className="p-4 text-left">Applied</th>
                 <th className="p-4 text-right">Action</th>
               </tr>
@@ -185,7 +188,7 @@ export default function AdminTutorsPage() {
                   <td className="p-4">{getUserName(tutor)}</td>
                   <td className="p-4">{tutor?.email ?? "—"}</td>
                   <td className="p-4">
-                    {tutor?.tutorProfile?.university || tutor?.university || "—"}
+                    {tutor?.education ?? tutor?.raw?.education ?? "—"}
                   </td>
                   <td className="p-4">{formatDate(tutor?.createdAt || tutor?.appliedAt)}</td>
                   <td className="p-4 text-right flex items-center justify-end gap-2">

@@ -3,21 +3,65 @@ import { getAllUsers } from "../../lib/api/admin/admin";
 
 export const USERS_QUERY_KEY = ["users"];
 
-function buildQueryKey({ role }) {
-  if (!role) {
-    return USERS_QUERY_KEY;
+function buildQueryKey({ role, page, limit, search }) {
+  const key = [...USERS_QUERY_KEY];
+
+  const filters = {};
+
+  if (role) {
+    filters.role = role;
   }
 
-  return [...USERS_QUERY_KEY, { role }];
+  if (typeof page === "number") {
+    filters.page = page;
+  }
+
+  if (typeof limit === "number") {
+    filters.limit = limit;
+  }
+
+  if (search) {
+    filters.search = search;
+  }
+
+  if (Object.keys(filters).length > 0) {
+    key.push(filters);
+  }
+
+  return key;
 }
 
-export function useUsers({ role, enabled = true, ...options } = {}) {
-  const queryKey = buildQueryKey({ role });
+const defaultSelect = (data) => {
+  if (!data) {
+    return { users: [], meta: null };
+  }
+
+  if (Array.isArray(data)) {
+    return { users: data, meta: null };
+  }
+
+  const users = Array.isArray(data.users) ? data.users : [];
+  const meta = data.meta ?? null;
+
+  return { users, meta };
+};
+
+export function useUsers({
+  role,
+  page = 1,
+  limit = 10,
+  search,
+  enabled = true,
+  ...queryOptions
+} = {}) {
+  const { select: customSelect, ...restOptions } = queryOptions;
+  const queryKey = buildQueryKey({ role, page, limit, search });
 
   return useQuery({
     queryKey,
-    queryFn: () => getAllUsers(role),
+    queryFn: () => getAllUsers(role, { page, limit, search }),
     enabled,
-    ...options,
+    select: customSelect ?? defaultSelect,
+    ...restOptions,
   });
 }
