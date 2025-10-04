@@ -73,7 +73,15 @@ export default function AdminTutorsPage() {
     if (!tutorId) return;
     const confirmed = window.confirm("Reject this tutor?");
     if (!confirmed) return;
-    rejectTutorMutation.mutate(tutorId);
+    const reason = window.prompt("Please provide a rejection reason:");
+    if (!reason || !reason.trim()) {
+      window.alert("Rejection reason is required.");
+      return;
+    }
+    rejectTutorMutation.mutate({
+      tutorId,
+      rejectionReason: reason.trim(),
+    });
   };
 
   return (

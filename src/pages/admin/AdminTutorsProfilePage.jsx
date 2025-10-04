@@ -114,6 +114,21 @@ function formatDate(value) {
   }
 }
 
+function extractFileName(url) {
+  if (typeof url !== "string" || url.length === 0) {
+    return "Document";
+  }
+
+  try {
+    const decoded = decodeURIComponent(url);
+    const parts = decoded.split("/");
+    return parts[parts.length - 1] || decoded;
+  } catch (error) {
+    const parts = url.split("/");
+    return parts[parts.length - 1] || url;
+  }
+}
+
 export default function AdminTutorsProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -132,12 +147,25 @@ export default function AdminTutorsProfilePage() {
   const tutor = pendingTutorQuery.data ?? activeTutorQuery.data;
   const isPendingTutor = Boolean(pendingTutorQuery.data);
 
+  const inlineDocumentUrl =
+    typeof pendingTutorQuery.data?.documentUrl === "string"
+      ? pendingTutorQuery.data.documentUrl
+      : typeof activeTutorQuery.data?.documentUrl === "string"
+      ? activeTutorQuery.data.documentUrl
+      : null;
+
   const {
-    data: documentUrl,
+    data: fetchedDocumentUrl,
     isLoading: isLoadingDocument,
     isError: isDocumentError,
     error: documentError,
-  } = useTutorDocument({ id, enabled: Boolean(id) });
+  } = useTutorDocument({
+    id,
+    enabled: Boolean(id) && !inlineDocumentUrl,
+  });
+
+  const resolvedDocumentUrl =
+    inlineDocumentUrl ?? (typeof fetchedDocumentUrl === "string" ? fetchedDocumentUrl : null);
 
   const approveTutorMutation = useApproveTutor({
     onSuccess: () => navigate(-1),
@@ -177,28 +205,27 @@ export default function AdminTutorsProfilePage() {
         id: document.id ?? document.url ?? document.name,
         title: document.title ?? document.name ?? "Document",
         subtitle: document.subtitle ?? document.fileName ?? document.url ?? "",
-        url: document.url ?? document.link ?? documentUrl,
+        url: document.url ?? document.link ?? resolvedDocumentUrl,
       }));
     }
 
-    if (documentUrl) {
-      const parts = documentUrl.split("/");
-      const subtitle = parts[parts.length - 1] || documentUrl;
+    if (typeof resolvedDocumentUrl === "string" && resolvedDocumentUrl.length > 0) {
+      const subtitle = extractFileName(resolvedDocumentUrl);
       return [
         {
           id: "primary-document",
           title: "Verification Document",
           subtitle,
-          url: documentUrl,
+          url: resolvedDocumentUrl,
         },
       ];
     }
 
     return [];
-  }, [documentUrl, tutor]);
+  }, [resolvedDocumentUrl, tutor]);
 
   const handleViewDocument = (doc) => {
-    if (!doc?.url) {
+    if (!doc?.url || typeof doc.url !== "string") {
       window.alert("Document URL unavailable.");
       return;
     }
@@ -216,7 +243,15 @@ export default function AdminTutorsProfilePage() {
     if (!id) return;
     const confirmed = window.confirm("Reject this tutor?");
     if (!confirmed) return;
-    rejectTutorMutation.mutate(id);
+    const reason = window.prompt("Please provide a rejection reason:");
+    if (!reason || !reason.trim()) {
+      window.alert("Rejection reason is required.");
+      return;
+    }
+    rejectTutorMutation.mutate({
+      tutorId: id,
+      rejectionReason: reason.trim(),
+    });
   };
 
   return (

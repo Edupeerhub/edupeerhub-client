@@ -8,6 +8,8 @@ const normalizePendingTutor = (entry) => {
 
   const user = entry.user ?? {};
   const id = entry.userId ?? user.id ?? entry.id;
+  const documentUrl =
+    entry.documentUrl ?? user.documentUrl ?? entry?.tutor?.documentUrl ?? null;
 
   return {
     id,
@@ -22,6 +24,7 @@ const normalizePendingTutor = (entry) => {
     rating: entry.rating ?? null,
     profileVisibility: entry.profileVisibility ?? null,
     subjects: Array.isArray(entry.subjects) ? entry.subjects : [],
+    documentUrl,
     user,
     raw: entry,
   };

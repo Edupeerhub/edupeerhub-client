@@ -11,10 +11,12 @@ export function useRejectTutor(options = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (tutorId) => rejectTutor(tutorId),
-    onSuccess: (data, tutorId, context) => {
+    mutationFn: ({ tutorId, rejectionReason }) =>
+      rejectTutor(tutorId, { rejectionReason }),
+    onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: PENDING_TUTORS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      const tutorId = variables?.tutorId;
       if (tutorId) {
         queryClient.invalidateQueries({
           queryKey: buildTutorQueryKey(tutorId, { isPending: true }),
@@ -28,7 +30,7 @@ export function useRejectTutor(options = {}) {
       }
       queryClient.invalidateQueries({ queryKey: USER_COUNTS_QUERY_KEY });
       handleToastSuccess("Tutor rejected successfully.");
-      options?.onSuccess?.(data, tutorId, context);
+      options?.onSuccess?.(data, variables, context);
     },
     onError: (error, variables, context) => {
       handleToastError(error, "Failed to reject tutor.");

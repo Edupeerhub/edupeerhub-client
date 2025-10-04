@@ -19,6 +19,7 @@ const normalizeActiveTutor = (data) => {
       : Array.isArray(data.subjects)
       ? data.subjects
       : [],
+    documentUrl: data.tutor?.documentUrl ?? data.documentUrl ?? null,
     raw: data,
   };
 };
@@ -37,6 +38,8 @@ const normalizePendingTutor = (data) => {
       user,
     },
     subjects: Array.isArray(data.subjects) ? data.subjects : [],
+    documentUrl:
+      data.documentUrl ?? data?.tutor?.documentUrl ?? data?.user?.documentUrl ?? null,
     user,
     raw: data,
   };

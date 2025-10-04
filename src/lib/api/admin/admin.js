@@ -69,8 +69,16 @@ export const approveTutor = async (id) => {
   return data.data;
 };
 
-export const rejectTutor = async (id) => {
-  const { data } = await axiosInstance.patch(`/admin/tutors/${id}/reject`);
+export const rejectTutor = async (id, rejectionReason) => {
+  const payload =
+    rejectionReason && typeof rejectionReason === "object"
+      ? rejectionReason
+      : { rejectionReason };
+
+  const { data } = await axiosInstance.patch(
+    `/admin/tutors/${id}/reject`,
+    payload,
+  );
   return data.data;
 };
 
