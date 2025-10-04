@@ -1,64 +1,34 @@
-import React, { useState, useMemo } from "react";
-import AdminLayout from "../../layouts/Layout";
+import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import Spinner from "../../components/common/Spinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import {
+  useApproveTutor,
+  usePendingTutors,
+  useRejectTutor,
+  useUsers,
+} from "../../hooks/admin";
 
-const MOCK_TUTORS = [
-  {
-    id: 1,
-    name: "Mr. Ola Williams",
-    university: "University of Lagos",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=12",
-  },
-  {
-    id: 2,
-    name: "Ms. Nkechi Onu",
-    university: "University of Nigeria, Nsukka",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=6",
-  },
-  {
-    id: 3,
-    name: "Ms. Esther Ali",
-    university: "Ahmadu Bello University",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=8",
-  },
-  {
-    id: 4,
-    name: "Mr. Steve Aina",
-    university: "University of Lagos",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=10",
-  },
-  {
-    id: 5,
-    name: "Mr. Ola Williams",
-    university: "University of Nigeria, Nsukka",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=14",
-  },
-  {
-    id: 6,
-    name: "Ms. Nkechi Onu",
-    university: "Ahmadu Bello University",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=15",
-  },
-  {
-    id: 7,
-    name: "Ms. Esther Ali",
-    university: "University of Lagos",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=9",
-  },
-  {
-    id: 8,
-    name: "Mr. Steve Aina",
-    university: "University of Lagos",
-    date: "2025-09-15",
-    avatar: "https://i.pravatar.cc/48?img=11",
-  },
-];
+function getUserName(user) {
+  if (!user) return "—";
+  if (user.fullName) return user.fullName;
+  const nameParts = [user.firstName, user.lastName].filter(Boolean);
+  if (nameParts.length) return nameParts.join(" ");
+  return user.name || "—";
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "—";
+    }
+    return date.toLocaleDateString();
+  } catch (error) {
+    return "—";
+  }
+}
 
 function SearchBar({ value, onChange }) {
   return (
@@ -87,100 +57,204 @@ function ViewButton({ onClick }) {
 }
 
 export default function AdminTutorsPage() {
-  const [query, setQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const {
+    data: tutorsData,
+    isLoading: isLoadingTutors,
+    isError: isTutorsError,
+    error: tutorsError,
+  } = useUsers({ role: "tutor", limit: 50 });
 
-  // simple client side filter (replace with server filtering if needed)
-  const filtered = useMemo(() => {
-    if (!query.trim()) return MOCK_TUTORS;
-    const q = query.toLowerCase();
-    return MOCK_TUTORS.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.university.toLowerCase().includes(q) ||
-        t.date.includes(q)
-    );
-  }, [query]);
+  const tutors = tutorsData?.users ?? [];
+
+  const {
+    data: pendingTutors,
+    isLoading: isLoadingPending,
+    isError: isPendingError,
+    error: pendingError,
+  } = usePendingTutors();
+
+  const approveTutorMutation = useApproveTutor();
+  const rejectTutorMutation = useRejectTutor();
+
+  const filteredTutors = useMemo(() => {
+    if (!Array.isArray(tutors)) return [];
+    if (!searchTerm) return tutors;
+    const lowerCaseTerm = searchTerm.toLowerCase();
+    return tutors.filter((tutor) => {
+      const name = getUserName(tutor).toLowerCase();
+      const email = (tutor?.email || "").toLowerCase();
+      return name.includes(lowerCaseTerm) || email.includes(lowerCaseTerm);
+    });
+  }, [searchTerm, tutors]);
+
+  const handleApprove = (tutorId) => {
+    if (!tutorId) return;
+    const confirmed = window.confirm("Approve this tutor?");
+    if (!confirmed) return;
+    approveTutorMutation.mutate(tutorId);
+  };
+
+  const handleReject = (tutorId) => {
+    if (!tutorId) return;
+    const confirmed = window.confirm("Reject this tutor?");
+    if (!confirmed) return;
+    const reason = window.prompt("Please provide a rejection reason:");
+    if (!reason || !reason.trim()) {
+      window.alert("Rejection reason is required.");
+      return;
+    }
+    rejectTutorMutation.mutate({
+      tutorId,
+      rejectionReason: reason.trim(),
+    });
+  };
 
   return (
-    <div className="max-w-6xl">
-      <h1 className="text-2xl font-semibold mb-4">Tutor Vetting</h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Tutors</h1>
+        <div className="flex gap-3">
+          <input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="px-3 py-2 border rounded-md"
+            placeholder="Search tutors..."
+            type="search"
+          />
+          <button className="px-4 py-2 bg-indigo-600 text-white rounded-md">
+            Search
+          </button>
+        </div>
+      </div>
 
-      <SearchBar value={query} onChange={setQuery} />
-
-      <div className="bg-white rounded-xl p-0 shadow-sm border">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[740px]">
-            <thead>
-              <tr className="bg-blue-50">
-                <th className="px-6 py-4 text-left text-sm text-gray-700">
-                  Name
-                </th>
-                <th className="px-6 py-4 text-left text-sm text-gray-700">
-                  University
-                </th>
-                <th className="px-6 py-4 text-left text-sm text-gray-700">
-                  Date Applied
-                </th>
-                <th className="px-6 py-4 text-right text-sm text-gray-700">
-                  Actions
-                </th>
+      <section className="bg-white rounded-xl p-4 border shadow-sm overflow-x-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Active Tutors</h2>
+          {isTutorsError ? <ErrorAlert error={tutorsError} /> : null}
+        </div>
+        {isLoadingTutors ? (
+          <Spinner />
+        ) : filteredTutors.length === 0 ? (
+          <p className="text-sm text-gray-500">No tutors found.</p>
+        ) : (
+          <table className="w-full">
+            <thead className="bg-blue-50">
+              <tr>
+                <th className="p-4 text-left">#</th>
+                <th className="p-4 text-left">Name</th>
+                <th className="p-4 text-left">Email</th>
+                <th className="p-4 text-left">Since</th>
+                <th className="p-4 text-left">Status</th>
+                <th className="p-4 text-right">Action</th>
               </tr>
             </thead>
-
             <tbody>
-              {filtered.map((t, idx) => (
+              {filteredTutors.map((tutor, index) => {
+                const status =
+                  tutor?.tutor?.approvalStatus || tutor?.status || tutor?.accountStatus || "—";
+                return (
+                  <tr
+                    key={tutor?.id ?? index}
+                    className={index < filteredTutors.length - 1 ? "border-b" : ""}
+                  >
+                    <td className="p-4">{tutor?.id ?? index + 1}</td>
+                    <td className="p-4">{getUserName(tutor)}</td>
+                    <td className="p-4">{tutor?.email ?? "—"}</td>
+                    <td className="p-4">{formatDate(tutor?.createdAt)}</td>
+                    <td className="p-4">
+                      <span
+                        className={`inline-block px-3 py-1 text-xs rounded-full ${
+                          status === "approved"
+                            ? "bg-green-100 text-green-700"
+                            : status === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : status === "rejected"
+                            ? "bg-red-100 text-red-600"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <Link
+                        className="px-4 py-2 bg-white border rounded-full text-blue-600"
+                        to={`/admin/tutors/${tutor?.id}`}
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section className="bg-white rounded-xl p-4 border shadow-sm overflow-x-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Pending Tutor Applications</h2>
+          {isPendingError ? <ErrorAlert error={pendingError} /> : null}
+        </div>
+        {isLoadingPending ? (
+          <Spinner />
+        ) : !pendingTutors || pendingTutors.length === 0 ? (
+          <p className="text-sm text-gray-500">No pending tutor applications.</p>
+        ) : (
+          <table className="w-full">
+            <thead className="bg-blue-50">
+              <tr>
+                <th className="p-4 text-left">Name</th>
+                <th className="p-4 text-left">Email</th>
+                <th className="p-4 text-left">Education</th>
+                <th className="p-4 text-left">Applied</th>
+                <th className="p-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingTutors.map((tutor, index) => (
                 <tr
-                  key={t.id}
-                  className={`${idx < filtered.length - 1 ? "border-b" : ""}`}
+                  key={tutor?.id ?? index}
+                  className={index < pendingTutors.length - 1 ? "border-b" : ""}
                 >
-                  <td className="px-6 py-5 flex items-center gap-4">
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div className="text-sm text-gray-700">{t.name}</div>
+                  <td className="p-4">{getUserName(tutor)}</td>
+                  <td className="p-4">{tutor?.email ?? "—"}</td>
+                  <td className="p-4">
+                    {tutor?.education ?? tutor?.raw?.education ?? "—"}
                   </td>
-
-                  <td className="px-6 py-5 text-sm text-gray-600">
-                    {t.university}
-                  </td>
-
-                  <td className="px-6 py-5 text-sm text-gray-600">{t.date}</td>
-
-                  <td className="px-6 py-5 text-right">
-                    <div className="inline-flex items-center justify-end gap-3">
-                      {/* decorative left "tab" to match the Figma right-side button style */}
-                      <div
-                        className="rounded-l-full bg-white shadow-sm p-2"
-                        aria-hidden="true"
-                      />
-                      <div className="ml-3">
-                        <ViewButton
-                          onClick={() =>
-                            alert(`Open tutor ${t.id} — replace with navigate`)
-                          }
-                        />
-                      </div>
-                    </div>
+                  <td className="p-4">{formatDate(tutor?.createdAt || tutor?.appliedAt)}</td>
+                  <td className="p-4 text-right flex items-center justify-end gap-2">
+                    <Link
+                      className="px-3 py-2 bg-white border rounded-full text-blue-600"
+                      to={`/admin/tutors/${tutor?.id}`}
+                    >
+                      View
+                    </Link>
+                    <button
+                      type="button"
+                      className="px-3 py-2 bg-green-600 text-white rounded-full disabled:opacity-60"
+                      disabled={approveTutorMutation.isPending}
+                      onClick={() => handleApprove(tutor?.id)}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      className="px-3 py-2 bg-red-600 text-white rounded-full disabled:opacity-60"
+                      disabled={rejectTutorMutation.isPending}
+                      onClick={() => handleReject(tutor?.id)}
+                    >
+                      Reject
+                    </button>
                   </td>
                 </tr>
               ))}
-
-              {filtered.length === 0 && (
-                <tr>
-                  <td
-                    className="px-6 py-8 text-center text-sm text-gray-500"
-                    colSpan={4}
-                  >
-                    No tutors match your search.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
-        </div>
-      </div>
+        )}
+      </section>
     </div>
   );
 }

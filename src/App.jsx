@@ -35,6 +35,8 @@ import TutorSessionsPage from "./pages/tutor/TutorSessionsPage";
 import TutorAvailabilityPage from "./pages/tutor/TutorAvailabilityPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminStudentsPage from "./pages/admin/AdminStudentsPage";
+import AdminTutorsProfilePage from "./pages/admin/AdminTutorsProfilePage";
+import AdminStudentsProfilePage from "./pages/admin/AdminStudentsProfilePage";
 import ChatPage from "./pages/messaging/ChatPage";
 import CallPage from "./pages/messaging/CallPage";
 import RecentChatsPage from "./pages/messaging/RecentChatsPage";
@@ -161,7 +163,9 @@ export default function App() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="tutors" element={<AdminTutorsPage />} />
+          <Route path="tutors/:id" element={<AdminTutorsProfilePage />} />
           <Route path="students" element={<AdminStudentsPage />} />
+          <Route path="students/:id" element={<AdminStudentsProfilePage />} />
           <Route path="report" element={<AdminReportsPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route>

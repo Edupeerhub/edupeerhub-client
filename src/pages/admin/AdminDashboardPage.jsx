@@ -1,71 +1,43 @@
-import React from "react";
-import AdminLayout from "../../layouts/Layout";
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import Spinner from "../../components/common/Spinner";
+import ErrorAlert from "../../components/common/ErrorAlert";
+import {
+  usePendingTutors,
+  useUserCounts,
+  useUsers,
+} from "../../hooks/admin";
 
-const statCards = [
-  {
-    title: "Total Tutors",
-    value: "1,250",
-    delta: "+5%",
-    deltaClass: "text-green-600",
-  },
-  {
-    title: "Total Students",
-    value: "50",
-    delta: "+10%",
-    deltaClass: "text-green-600",
-  },
-  {
-    title: "Pending Tutor Application",
-    value: "15",
-    delta: "-20%",
-    deltaClass: "text-red-500",
-  },
-];
+const PREVIEW_LIMIT = 5;
 
-const pendingTutors = [
-  {
-    id: 1,
-    name: "Mr. Ola Williams",
-    university: "University of Lagos",
-    date: "2025-09-15",
-  },
-  {
-    id: 2,
-    name: "Ms. Nkechi Onu",
-    university: "University of Nigeria, Nsukka",
-    date: "2025-09-15",
-  },
-  {
-    id: 3,
-    name: "Ms. Esther Ali",
-    university: "Ahmadu Bello University",
-    date: "2025-09-15",
-  },
-];
+function formatNumber(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "0";
+  }
 
-const students = [
-  {
-    id: 1,
-    name: "Chidinma Okeke",
-    date: "2025-09-15",
-    completed: 10,
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Fatima Abubakar",
-    date: "2025-09-15",
-    completed: 20,
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Tunde Oladipo",
-    date: "2025-09-15",
-    completed: 30,
-    status: "Inactive",
-  },
-];
+  return new Intl.NumberFormat().format(value);
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  try {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "—";
+    }
+    return date.toLocaleDateString();
+  } catch (error) {
+    return "—";
+  }
+}
+
+function getUserName(user) {
+  if (!user) return "—";
+  if (user.fullName) return user.fullName;
+  const nameParts = [user.firstName, user.lastName].filter(Boolean);
+  if (nameParts.length) return nameParts.join(" ");
+  return user.name || "—";
+}
 
 function StatCard({ title, value, delta, deltaClass }) {
   return (
@@ -103,129 +75,243 @@ function ViewButton({ onClick }) {
 }
 
 export default function AdminDashboardPage() {
+  const {
+    data: counts,
+    isLoading: isLoadingCounts,
+    isError: isCountsError,
+    error: countsError,
+  } = useUserCounts();
+  const {
+    data: pendingTutors,
+    isLoading: isLoadingPendingTutors,
+    isError: isPendingTutorsError,
+    error: pendingTutorsError,
+  } = usePendingTutors();
+  const {
+    data: studentsData,
+    isLoading: isLoadingStudents,
+    isError: isStudentsError,
+    error: studentsError,
+  } = useUsers({ role: "student", limit: PREVIEW_LIMIT });
+
+  const students = studentsData?.users ?? [];
+
+  const pendingCount = counts?.totalPendingTutors ?? counts?.pendingTutorCount ?? counts?.pendingTutors ?? 0;
+  const tutorCount = counts?.totalTutors ?? counts?.tutorCount ?? counts?.tutors ?? 0;
+  const studentCount = counts?.totalStudents ?? counts?.studentCount ?? counts?.students ?? 0;
+
+  const statCards = useMemo(
+    () => [
+      {
+        title: "Total Tutors",
+        value: formatNumber(tutorCount),
+        delta: counts?.tutorGrowth ?? null,
+        deltaClass:
+          typeof counts?.tutorGrowth === "number" && counts?.tutorGrowth < 0
+            ? "text-red-500"
+            : "text-green-600",
+      },
+      {
+        title: "Total Students",
+        value: formatNumber(studentCount),
+        delta: counts?.studentGrowth ?? null,
+        deltaClass:
+          typeof counts?.studentGrowth === "number" && counts?.studentGrowth < 0
+            ? "text-red-500"
+            : "text-green-600",
+      },
+      {
+        title: "Pending Tutor Application",
+        value: formatNumber(pendingCount),
+        delta: counts?.pendingTutorGrowth ?? null,
+        deltaClass:
+          typeof counts?.pendingTutorGrowth === "number" &&
+          counts?.pendingTutorGrowth < 0
+            ? "text-green-600"
+            : "text-red-500",
+      },
+    ],
+    [counts],
+  );
+
+  const pendingTutorPreview = useMemo(
+    () => (pendingTutors ?? []).slice(0, PREVIEW_LIMIT),
+    [pendingTutors],
+  );
+
+  const studentPreview = useMemo(
+    () => (students ?? []).slice(0, PREVIEW_LIMIT),
+    [students],
+  );
+
   return (
-    <div className="max-w-7xl">
-      {/* top stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-        {stats.map((s) => (
-          <StatCard
-            key={s.id}
-            title={s.title}
-            value={s.value}
-            delta={s.delta}
-            deltaClass={s.deltaClass}
-          />
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {isCountsError ? (
+          <div className="sm:col-span-3">
+            <ErrorAlert error={countsError} />
+          </div>
+        ) : null}
+        {statCards.map((card) => (
+          <div
+            key={card.title}
+            className="bg-white rounded-xl p-5 shadow-sm border min-h-[120px] flex flex-col justify-between"
+          >
+            <div className="text-sm text-gray-500">{card.title}</div>
+            {isLoadingCounts ? (
+              <div className="py-4">
+                <Spinner />
+              </div>
+            ) : (
+              <>
+                <div className="mt-3 text-2xl font-semibold">{card.value}</div>
+                <div className={`mt-2 text-sm ${card.deltaClass}`}>
+                  {card.delta ?? "—"}
+                </div>
+              </>
+            )}
+          </div>
         ))}
       </div>
 
-      {/* Pending Tutors Approval */}
-      <section className="mb-10 bg-white rounded-xl p-6 shadow-sm border">
+      <section className="bg-white p-6 rounded-xl shadow-sm border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Pending Tutors Approval</h3>
-          <a className="text-sm text-blue-600" href="#view-all">
+          <Link className="text-sm text-blue-600" to="/admin/tutors">
             View All
-          </a>
+          </Link>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <TableHeader
-              cols={["Name", "University", "Date Applied", "Action"]}
-            />
-            <tbody>
-              {pendingTutors.map((t, idx) => (
-                <tr
-                  key={t.id}
-                  className={`${
-                    idx < pendingTutors.length - 1 ? "border-b" : ""
-                  }`}
-                >
-                  <td className="px-6 py-4 flex items-center gap-4">
-                    <img
-                      src={`https://i.pravatar.cc/40?img=${t.avatarId}`}
-                      alt={t.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div className="text-sm text-gray-700">{t.name}</div>
-                  </td>
-
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {t.university}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{t.date}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="inline-flex items-center justify-end">
-                      <div className="rounded-l-full bg-white shadow-sm p-2" />
-                      <div className="ml-3">
-                        <ViewButton
-                          onClick={() =>
-                            alert(`Open tutor ${t.id} - replace with routing`)
-                          }
-                        />
-                      </div>
-                    </div>
-                  </td>
+        {isPendingTutorsError ? <ErrorAlert error={pendingTutorsError} /> : null}
+        {isLoadingPendingTutors ? (
+          <Spinner />
+        ) : pendingTutorPreview.length === 0 ? (
+          <p className="text-sm text-gray-500">No pending tutors at the moment.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="p-4">Name</th>
+                  <th className="p-4">Education</th>
+                  <th className="p-4">Date Applied</th>
+                  <th className="p-4 text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {pendingTutorPreview.map((tutor, index) => {
+                  const university =
+                    tutor?.tutorProfile?.university || tutor?.university || "—";
+                  return (
+                    <tr
+                      key={tutor?.id ?? index}
+                      className={
+                        index < pendingTutorPreview.length - 1 ? "border-b" : ""
+                      }
+                    >
+                      <td className="p-4 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-medium text-blue-700">
+                          {getUserName(tutor)
+                            .split(" ")
+                            .map((part) => part[0])
+                            .join("")
+                            .slice(0, 2) || "U"}
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          {getUserName(tutor)}
+                        </div>
+                      </td>
+                  <td className="p-4 text-gray-600">
+                    {tutor?.education ?? tutor?.raw?.education ?? university}
+                  </td>
+                      <td className="p-4 text-gray-600">
+                        {formatDate(tutor?.createdAt || tutor?.appliedAt)}
+                      </td>
+                      <td className="p-4 text-right">
+                        <Link
+                          className="px-4 py-2 bg-white border rounded-full shadow-sm text-blue-600"
+                          to={`/admin/tutors/${tutor?.id}`}
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
-      {/* Registered students */}
-      <section className="bg-white rounded-xl p-6 shadow-sm border">
+      <section className="bg-white p-6 rounded-xl shadow-sm border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-lg">Registered students</h3>
-          <a className="text-sm text-blue-600" href="#view-all">
+          <Link className="text-sm text-blue-600" to="/admin/students">
             View All
-          </a>
+          </Link>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <TableHeader
-              cols={[
-                "Name",
-                "Date Applied",
-                "Completed sections",
-                "Status",
-                "Action",
-              ]}
-            />
-            <tbody>
-              {students.map((s, idx) => (
-                <tr
-                  key={s.id}
-                  className={`${idx < students.length - 1 ? "border-b" : ""}`}
-                >
-                  <td className="px-6 py-4 text-sm text-gray-700">{s.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{s.date}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {s.completed}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-block px-3 py-1 text-xs rounded-full ${
-                        s.status === "Active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {s.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <ViewButton
-                      onClick={() =>
-                        alert(`Open student ${s.id} - replace with routing`)
-                      }
-                    />
-                  </td>
+        {isStudentsError ? <ErrorAlert error={studentsError} /> : null}
+        {isLoadingStudents ? (
+          <Spinner />
+        ) : studentPreview.length === 0 ? (
+          <p className="text-sm text-gray-500">No students found.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-blue-50">
+                  <th className="p-4">Name</th>
+                  <th className="p-4">Date Joined</th>
+                  <th className="p-4">Completed sections</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {studentPreview.map((student, index) => {
+                  const status = student?.accountStatus || student?.status || "—";
+                  return (
+                    <tr
+                      key={student?.id ?? index}
+                      className={
+                        index < studentPreview.length - 1 ? "border-b" : ""
+                      }
+                    >
+                      <td className="p-4 text-gray-700">{getUserName(student)}</td>
+                      <td className="p-4 text-gray-600">
+                        {formatDate(student?.createdAt)}
+                      </td>
+                      <td className="p-4 text-gray-600">
+                        {student?.completedSections ?? "—"}
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`inline-block px-3 py-1 text-xs rounded-full ${
+                            status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : status === "inactive"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {status ?? "—"}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <Link
+                          className="px-4 py-2 bg-white border rounded-full shadow-sm text-blue-600"
+                          to={`/admin/students/${student?.id}`}
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );
