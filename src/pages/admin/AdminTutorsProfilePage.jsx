@@ -8,6 +8,10 @@ import {
   useRejectTutor,
   usePendingTutor,
 } from "../../hooks/admin";
+import {
+  ApproveTutorModal,
+  RejectTutorModal,
+} from "../../components/admin/ApprovalModals";
 
 function BackButton({ onClick }) {
   return (
@@ -45,41 +49,39 @@ function Tag({ children }) {
 
 function DocumentRow({ doc, onView }) {
   return (
-    <div className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm border mb-4">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-md bg-gray-50 flex items-center justify-center">
-          <svg
-            className="w-6 h-6 text-gray-400"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-            />
-            <path
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14 2v6h6"
-            />
-          </svg>
-        </div>
+    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+        <svg
+          className="w-5 h-5 text-gray-500"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+          />
+          <path
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M14 2v6h6"
+          />
+        </svg>
+      </div>
 
-        <div>
-          <div className="text-sm font-medium text-gray-800">{doc.title}</div>
-          <div className="text-xs text-gray-500 truncate max-w-xs">
-            {doc.subtitle}
-          </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-gray-900  break-all ">
+          {doc.title}
         </div>
+        <div className="text-xs text-gray-500 break-all ">{doc.subtitle}</div>
       </div>
 
       <button
         onClick={() => onView(doc)}
-        className="px-4 py-2 rounded-full border text-sm hover:bg-gray-50"
+        className="flex-shrink-0 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
         type="button"
       >
         View
@@ -90,38 +92,24 @@ function DocumentRow({ doc, onView }) {
 
 function extractFileName(url) {
   try {
-    const parts = decodeURIComponent(url).split("/");
-    return parts[parts.length - 1] || "Document";
+    // Decode the URL first
+    const decodedUrl = decodeURIComponent(url);
+
+    // Extract everything after the last '/' and before any '?'
+    const urlParts = decodedUrl.split("?")[0].split("/");
+    let filename = urlParts[urlParts.length - 1];
+
+    // Remove common cloud storage prefixes/hashes if present
+    // Example: "1234567890_document.pdf" -> "document.pdf"
+    filename = filename.replace(/^\d+[-_]/, "");
+
+    // If it's a signed URL with tokens, clean it up
+    filename = filename.split("?")[0];
+
+    return filename || "Document";
   } catch {
     return "Document";
   }
-}
-
-/* ---------- MODALS ---------- */
-
-function Modal({ isOpen, title, children, onClose }) {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
-        {/* Close (X) button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition"
-          aria-label="Close modal"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        {/* Title */}
-        <h2 className="text-lg font-semibold mb-4 pr-6">{title}</h2>
-
-        {/* Content */}
-        {children}
-      </div>
-    </div>
-  );
 }
 
 export default function AdminTutorsProfilePage() {
@@ -155,18 +143,12 @@ export default function AdminTutorsProfilePage() {
   };
 
   const confirmApprove = () => {
-    if (!id) return;
     approveTutor.mutate(id);
     setShowApproveModal(false);
   };
 
-  const confirmReject = () => {
-    if (!id) return;
-    if (!rejectionReason.trim()) return alert("Rejection reason is required.");
-    rejectTutor.mutate({
-      tutorId: id,
-      rejectionReason: rejectionReason.trim(),
-    });
+  const confirmReject = (reason) => {
+    rejectTutor.mutate({ tutorId: id, rejectionReason: reason });
     setShowRejectModal(false);
   };
 
@@ -175,164 +157,170 @@ export default function AdminTutorsProfilePage() {
   if (!tutor) return <p className="text-sm text-gray-500">Tutor not found.</p>;
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-6 mb-8">
-        <BackButton onClick={() => navigate(-1)} />
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold">Tutor profile review</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Review tutor information, documents, and approve or reject this
-            application.
-          </p>
-        </div>
-      </div>
-
-      {/* Tutor info */}
-      <section className="flex flex-wrap md:flex-nowrap items-start gap-8 mb-8">
-        <img
-          src={tutor.user.profileImageUrl}
-          alt={`${tutor.user.firstName} ${tutor.user.lastName}`}
-          className="w-28 h-28 rounded-full object-cover"
-        />
-
-        <div className="flex-1">
-          <div className="text-2xl font-semibold text-gray-900">
-            {tutor.user.firstName} {tutor.user.lastName}
-          </div>
-          <div className="text-sm text-gray-500 mt-1">
-            Email: {tutor.user.email}
-          </div>
-          <div className="text-sm text-gray-500 mt-1">
-            Bio: {tutor.bio || "No bio provided."}
-          </div>
-          <div className="text-sm text-gray-500 mt-1">
-            Status: {tutor.approvalStatus}
-          </div>
-          {tutor.rejectionReason && (
-            <div className="text-sm font-bold text-red-600 mt-1">
-              Rejection Reason: {tutor.rejectionReason || "N/A"}
+    <div className="relative w-full max-w-full overflow-x-hidden -mx-1">
+      <div className="min-h-screen bg-gray-50">
+        <div className="w-full max-w-5xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="mb-4">
+              <BackButton onClick={() => navigate(-1)} />
             </div>
-          )}
-        </div>
-      </section>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
+              Tutor Profile Review
+            </h1>
+            <p className="text-sm text-gray-600">
+              Review tutor information, documents, and approve or reject this
+              application.
+            </p>
+          </div>
 
-      {/* Academic + Subjects */}
-      <section className="mb-8">
-        <div className="bg-white rounded-xl border p-5 shadow-sm mb-6">
-          <div className="text-sm font-medium mb-1">Academic History</div>
-          <p className="text-gray-600 leading-relaxed whitespace-pre-line break-words">
-            {tutor.education || "No education details provided."}
-          </p>
+          {/* Profile Card */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-6">
+              <img
+                src={tutor.user.profileImageUrl}
+                alt={`${tutor.user.firstName} ${tutor.user.lastName}`}
+                className="w-24 h-24 rounded-full object-cover mx-auto sm:mx-0 flex-shrink-0 border-2 border-gray-100"
+              />
 
-          {tutor.subjects?.length ? (
-            <>
-              <div className="text-sm font-medium mt-4">Subjects Selected</div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {tutor.subjects.map((subject) => (
-                  <Tag key={subject.id}>{subject.name}</Tag>
+              <div className="flex-1 min-w-0 space-y-4">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-2 text-center sm:text-left">
+                    {tutor.user.firstName} {tutor.user.lastName}
+                  </h2>
+                  <div className="flex justify-center sm:justify-start">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full border ${
+                        tutor.approvalStatus === "approved"
+                          ? "bg-green-100 text-green-700 border-green-200"
+                          : tutor.approvalStatus === "pending"
+                          ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                          : tutor.approvalStatus === "rejected"
+                          ? "bg-red-100 text-red-700 border-red-200"
+                          : "bg-gray-100 text-gray-700 border-gray-200"
+                      }`}
+                    >
+                      {tutor.approvalStatus}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                    <span className="text-sm font-medium text-gray-700 sm:min-w-[80px]">
+                      Email:
+                    </span>
+                    <span className="text-sm text-gray-600 break-all">
+                      {tutor.user.email}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-1">
+                    <span className="text-sm font-medium text-gray-700 sm:min-w-[80px] flex-shrink-0">
+                      Bio:
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {tutor.bio || "No bio provided."}
+                    </span>
+                  </div>
+
+                  {tutor.rejectionReason && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="text-sm font-medium text-red-800 mb-1">
+                        Previous Rejection Reason:
+                      </div>
+                      <div className="text-sm text-red-700">
+                        {tutor.rejectionReason}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Academic History */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">
+              Academic History
+            </h3>
+            <div className="text-sm text-gray-700 leading-relaxed break-all">
+              {tutor.education || "No education details provided."}
+            </div>
+
+            {tutor.subjects?.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                  Subjects
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {tutor.subjects.map((subject) => (
+                    <Tag key={subject.id}>{subject.name}</Tag>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Documents */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">
+              Documents
+            </h3>
+            {documents.length === 0 ? (
+              <p className="text-sm text-gray-500">No documents available.</p>
+            ) : (
+              <div className="space-y-3">
+                {documents.map((doc) => (
+                  <DocumentRow
+                    key={doc.id}
+                    doc={doc}
+                    onView={handleViewDocument}
+                  />
                 ))}
               </div>
-            </>
-          ) : (
-            <p className="text-sm text-gray-500">No subjects found.</p>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Documents */}
-        <div>
-          <div className="text-base font-medium mb-4">Documents</div>
-          {documents.length === 0 ? (
-            <p className="text-sm text-gray-500">No documents available.</p>
-          ) : (
-            <div className="space-y-2">
-              {documents.map((doc) => (
-                <DocumentRow
-                  key={doc.id}
-                  doc={doc}
-                  onView={handleViewDocument}
-                />
-              ))}
+          {/* Action Buttons */}
+          {(tutor.approvalStatus === "pending" ||
+            tutor.approvalStatus === "rejected") && (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setShowApproveModal(true)}
+                disabled={approveTutor.isPending}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors"
+              >
+                {approveTutor.isPending ? "Approving..." : "Approve Tutor"}
+              </button>
+              <button
+                onClick={() => setShowRejectModal(true)}
+                disabled={rejectTutor.isPending}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-colors"
+              >
+                {rejectTutor.isPending ? "Rejecting..." : "Reject Tutor"}
+              </button>
             </div>
           )}
-        </div>
-      </section>
 
-      {/* Actions */}
-      {tutor.approvalStatus === "pending" ||
-        (tutor.approvalStatus === "rejected" && (
-          <div className="flex items-center gap-4 mt-6">
-            <button
-              onClick={() => setShowApproveModal(true)}
-              className="px-6 py-3 rounded-full bg-blue-600 text-white shadow hover:brightness-95 disabled:opacity-60"
-              disabled={approveTutor.isPending}
-            >
-              {approveTutor.isPending ? "Approving..." : "Approve"}
-            </button>
-            <button
-              onClick={() => setShowRejectModal(true)}
-              className="px-6 py-3 rounded-full border text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-              disabled={rejectTutor.isPending}
-            >
-              {rejectTutor.isPending ? "Rejecting..." : "Reject"}
-            </button>
-          </div>
-        ))}
-      {/* Approve Modal */}
-      <Modal
-        isOpen={showApproveModal}
-        title="Approve Tutor"
-        onClose={() => setShowApproveModal(false)}
-      >
-        <p className="text-gray-600 mb-4">
-          Are you sure you want to approve <b>{tutor.user.firstName}</b> as a
-          tutor?
-        </p>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={() => setShowApproveModal(false)}
-            className="px-4 py-2 text-sm border rounded-md"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={confirmApprove}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
-          >
-            Confirm
-          </button>
-        </div>
-      </Modal>
+          {/* Your existing modals */}
+          <ApproveTutorModal
+            isOpen={showApproveModal}
+            onClose={() => setShowApproveModal(false)}
+            tutorName={tutor.user.firstName}
+            onConfirm={confirmApprove}
+            isLoading={approveTutor.isPending}
+          />
 
-      {/* Reject Modal */}
-      <Modal
-        isOpen={showRejectModal}
-        title="Reject Tutor"
-        onClose={() => setShowRejectModal(false)}
-      >
-        <p className="text-gray-600 mb-3">Please provide a rejection reason:</p>
-        <textarea
-          value={rejectionReason}
-          onChange={(e) => setRejectionReason(e.target.value)}
-          rows={3}
-          className="w-full border rounded-md p-2 text-sm"
-          placeholder="Enter reason..."
-        />
-        <div className="flex justify-end gap-3 mt-4">
-          <button
-            onClick={() => setShowRejectModal(false)}
-            className="px-4 py-2 text-sm border rounded-md"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={confirmReject}
-            className="px-4 py-2 text-sm bg-red-600 text-white rounded-md"
-          >
-            Submit
-          </button>
+          <RejectTutorModal
+            isOpen={showRejectModal}
+            onClose={() => setShowRejectModal(false)}
+            tutorName={tutor.user.firstName}
+            onConfirm={confirmReject}
+            isLoading={rejectTutor.isPending}
+          />
         </div>
-      </Modal>
+      </div>
     </div>
   );
 }

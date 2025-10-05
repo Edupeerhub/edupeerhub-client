@@ -5,7 +5,6 @@ import useLogout from "../../hooks/auth/useLogout";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
 import useAuthUser from "../../hooks/auth/useAuthUser";
-import { adminSidebarLinks } from "../../utils/sideBarLinks";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { logoutMutation } = useLogout();
@@ -18,12 +17,9 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
       !!authUser && (authUser.role === "tutor" || authUser.role === "admin"),
   });
 
-  const sidebarLinks = [
-    ...links, // all the common links passed in
-    ...(user?.admin?.isSuperAdmin
-      ? adminSidebarLinks.filter((link) => link.superAdminOnly)
-      : []),
-  ];
+  const sidebarLinks = links.filter(
+    (link) => !link.superAdminOnly || user?.admin?.isSuperAdmin
+  );
 
   const tutor = user?.tutor;
 
