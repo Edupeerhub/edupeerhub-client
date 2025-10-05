@@ -15,12 +15,15 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
     queryKey: ["userProfile"],
     queryFn: getUserProfile,
     enabled:
-      (!!authUser && authUser.role === "tutor") || authUser.role === "admin",
+      !!authUser && (authUser.role === "tutor" || authUser.role === "admin"),
   });
 
-  links = adminSidebarLinks.filter(
-    (link) => !link.superAdminOnly || user?.admin?.isSuperAdmin
-  );
+  const sidebarLinks = [
+    ...links, // all the common links passed in
+    ...(user?.admin?.isSuperAdmin
+      ? adminSidebarLinks.filter((link) => link.superAdminOnly)
+      : []),
+  ];
 
   const tutor = user?.tutor;
 
@@ -107,7 +110,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
 
         {/* Navigation Links */}
         <nav className="flex-1 p-4 space-y-5 md:space-y-4 mt-1 overflow-y-auto">
-          {links.map(({ path, label, icon: Icon }) => {
+          {sidebarLinks.map(({ path, label, icon: Icon }) => {
             const isDisabled = isTutorAndRestricted && label !== "Dashboard";
             return (
               <NavLink
