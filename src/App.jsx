@@ -28,7 +28,7 @@ import StudentLibraryPage from "./pages/student/StudentLibraryPage";
 import StudentTutorsPage from "./pages/student/StudentTutorsPage";
 import FAQPage from "./pages/general/FAQPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminManageAdminsPage from "./pages/admin/AdminManageAdminsPage";
 import StudentBookingPage from "./pages/student/StudentBookingPage";
 import AdminTutorsPage from "./pages/admin/AdminTutorsPage";
 import TutorSessionsPage from "./pages/tutor/TutorSessionsPage";
@@ -167,7 +167,8 @@ export default function App() {
           <Route path="students" element={<AdminStudentsPage />} />
           <Route path="students/:id" element={<AdminStudentsProfilePage />} />
           <Route path="report" element={<AdminReportsPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="settings" element={<AccountSettingsPage />} />
+          <Route path="manage-admins" element={<AdminManageAdminsPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

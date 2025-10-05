@@ -1,12 +1,12 @@
-import React, { useMemo } from "react";
+import { X } from "lucide-react";
+import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import {
   useApproveTutor,
   useRejectTutor,
-  useTutor,
-  useTutorDocument,
+  usePendingTutor,
 } from "../../hooks/admin";
 
 function BackButton({ onClick }) {
@@ -14,7 +14,6 @@ function BackButton({ onClick }) {
     <button
       onClick={onClick}
       className="inline-flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50 text-sm"
-      aria-label="Back"
       type="button"
     >
       <svg
@@ -38,7 +37,8 @@ function BackButton({ onClick }) {
 function Tag({ children }) {
   return (
     <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full bg-blue-50 text-blue-700 mr-2">
-      <span className="w-2 h-2 rounded-full bg-blue-700 inline-block" /> {children}
+      <span className="w-2 h-2 rounded-full bg-blue-700 inline-block" />{" "}
+      {children}
     </span>
   );
 }
@@ -71,336 +71,268 @@ function DocumentRow({ doc, onView }) {
 
         <div>
           <div className="text-sm font-medium text-gray-800">{doc.title}</div>
-          <div className="text-xs text-gray-500">{doc.subtitle}</div>
+          <div className="text-xs text-gray-500 truncate max-w-xs">
+            {doc.subtitle}
+          </div>
         </div>
       </div>
 
-      <div>
+      <button
+        onClick={() => onView(doc)}
+        className="px-4 py-2 rounded-full border text-sm hover:bg-gray-50"
+        type="button"
+      >
+        View
+      </button>
+    </div>
+  );
+}
+
+function extractFileName(url) {
+  try {
+    const parts = decodeURIComponent(url).split("/");
+    return parts[parts.length - 1] || "Document";
+  } catch {
+    return "Document";
+  }
+}
+
+/* ---------- MODALS ---------- */
+
+function Modal({ isOpen, title, children, onClose }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="relative bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
+        {/* Close (X) button */}
         <button
-          onClick={() => onView(doc)}
-          className="px-4 py-2 rounded-full border text-sm hover:bg-gray-50"
-          aria-label={`View ${doc.title}`}
-          type="button"
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition"
+          aria-label="Close modal"
         >
-          View
+          <X className="w-5 h-5" />
         </button>
+
+        {/* Title */}
+        <h2 className="text-lg font-semibold mb-4 pr-6">{title}</h2>
+
+        {/* Content */}
+        {children}
       </div>
     </div>
   );
 }
 
-function getTutorName(tutor) {
-  if (!tutor) return "—";
-  if (tutor.fullName) return tutor.fullName;
-  const nameParts = [tutor.firstName, tutor.lastName].filter(Boolean);
-  if (nameParts.length) return nameParts.join(" ");
-  return tutor.name || "—";
-}
-
-function getTutorEmail(tutor) {
-  return tutor?.email ?? tutor?.user?.email ?? tutor?.raw?.user?.email ?? "—";
-}
-
-function formatDate(value) {
-  if (!value) return "—";
-  try {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return "—";
-    }
-    return date.toLocaleDateString();
-  } catch (error) {
-    return "—";
-  }
-}
-
-function extractFileName(url) {
-  if (typeof url !== "string" || url.length === 0) {
-    return "Document";
-  }
-
-  try {
-    const decoded = decodeURIComponent(url);
-    const parts = decoded.split("/");
-    return parts[parts.length - 1] || decoded;
-  } catch (error) {
-    const parts = url.split("/");
-    return parts[parts.length - 1] || url;
-  }
-}
-
 export default function AdminTutorsProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { data: tutor, isLoading, isError, error } = usePendingTutor(id);
 
-  const pendingTutorQuery = useTutor({ id, isPending: true, enabled: Boolean(id) });
-  const shouldFetchActiveTutor =
-    Boolean(id) &&
-    (pendingTutorQuery.isError ||
-      (!pendingTutorQuery.isFetching && !pendingTutorQuery.data));
+  const approveTutor = useApproveTutor({ onSuccess: () => navigate(-1) });
+  const rejectTutor = useRejectTutor({ onSuccess: () => navigate(-1) });
 
-  const activeTutorQuery = useTutor({
-    id,
-    enabled: shouldFetchActiveTutor,
-  });
-
-  const tutor = pendingTutorQuery.data ?? activeTutorQuery.data;
-  const isPendingTutor = Boolean(pendingTutorQuery.data);
-
-  const inlineDocumentUrl =
-    typeof pendingTutorQuery.data?.documentUrl === "string"
-      ? pendingTutorQuery.data.documentUrl
-      : typeof activeTutorQuery.data?.documentUrl === "string"
-      ? activeTutorQuery.data.documentUrl
-      : null;
-
-  const {
-    data: fetchedDocumentUrl,
-    isLoading: isLoadingDocument,
-    isError: isDocumentError,
-    error: documentError,
-  } = useTutorDocument({
-    id,
-    enabled: Boolean(id) && !inlineDocumentUrl,
-  });
-
-  const resolvedDocumentUrl =
-    inlineDocumentUrl ?? (typeof fetchedDocumentUrl === "string" ? fetchedDocumentUrl : null);
-
-  const approveTutorMutation = useApproveTutor({
-    onSuccess: () => navigate(-1),
-  });
-  const rejectTutorMutation = useRejectTutor({
-    onSuccess: () => navigate(-1),
-  });
-
-  const isLoading = pendingTutorQuery.isLoading || activeTutorQuery.isLoading;
-  const error = pendingTutorQuery.error || activeTutorQuery.error;
-
-  const subjects = useMemo(() => {
-    const subjectList =
-      (Array.isArray(tutor?.tutor?.subjects) && tutor.tutor.subjects) ||
-      (Array.isArray(tutor?.subjects) && tutor.subjects) ||
-      [];
-
-    return subjectList.map((subject) =>
-      typeof subject === "string" ? subject : subject?.name ?? subject?.title ?? "Subject",
-    );
-  }, [tutor]);
-
-  const bio =
-    tutor?.tutor?.bio ||
-    tutor?.bio ||
-    tutor?.tutorProfile?.bio ||
-    "Tutor did not provide a biography.";
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   const documents = useMemo(() => {
-    const tutorDocuments =
-      (Array.isArray(tutor?.tutor?.documents) && tutor.tutor.documents) ||
-      (Array.isArray(tutor?.documents) && tutor.documents) ||
-      [];
-
-    if (tutorDocuments.length > 0) {
-      return tutorDocuments.map((document) => ({
-        id: document.id ?? document.url ?? document.name,
-        title: document.title ?? document.name ?? "Document",
-        subtitle: document.subtitle ?? document.fileName ?? document.url ?? "",
-        url: document.url ?? document.link ?? resolvedDocumentUrl,
-      }));
-    }
-
-    if (typeof resolvedDocumentUrl === "string" && resolvedDocumentUrl.length > 0) {
-      const subtitle = extractFileName(resolvedDocumentUrl);
-      return [
-        {
-          id: "primary-document",
-          title: "Verification Document",
-          subtitle,
-          url: resolvedDocumentUrl,
-        },
-      ];
-    }
-
-    return [];
-  }, [resolvedDocumentUrl, tutor]);
+    if (!tutor?.documentUrl) return [];
+    const subtitle = extractFileName(tutor.documentUrl);
+    return [
+      {
+        id: "primary-document",
+        title: "Verification Document",
+        subtitle,
+        url: tutor.documentUrl,
+      },
+    ];
+  }, [tutor]);
 
   const handleViewDocument = (doc) => {
-    if (!doc?.url || typeof doc.url !== "string") {
-      window.alert("Document URL unavailable.");
-      return;
-    }
+    if (!doc?.url) return alert("Document URL unavailable.");
     window.open(doc.url, "_blank", "noopener");
   };
 
-  const handleApprove = () => {
+  const confirmApprove = () => {
     if (!id) return;
-    const confirmed = window.confirm("Approve this tutor?");
-    if (!confirmed) return;
-    approveTutorMutation.mutate(id);
+    approveTutor.mutate(id);
+    setShowApproveModal(false);
   };
 
-  const handleReject = () => {
+  const confirmReject = () => {
     if (!id) return;
-    const confirmed = window.confirm("Reject this tutor?");
-    if (!confirmed) return;
-    const reason = window.prompt("Please provide a rejection reason:");
-    if (!reason || !reason.trim()) {
-      window.alert("Rejection reason is required.");
-      return;
-    }
-    rejectTutorMutation.mutate({
+    if (!rejectionReason.trim()) return alert("Rejection reason is required.");
+    rejectTutor.mutate({
       tutorId: id,
-      rejectionReason: reason.trim(),
+      rejectionReason: rejectionReason.trim(),
     });
+    setShowRejectModal(false);
   };
+
+  if (isLoading) return <Spinner />;
+  if (isError) return <ErrorAlert error={error} />;
+  if (!tutor) return <p className="text-sm text-gray-500">Tutor not found.</p>;
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-6 mb-8">
         <BackButton onClick={() => navigate(-1)} />
         <div className="flex-1">
           <h1 className="text-xl font-semibold">Tutor profile review</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Review tutor information, documents, and take action on pending applications.
+            Review tutor information, documents, and approve or reject this
+            application.
           </p>
         </div>
       </div>
 
-      {error ? <ErrorAlert error={error} /> : null}
+      {/* Tutor info */}
+      <section className="flex flex-wrap md:flex-nowrap items-start gap-8 mb-8">
+        <img
+          src={tutor.user.profileImageUrl}
+          alt={`${tutor.user.firstName} ${tutor.user.lastName}`}
+          className="w-28 h-28 rounded-full object-cover"
+        />
 
-      {isLoading ? (
-        <Spinner />
-      ) : !tutor ? (
-        <p className="text-sm text-gray-500">Tutor not found.</p>
-      ) : (
-        <>
-          <section className="flex flex-wrap md:flex-nowrap items-start gap-8 mb-8">
-            <div className="w-28 h-28 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-semibold text-blue-700">
-              {getTutorName(tutor)
-                .split(" ")
-                .map((part) => part[0])
-                .join("")
-                .slice(0, 2) || "T"}
+        <div className="flex-1">
+          <div className="text-2xl font-semibold text-gray-900">
+            {tutor.user.firstName} {tutor.user.lastName}
+          </div>
+          <div className="text-sm text-gray-500 mt-1">
+            Email: {tutor.user.email}
+          </div>
+          <div className="text-sm text-gray-500 mt-1">
+            Bio: {tutor.bio || "No bio provided."}
+          </div>
+          <div className="text-sm text-gray-500 mt-1">
+            Status: {tutor.approvalStatus}
+          </div>
+          {tutor.rejectionReason && (
+            <div className="text-sm font-bold text-red-600 mt-1">
+              Rejection Reason: {tutor.rejectionReason || "N/A"}
             </div>
+          )}
+        </div>
+      </section>
 
-            <div className="flex-1 min-w-[200px]">
-              <div className="text-sm text-gray-500 mb-2">
-                Application Date: {formatDate(tutor?.createdAt || tutor?.appliedAt)}
+      {/* Academic + Subjects */}
+      <section className="mb-8">
+        <div className="bg-white rounded-xl border p-5 shadow-sm mb-6">
+          <div className="text-sm font-medium mb-1">Academic History</div>
+          <p className="text-gray-600 leading-relaxed whitespace-pre-line break-words">
+            {tutor.education || "No education details provided."}
+          </p>
+
+          {tutor.subjects?.length ? (
+            <>
+              <div className="text-sm font-medium mt-4">Subjects Selected</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {tutor.subjects.map((subject) => (
+                  <Tag key={subject.id}>{subject.name}</Tag>
+                ))}
               </div>
-              <div className="text-2xl font-semibold text-gray-900">
-                {getTutorName(tutor)}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">
-                {tutor?.tutorProfile?.university ||
-                  tutor?.university ||
-                  tutor?.tutor?.education ||
-                  tutor?.education ||
-                  "University information unavailable"}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">
-                Email: {getTutorEmail(tutor)}
-              </div>
-              <div className="text-sm text-gray-500 mt-1">
-                Status: {
-                  tutor?.tutor?.approvalStatus ||
-                  tutor?.status ||
-                  tutor?.accountStatus ||
-                  (isPendingTutor ? "pending" : "—")
-                }
-              </div>
+            </>
+          ) : (
+            <p className="text-sm text-gray-500">No subjects found.</p>
+          )}
+        </div>
+
+        {/* Documents */}
+        <div>
+          <div className="text-base font-medium mb-4">Documents</div>
+          {documents.length === 0 ? (
+            <p className="text-sm text-gray-500">No documents available.</p>
+          ) : (
+            <div className="space-y-2">
+              {documents.map((doc) => (
+                <DocumentRow
+                  key={doc.id}
+                  doc={doc}
+                  onView={handleViewDocument}
+                />
+              ))}
             </div>
-          </section>
+          )}
+        </div>
+      </section>
 
-          <section className="mb-8">
-            <h2 className="text-lg font-semibold mb-4">Details</h2>
+      {/* Actions */}
+      {tutor.approvalStatus === "pending" ||
+        (tutor.approvalStatus === "rejected" && (
+          <div className="flex items-center gap-4 mt-6">
+            <button
+              onClick={() => setShowApproveModal(true)}
+              className="px-6 py-3 rounded-full bg-blue-600 text-white shadow hover:brightness-95 disabled:opacity-60"
+              disabled={approveTutor.isPending}
+            >
+              {approveTutor.isPending ? "Approving..." : "Approve"}
+            </button>
+            <button
+              onClick={() => setShowRejectModal(true)}
+              className="px-6 py-3 rounded-full border text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+              disabled={rejectTutor.isPending}
+            >
+              {rejectTutor.isPending ? "Rejecting..." : "Reject"}
+            </button>
+          </div>
+        ))}
+      {/* Approve Modal */}
+      <Modal
+        isOpen={showApproveModal}
+        title="Approve Tutor"
+        onClose={() => setShowApproveModal(false)}
+      >
+        <p className="text-gray-600 mb-4">
+          Are you sure you want to approve <b>{tutor.user.firstName}</b> as a
+          tutor?
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => setShowApproveModal(false)}
+            className="px-4 py-2 text-sm border rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmApprove}
+            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
+          >
+            Confirm
+          </button>
+        </div>
+      </Modal>
 
-            <div className="bg-white rounded-xl border p-5 shadow-sm mb-6">
-              <div className="text-sm font-medium mb-2">Bio</div>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{bio}</p>
-
-              {subjects.length ? (
-                <div className="mt-4 flex flex-wrap">
-                  {subjects.map((subject, index) => (
-                    <Tag key={`${subject}-${index}`}>{subject}</Tag>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div>
-                <div className="text-sm text-gray-500">Availability</div>
-              <div className="text-sm text-gray-800 mt-1">
-                  {tutor?.tutorProfile?.availability?.label ||
-                    tutor?.tutor?.availability?.label ||
-                    "Not specified"}
-              </div>
-              </div>
-
-              <div>
-                <div className="text-sm text-gray-500">Day</div>
-              <div className="text-sm text-gray-800 mt-1">
-                  {tutor?.tutorProfile?.availability?.day ||
-                    tutor?.tutor?.availability?.day ||
-                    "Not specified"}
-              </div>
-              </div>
-
-              <div>
-                <div className="text-sm text-gray-500">Time</div>
-              <div className="text-sm text-gray-800 mt-1">
-                  {tutor?.tutorProfile?.availability?.time ||
-                    tutor?.tutor?.availability?.time ||
-                    "Not specified"}
-              </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="text-base font-medium mb-4">Documents</div>
-              {isDocumentError ? <ErrorAlert error={documentError} /> : null}
-              {isLoadingDocument ? <Spinner /> : null}
-              {!isLoadingDocument && documents.length === 0 ? (
-                <p className="text-sm text-gray-500">No documents available.</p>
-              ) : (
-                <div>
-                  {documents.map((document) => (
-                    <DocumentRow
-                      key={document.id}
-                      doc={document}
-                      onView={handleViewDocument}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-
-          {isPendingTutor ? (
-            <div className="flex items-center gap-4 mt-6">
-              <button
-                onClick={handleApprove}
-                className="px-6 py-3 rounded-full bg-blue-600 text-white shadow hover:brightness-95 disabled:opacity-60"
-                aria-label="Approve tutor"
-                disabled={approveTutorMutation.isPending}
-                type="button"
-              >
-                {approveTutorMutation.isPending ? "Approving..." : "Approve"}
-              </button>
-
-              <button
-                onClick={handleReject}
-                className="px-6 py-3 rounded-full border text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-                aria-label="Reject tutor"
-                disabled={rejectTutorMutation.isPending}
-                type="button"
-              >
-                {rejectTutorMutation.isPending ? "Rejecting..." : "Reject"}
-              </button>
-            </div>
-          ) : null}
-        </>
-      )}
+      {/* Reject Modal */}
+      <Modal
+        isOpen={showRejectModal}
+        title="Reject Tutor"
+        onClose={() => setShowRejectModal(false)}
+      >
+        <p className="text-gray-600 mb-3">Please provide a rejection reason:</p>
+        <textarea
+          value={rejectionReason}
+          onChange={(e) => setRejectionReason(e.target.value)}
+          rows={3}
+          className="w-full border rounded-md p-2 text-sm"
+          placeholder="Enter reason..."
+        />
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            onClick={() => setShowRejectModal(false)}
+            className="px-4 py-2 text-sm border rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmReject}
+            className="px-4 py-2 text-sm bg-red-600 text-white rounded-md"
+          >
+            Submit
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

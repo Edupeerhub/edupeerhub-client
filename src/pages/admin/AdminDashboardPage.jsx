@@ -2,11 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
-import {
-  usePendingTutors,
-  useUserCounts,
-  useUsers,
-} from "../../hooks/admin";
+import { usePendingTutors, useUserCounts, useUsers } from "../../hooks/admin";
 
 const PREVIEW_LIMIT = 5;
 
@@ -96,52 +92,54 @@ export default function AdminDashboardPage() {
 
   const students = studentsData?.users ?? [];
 
-  const pendingCount = counts?.totalPendingTutors ?? counts?.pendingTutorCount ?? counts?.pendingTutors ?? 0;
-  const tutorCount = counts?.totalTutors ?? counts?.tutorCount ?? counts?.tutors ?? 0;
-  const studentCount = counts?.totalStudents ?? counts?.studentCount ?? counts?.students ?? 0;
+  const pendingCount = counts?.totals?.totalPendingTutors ?? 0;
+  const tutorCount = counts?.totals?.totalTutors ?? 0;
+  const studentCount = counts?.totals?.totalStudents ?? 0;
 
   const statCards = useMemo(
     () => [
       {
         title: "Total Tutors",
         value: formatNumber(tutorCount),
-        delta: counts?.tutorGrowth ?? null,
+        delta: counts?.growth?.tutors ?? null,
         deltaClass:
-          typeof counts?.tutorGrowth === "number" && counts?.tutorGrowth < 0
+          typeof counts?.growth?.tutors === "number" &&
+          counts?.growth?.tutors < 0
             ? "text-red-500"
             : "text-green-600",
       },
       {
         title: "Total Students",
         value: formatNumber(studentCount),
-        delta: counts?.studentGrowth ?? null,
+        delta: counts?.growth?.students ?? null,
         deltaClass:
-          typeof counts?.studentGrowth === "number" && counts?.studentGrowth < 0
+          typeof counts?.growth?.students === "number" &&
+          counts?.growth?.students < 0
             ? "text-red-500"
             : "text-green-600",
       },
       {
         title: "Pending Tutor Application",
         value: formatNumber(pendingCount),
-        delta: counts?.pendingTutorGrowth ?? null,
+        delta: counts?.growth?.pendingTutors ?? null,
         deltaClass:
-          typeof counts?.pendingTutorGrowth === "number" &&
-          counts?.pendingTutorGrowth < 0
+          typeof counts?.growth?.pendingTutors === "number" &&
+          counts?.growth?.pendingTutors < 0
             ? "text-green-600"
             : "text-red-500",
       },
     ],
-    [counts],
+    [counts]
   );
 
   const pendingTutorPreview = useMemo(
     () => (pendingTutors ?? []).slice(0, PREVIEW_LIMIT),
-    [pendingTutors],
+    [pendingTutors]
   );
 
   const studentPreview = useMemo(
     () => (students ?? []).slice(0, PREVIEW_LIMIT),
-    [students],
+    [students]
   );
 
   return (
@@ -166,7 +164,7 @@ export default function AdminDashboardPage() {
               <>
                 <div className="mt-3 text-2xl font-semibold">{card.value}</div>
                 <div className={`mt-2 text-sm ${card.deltaClass}`}>
-                  {card.delta ?? "—"}
+                  {card.delta != null ? `${card.delta}%` : "—"}
                 </div>
               </>
             )}
@@ -181,26 +179,28 @@ export default function AdminDashboardPage() {
             View All
           </Link>
         </div>
-        {isPendingTutorsError ? <ErrorAlert error={pendingTutorsError} /> : null}
+        {isPendingTutorsError ? (
+          <ErrorAlert error={pendingTutorsError} />
+        ) : null}
         {isLoadingPendingTutors ? (
           <Spinner />
         ) : pendingTutorPreview.length === 0 ? (
-          <p className="text-sm text-gray-500">No pending tutors at the moment.</p>
+          <p className="text-sm text-gray-500">
+            No pending tutors at the moment.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-blue-50">
                   <th className="p-4">Name</th>
-                  <th className="p-4">Education</th>
+                  <th className="p-4">Bio</th>
                   <th className="p-4">Date Applied</th>
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {pendingTutorPreview.map((tutor, index) => {
-                  const university =
-                    tutor?.tutorProfile?.university || tutor?.university || "—";
                   return (
                     <tr
                       key={tutor?.id ?? index}
@@ -209,22 +209,18 @@ export default function AdminDashboardPage() {
                       }
                     >
                       <td className="p-4 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-medium text-blue-700">
-                          {getUserName(tutor)
-                            .split(" ")
-                            .map((part) => part[0])
-                            .join("")
-                            .slice(0, 2) || "U"}
-                        </div>
+                        <img
+                          src={tutor.user.profileImageUrl}
+                          alt={`${tutor.user.firstName} ${tutor.user.lastName}`}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
                         <div className="text-sm text-gray-700">
                           {getUserName(tutor)}
                         </div>
                       </td>
-                  <td className="p-4 text-gray-600">
-                    {tutor?.education ?? tutor?.raw?.education ?? university}
-                  </td>
+                      <td className="p-4 text-gray-600">{tutor?.bio}</td>
                       <td className="p-4 text-gray-600">
-                        {formatDate(tutor?.createdAt || tutor?.appliedAt)}
+                        {formatDate(tutor?.user.createdAt)}
                       </td>
                       <td className="p-4 text-right">
                         <Link
@@ -262,14 +258,14 @@ export default function AdminDashboardPage() {
                 <tr className="bg-blue-50">
                   <th className="p-4">Name</th>
                   <th className="p-4">Date Joined</th>
-                  <th className="p-4">Completed sections</th>
                   <th className="p-4">Status</th>
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {studentPreview.map((student, index) => {
-                  const status = student?.accountStatus || student?.status || "—";
+                  const status =
+                    student?.accountStatus || student?.status || "—";
                   return (
                     <tr
                       key={student?.id ?? index}
@@ -277,12 +273,16 @@ export default function AdminDashboardPage() {
                         index < studentPreview.length - 1 ? "border-b" : ""
                       }
                     >
-                      <td className="p-4 text-gray-700">{getUserName(student)}</td>
-                      <td className="p-4 text-gray-600">
-                        {formatDate(student?.createdAt)}
+                      <td className="p-4 flex items-center gap-3">
+                        <img
+                          src={student.profileImageUrl}
+                          alt={`${student.firstName} ${student.lastName}`}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                        {getUserName(student)}
                       </td>
                       <td className="p-4 text-gray-600">
-                        {student?.completedSections ?? "—"}
+                        {formatDate(student?.createdAt)}
                       </td>
                       <td className="p-4">
                         <span

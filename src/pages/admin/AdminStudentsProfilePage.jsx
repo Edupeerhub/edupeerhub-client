@@ -12,8 +12,18 @@ function BackButton({ onClick }) {
       className="inline-flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50 text-sm"
       aria-label="Back"
     >
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M15 19l-7-7 7-7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <svg
+        className="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+      >
+        <path
+          d="M15 19l-7-7 7-7"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
       Back
     </button>
@@ -45,12 +55,7 @@ export default function AdminStudentsProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const {
-    data: student,
-    isLoading,
-    isError,
-    error,
-  } = useAdminUser({ id });
+  const { data: student, isLoading, isError, error } = useAdminUser({ id });
 
   const learningGoals = Array.isArray(student?.student?.learningGoals)
     ? student.student.learningGoals
@@ -78,31 +83,37 @@ export default function AdminStudentsProfilePage() {
         <>
           <section className="bg-white border rounded-xl shadow-sm p-6">
             <div className="flex flex-wrap gap-6">
-              <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-xl font-semibold text-blue-700">
-                {getFullName(student)
-                  .split(" ")
-                  .map((part) => part[0])
-                  .join("")
-                  .slice(0, 2) || "S"}
-              </div>
+              <img
+                src={student.profileImageUrl}
+                alt={`${student.firstName} ${student.lastName}`}
+                className="w-28 h-28 rounded-full object-cover"
+              />
               <div className="flex-1 min-w-[220px] space-y-2 text-sm text-gray-600">
                 <div>
-                  <span className="font-medium text-gray-800">Full name:</span> {getFullName(student)}
+                  <span className="font-medium text-gray-800">Full name:</span>{" "}
+                  {getFullName(student)}
                 </div>
                 <div>
-                  <span className="font-medium text-gray-800">Email:</span> {student.email ?? "—"}
+                  <span className="font-medium text-gray-800">Email:</span>{" "}
+                  {student.email ?? "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-gray-800">Account status:</span> {student.accountStatus ?? "—"}
+                  <span className="font-medium text-gray-800">
+                    Account status:
+                  </span>{" "}
+                  {student.accountStatus ?? "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-gray-800">Role:</span> {student.role ?? "—"}
+                  <span className="font-medium text-gray-800">Role:</span>{" "}
+                  {student.role ?? "—"}
                 </div>
                 <div>
-                  <span className="font-medium text-gray-800">Created:</span> {formatDate(student.createdAt)}
+                  <span className="font-medium text-gray-800">Created:</span>{" "}
+                  {formatDate(student.createdAt)}
                 </div>
                 <div>
-                  <span className="font-medium text-gray-800">Last login:</span> {formatDate(student.lastLogin)}
+                  <span className="font-medium text-gray-800">Last login:</span>{" "}
+                  {formatDate(student.lastLogin)}
                 </div>
               </div>
             </div>
@@ -123,7 +134,9 @@ export default function AdminStudentsProfilePage() {
                 </div>
               </div>
               <div>
-                <div className="font-medium text-gray-800">Verification status</div>
+                <div className="font-medium text-gray-800">
+                  Verification status
+                </div>
                 <div className="mt-1 text-gray-600">
                   {student?.isVerified ? "Verified" : "Pending"}
                 </div>
@@ -131,9 +144,13 @@ export default function AdminStudentsProfilePage() {
             </div>
 
             <div>
-              <div className="font-medium text-gray-800 mb-2">Learning goals</div>
+              <div className="font-medium text-gray-800 mb-2">
+                Learning goals
+              </div>
               {learningGoals.length === 0 ? (
-                <p className="text-sm text-gray-600">No learning goals provided.</p>
+                <p className="text-sm text-gray-600">
+                  No learning goals provided.
+                </p>
               ) : (
                 <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
                   {learningGoals.map((goal, index) => (
