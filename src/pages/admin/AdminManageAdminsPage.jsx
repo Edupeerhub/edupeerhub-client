@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="max-w-5xl space-y-10">
+    <div className="max-w-5xl space-y-10 mx-auto">
       <div className="mb-4">
         <h1 className="text-3xl font-extrabold text-gray-900">
           Manage Platform Administrators
