@@ -105,14 +105,24 @@ const Header = () => {
             ))}
             <div className="pt-4 space-y-2 border-t border-gray-200">
               {isAuthenticated ? (
-                <Button
-                  to={roleLink}
-                  variant="primary"
-                  size="md"
-                  className="w-full"
-                >
-                  Go to Dashboard
-                </Button>
+                <>
+                  <Button
+                    to={roleLink}
+                    variant="primary"
+                    size="md"
+                    className="w-full"
+                  >
+                    Go to Dashboard
+                  </Button>
+                  <Button
+                    onClick={logoutMutation}
+                    variant="ghost"
+                    size="md"
+                    className="w-full"
+                  >
+                    Logout
+                  </Button>
+                </>
               ) : (
                 <>
                   <Button
