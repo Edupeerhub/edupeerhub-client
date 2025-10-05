@@ -5,7 +5,6 @@ import useLogout from "../../hooks/auth/useLogout";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
 import useAuthUser from "../../hooks/auth/useAuthUser";
-import { adminSidebarLinks } from "../../utils/sideBarLinks";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { logoutMutation } = useLogout();
@@ -15,10 +14,10 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
     queryKey: ["userProfile"],
     queryFn: getUserProfile,
     enabled:
-      (!!authUser && authUser.role === "tutor") || authUser.role === "admin",
+      !!authUser && (authUser.role === "tutor" || authUser.role === "admin"),
   });
 
-  links = adminSidebarLinks.filter(
+  const sidebarLinks = links.filter(
     (link) => !link.superAdminOnly || user?.admin?.isSuperAdmin
   );
 
@@ -107,7 +106,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
 
         {/* Navigation Links */}
         <nav className="flex-1 p-4 space-y-5 md:space-y-4 mt-1 overflow-y-auto">
-          {links.map(({ path, label, icon: Icon }) => {
+          {sidebarLinks.map(({ path, label, icon: Icon }) => {
             const isDisabled = isTutorAndRestricted && label !== "Dashboard";
             return (
               <NavLink

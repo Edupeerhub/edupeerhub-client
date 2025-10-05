@@ -17,10 +17,10 @@ const Button = ({
   const variants = {
     primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
     secondary:
-      "bg-white text-blue-600 hover:bg-gray-300 focus:ring-blue-500 border-2 border-blue-600",
+      "bg-white text-blue-600 hover:bg-blue-50 focus:ring-blue-500 border-2 border-blue-600",
     outline:
-      "bg-transparent text-white border-2 border-white hover:bg-white hover:text-blue-600 focus:ring-white",
-    ghost: "bg-transparent text-gray-700 hover:bg-gray-400 focus:ring-gray-500",
+      "bg-transparent text-blue-600 border-2 border-blue-600 hover:bg-blue-100 focus:ring-blue-500",
+    ghost: "bg-transparent text-gray-700 hover:bg-blue-100 focus:ring-blue-500",
   };
 
   const sizes = {
