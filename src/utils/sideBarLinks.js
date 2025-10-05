@@ -8,6 +8,7 @@ import AvailabilityIcon from "../assets/images/layout-icons/clock.svg?react";
 import MessageIcon from "../assets/images/layout-icons/message.svg?react";
 import StudentsIcon from "../assets/images/layout-icons/students.svg?react";
 import ReportsIcon from "../assets/images/layout-icons/reports.svg?react";
+import { UsersIcon } from "lucide-react";
 
 export const studentSidebarLinks = [
   { path: "/student/dashboard", label: "Dashboard", icon: DashboardIcon },
@@ -42,5 +43,11 @@ export const adminSidebarLinks = [
   { path: "/admin/tutors", label: "Tutors", icon: TutorIcon },
   { path: "/admin/students", label: "Students", icon: StudentsIcon },
   { path: "/admin/report", label: "Reports", icon: ReportsIcon },
+  {
+    path: "/admin/manage-admins",
+    label: "Manage Admins",
+    icon: UsersIcon,
+    superAdminOnly: true,
+  },
   { path: "/admin/settings", label: "Settings", icon: SettingsIcon },
 ];
