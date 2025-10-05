@@ -19,7 +19,7 @@ const useResetPassword = () => {
   const { mutate, isPending, error, isSuccess } = useMutation({
     mutationFn: resetPassword,
     onSuccess: () => {
-      toast.success("Password reset successfully, redirecting...", {
+      toast.success("Password reset successfully, redirecting to login...", {
         duration: 2000,
       });
       setRetryAfter(null);
