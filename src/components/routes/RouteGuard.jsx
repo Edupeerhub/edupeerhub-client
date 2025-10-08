@@ -39,7 +39,6 @@ const RouteGuard = ({
       case "tutor":
         return "/tutor/dashboard";
       case "admin":
-      case "super_admin":
         return "/admin/dashboard";
       default:
         return "/";
@@ -72,7 +71,7 @@ const RouteGuard = ({
       return <Navigate to={getDashboardRoute(authUser.role)} replace />;
 
     // Role checks
-    if (requireAdminRole && !["admin", "super_admin"].includes(authUser.role))
+    if (requireAdminRole && authUser.role !== "admin")
       return <Navigate to={getDashboardRoute(authUser.role)} replace />;
 
     if (requireStudentRole && authUser.role !== "student")

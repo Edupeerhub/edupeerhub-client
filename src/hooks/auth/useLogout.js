@@ -18,8 +18,9 @@ const useLogout = () => {
     error,
   } = useMutation({
     mutationFn: logout,
-    onSuccess: () => {
-      disconnectChatClient();
+    onSuccess: async () => {
+      await disconnectChatClient();
+      queryClient.removeQueries({ queryKey: ["streamToken"] });
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Logout successful! See you next time!");
     },

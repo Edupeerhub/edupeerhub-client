@@ -23,10 +23,10 @@ import {
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
 import { formatCalendarDate, formatDate } from "../../utils/time";
-import { useAuth } from "../../hooks/useAuthContext";
+import { useUserProfile } from "../../hooks/profile/useUserProfile";
 
 const StudentDashboardPage = () => {
-  const { authUser } = useAuth();
+  const { data: user } = useUserProfile();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -40,6 +40,7 @@ const StudentDashboardPage = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["recommendedTutors"],
     queryFn: () => getRecommendedTutors(),
+    staleTime: 60 * 60 * 1000, // 1 hour
   });
 
   // Monthly bookings query - fetch bookings for the current month
@@ -63,7 +64,7 @@ const StudentDashboardPage = () => {
     isLoading: upcomingSessionsLoading,
     error: upcomingSessionsError,
   } = useQuery({
-    queryKey: ["upcomingSession"],
+    queryKey: ["studentUpcomingSession"],
     queryFn: getUpcomingSession,
   });
 
@@ -71,7 +72,7 @@ const StudentDashboardPage = () => {
     mutationFn: ({ id, cancellationReason }) =>
       cancelStudentBooking(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["upcomingSession"]);
+      queryClient.invalidateQueries(["studentUpcomingSession"]);
       queryClient.invalidateQueries(["studentBookings"]);
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
@@ -140,7 +141,7 @@ const StudentDashboardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-2 md:space-y-6">
             <h1 className="text-2xl mb-4 font-semibold pl-2 md:pl-0">
-              Welcome back, {authUser?.firstName || "Student"}
+              Welcome back, {user?.firstName || "Student"}
             </h1>
 
             {/* Overview */}

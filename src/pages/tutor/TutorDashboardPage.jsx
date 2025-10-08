@@ -9,7 +9,6 @@ import {
 import ViewModal from "../../components/tutor/ViewModal";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getUserProfile } from "../../lib/api/user/userApi";
 import {
   updateBookingAvailabilityStatus,
   cancelBookingAvailability,
@@ -25,12 +24,13 @@ import {
 } from "../../utils/toastDisplayHandler";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
-import { getTutorReviewSummary } from "../../lib/api/tutor/tutorApi";
 import PendingLayout from "../../layouts/tutor/PendingLayout";
 import RejectedLayout from "../../layouts/tutor/RejectedLayout";
 import ApprovedLayout from "../../layouts/tutor/ApprovedLayout";
 import ActiveLayout from "../../layouts/tutor/ActiveLayout";
 import { useNotifications } from "../../hooks/notifications/useNotfications";
+import { useTutorStatus } from "../../hooks/auth/useUserRoles";
+import { useTutorDashboard } from "../../hooks/tutor/useTutorProfile";
 
 const TutorDashboardPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
@@ -41,14 +41,12 @@ const TutorDashboardPage = () => {
   const queryClient = useQueryClient();
 
   const {
-    data: user,
-    isLoading: isLoadingUser,
-    isError: isErrorUser,
-    error: errorUser,
-  } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: getUserProfile,
-  });
+    reviewSummary,
+    profile: user,
+    isLoadingProfileQuery: isLoadingUser,
+    isErrorUser,
+    errorProfileQuery: errorUser,
+  } = useTutorDashboard();
 
   const {
     data: tutorBookingsData,
@@ -59,12 +57,6 @@ const TutorDashboardPage = () => {
     queryKey: ["tutorBookings"],
     queryFn: () => fetchTutorBookings({ status: ["confirmed", "pending"] }),
     enabled: !!user,
-  });
-
-  const { data: reviewSummary } = useQuery({
-    queryKey: ["tutorReviewSummary", user?.id],
-    queryFn: () => getTutorReviewSummary(user?.id),
-    enabled: !!user?.id,
   });
 
   const updateBookingStatusMutation = useMutation({
@@ -106,6 +98,7 @@ const TutorDashboardPage = () => {
 
   const tutor = user?.tutor;
   const rating = reviewSummary?.averageRating ?? 0;
+  const tutorStatus = useTutorStatus();
 
   const handleView = (session) => {
     setSelectedSession(session);
@@ -137,19 +130,6 @@ const TutorDashboardPage = () => {
       cancelMutation.mutate({ id: selectedSession.id, cancellationReason });
     }
   };
-
-  const getTutorStatus = () => {
-    if (!tutor) return "pending";
-    if (
-      tutor.approvalStatus === "approved" &&
-      tutor.profileVisibility === "active"
-    ) {
-      return "active";
-    }
-    return tutor.approvalStatus;
-  };
-
-  const tutorStatus = getTutorStatus();
 
   const profileStatus = {
     pending: {
@@ -291,7 +271,7 @@ const TutorDashboardPage = () => {
 
     return (
       <Link
-        to={`/tutor/profile/${user?.id}`}
+        to={`/tutor/profile`}
         className="btn bg-primary hover:bg-primary-focus text-white w-full mt-4 rounded-full"
       >
         {btnMessage}

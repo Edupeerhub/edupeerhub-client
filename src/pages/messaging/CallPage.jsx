@@ -41,7 +41,7 @@ const CallPage = () => {
 
   // fetch stream token
   const { data: tokenData } = useQuery({
-    queryKey: ["streamToken"],
+    queryKey: ["streamToken", authUser?.id],
     queryFn: getStreamToken,
     enabled: !!authUser,
   });

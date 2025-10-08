@@ -9,6 +9,8 @@ export default function useSubjects() {
   } = useQuery({
     queryKey: ["subjects"],
     queryFn: getSubjects,
+    staleTime: Infinity,
+    cacheTime: 1000 * 60 * 60, // 1 hour in memory
   });
 
   return {

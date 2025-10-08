@@ -5,9 +5,12 @@ import useLogout from "../../hooks/auth/useLogout";
 import NotificationDropdown from "../navbar/NotificationDropdown";
 import { useNotifications } from "../../hooks/notifications/useNotfications";
 import { useAuth } from "../../hooks/useAuthContext";
+import { useUserProfile } from "../../hooks/profile/useUserProfile";
 
 const Navbar = ({ onToggleSidebar }) => {
   const { authUser } = useAuth();
+  const { data: user } = useUserProfile();
+
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] =
     useState(false);
@@ -114,13 +117,13 @@ const Navbar = ({ onToggleSidebar }) => {
               >
                 <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-sm">
                   <img
-                    src={authUser?.profileImageUrl}
+                    src={user?.profileImageUrl}
                     alt="User Avatar"
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <span className="hidden sm:inline text-sm font-medium text-gray-800 max-w-32 truncate">
-                  {authUser?.firstName} {authUser?.lastName}
+                  {user?.firstName} {user?.lastName}
                 </span>
                 <ChevronDown
                   className={`h-4 w-4 text-gray-600 transition-transform ${
@@ -131,7 +134,6 @@ const Navbar = ({ onToggleSidebar }) => {
 
               {isProfileDropdownOpen && (
                 <ProfileDropdown
-                  authUser={authUser}
                   logoutMutation={logoutMutation}
                   closeDropdown={() => setIsProfileDropdownOpen(false)}
                 />

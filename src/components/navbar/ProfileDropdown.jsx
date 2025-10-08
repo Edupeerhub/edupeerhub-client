@@ -1,35 +1,17 @@
 import { LogOut } from "lucide-react";
 import DropdownItem from "./DropdownItem";
 import { profileDropdownItems } from "../../utils/navBarLinks";
-import { useQuery } from "@tanstack/react-query";
-import { getUserProfile } from "../../lib/api/user/userApi";
+import { useTutorStatus } from "../../hooks/auth/useUserRoles";
+import { useUserProfile } from "../../hooks/profile/useUserProfile";
 
-const ProfileDropdown = ({ authUser, logoutMutation, closeDropdown }) => {
-  const items = profileDropdownItems[authUser?.role] || [];
+const ProfileDropdown = ({ logoutMutation, closeDropdown }) => {
+  const { data: user } = useUserProfile();
+  const tutorStatus = useTutorStatus();
 
-  const { data: user } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: getUserProfile,
-    enabled: !!authUser && authUser.role === "tutor",
-  });
-
-  const tutor = user?.tutor;
-
-  const getTutorStatus = () => {
-    if (!tutor) return null;
-    if (
-      tutor.approvalStatus === "approved" &&
-      user.accountStatus === "active"
-    ) {
-      return "active";
-    }
-    return tutor.approvalStatus;
-  };
-
-  const tutorStatus = getTutorStatus();
+  const items = profileDropdownItems[user?.role] || [];
 
   const isTutorAndRestricted =
-    authUser?.role === "tutor" &&
+    user?.role === "tutor" &&
     (tutorStatus === "pending" || tutorStatus === "rejected");
 
   return (
@@ -37,9 +19,9 @@ const ProfileDropdown = ({ authUser, logoutMutation, closeDropdown }) => {
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100">
         <p className="text-sm font-medium text-gray-900">
-          {authUser?.firstName} {authUser?.lastName}
+          {user?.firstName} {user?.lastName}
         </p>
-        <p className="text-sm text-gray-500 break-all">{authUser?.email}</p>
+        <p className="text-sm text-gray-500 break-all">{user?.email}</p>
       </div>
 
       {/* Items */}

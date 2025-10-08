@@ -9,15 +9,15 @@ const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 let globalChatClient = null;
 let connectionPromise = null;
 
-const useChatClient = (authUser) => {
+const useChatClient = (authUser, isLoggingOut = false) => {
   const [chatClient, setChatClient] = useState(globalChatClient);
   const [isLoading, setIsLoading] = useState(!globalChatClient);
 
   const { data } = useQuery({
-    queryKey: ["streamToken"],
+    queryKey: ["streamToken", authUser?.id],
     queryFn: getStreamToken,
-    enabled: !!authUser,
-    // staleTime: 55 * 60 * 1000, // 55 min cache for 1h tokens
+    enabled: !!authUser && !isLoggingOut,
+    staleTime: 55 * 60 * 1000, // 55 min cache for 1h tokens
   });
   const token = data?.token;
 

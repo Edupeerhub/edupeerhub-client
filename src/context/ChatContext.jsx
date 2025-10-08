@@ -4,11 +4,7 @@ import { useAuth } from "../hooks/useAuthContext";
 
 export function ChatProvider({ children }) {
   const { authUser } = useAuth();
-  const { isLoading, chatClient, disconnectChatClient } =
-    useChatClient(authUser);
-
-  // Optional: show loading state while chat client connects
-  // if (isLoading) return <div>Loading chat...</div>;
+  const { chatClient, disconnectChatClient } = useChatClient(authUser);
 
   return (
     <ChatContext.Provider value={{ chatClient, disconnectChatClient }}>

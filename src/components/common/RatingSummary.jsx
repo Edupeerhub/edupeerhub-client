@@ -7,7 +7,7 @@ const RatingSummary = ({ rating }) => {
         {/* Average Rating */}
         <div className="text-center md:text-left md:w-auto">
           <h1 className="font-bold text-2xl md:text-4xl">
-            {rating.averageRating}
+            {rating?.averageRating}
           </h1>
           <div className="flex justify-center md:justify-start mt-1">
             {[...Array(5)].map((_, i) => (
@@ -15,19 +15,21 @@ const RatingSummary = ({ rating }) => {
                 key={i}
                 size={20}
                 className={`text-primary ${
-                  i < Math.floor(rating.averageRating)
+                  i < Math.floor(rating?.averageRating)
                     ? "fill-current"
                     : "opacity-30"
                 }`}
               />
             ))}
           </div>
-          <p className="text-sm text-gray-600">{rating.totalReviews} reviews</p>
+          <p className="text-sm text-gray-600">
+            {rating?.totalReviews} reviews
+          </p>
         </div>
 
         {/* Breakdown */}
         <div className="mt-4 md:mt-0 md:min-w-[400px]">
-          {rating.breakdown.map((item) => (
+          {rating?.breakdown.map((item) => (
             <div key={item.stars} className="flex items-center gap-2 mt-1">
               <p className="w-4">{item.stars}</p>
               <progress

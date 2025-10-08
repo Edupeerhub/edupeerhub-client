@@ -9,7 +9,6 @@ const FAQPage = () => {
   const [openIndex, setOpenIndex] = useState(null);
   const { authUser } = useAuth();
 
-  // ✅ Single unified FAQ array (general + role-specific)
   const FAQ_ITEMS = [
     // --- GENERAL FAQs (visible to everyone) ---
     {

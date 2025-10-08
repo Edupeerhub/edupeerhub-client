@@ -2,14 +2,10 @@ import { useState } from "react";
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { useAdmins, useCreateAdmin } from "../../hooks/admin";
-import { useQuery } from "@tanstack/react-query";
-import { getUserProfile } from "../../lib/api/user/userApi";
+import { useIsSuperAdmin } from "../../hooks/auth/useUserRoles";
 
 export default function AdminSettingsPage() {
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: getUserProfile,
-  });
+  const isSuperAdmin = useIsSuperAdmin();
 
   const { data: admins, isLoading, isError, error } = useAdmins();
 
@@ -36,16 +32,8 @@ export default function AdminSettingsPage() {
     createAdminMutation.mutate(formState);
   };
 
-  if (userLoading) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <Spinner />
-      </div>
-    );
-  }
-
   // Restrict access to only superadmins
-  if (!user?.admin?.isSuperAdmin) {
+  if (!isSuperAdmin) {
     return (
       <div className="flex items-center justify-center h-64 text-center">
         <div>

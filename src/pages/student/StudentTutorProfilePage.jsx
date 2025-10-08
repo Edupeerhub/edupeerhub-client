@@ -1,7 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useTutorProfile } from "../../hooks/tutor/useTutorProfile";
-import { useAvailability } from "../../hooks/tutor/useAvailability";
-
+import { useStudentTutorPage } from "../../hooks/tutor/useTutorProfile";
 import RatingSummary from "../../components/common/RatingSummary";
 import ReviewList from "../../components/common/ReviewList";
 import BackButton from "../../components/common/BackButton";
@@ -17,22 +15,13 @@ const StudentTutorProfilePage = () => {
     profile,
     reviews,
     reviewSummary,
-    isLoading,
-    error,
     isLoadingProfileQuery,
     isLoadingReviewSummaryQuery,
     isLoadingReviewsQuery,
     errorProfileQuery,
     errorReviewSummaryQuery,
     errorReviewsQuery,
-  } = useTutorProfile(id);
-
-  // const { data: availability, isLoading: availabilityLoading } =
-  //   useAvailability({
-  //     start: new Date().toLocaleDateString("en-CA"),
-  //     end: new Date().toLocaleDateString("en-CA"),
-  //     tutorId: id,
-  //   });
+  } = useStudentTutorPage(id);
 
   const { availabilityData: availability, availabilityLoading } =
     useStudentBooking(id, new Date(), null);
@@ -43,10 +32,7 @@ const StudentTutorProfilePage = () => {
 
   return (
     <div className="w-full overflow-x-hidden">
-      <div className="px-4 sm:px-8 py-4">
-        <BackButton to="/student/tutors" />
-      </div>
-
+      <BackButton to="/student/tutors" />
       <div className="px-2 sm:px-8 md:pb-8">
         {/* Tutor Header */}
         {isLoadingProfileQuery ? (

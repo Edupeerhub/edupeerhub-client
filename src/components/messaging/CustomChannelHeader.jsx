@@ -5,10 +5,9 @@ import {
   useChatContext,
 } from "stream-chat-react";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react"; // or any icon library you prefer
-import CallButton from "../ui/CallButton";
+import { ArrowLeft } from "lucide-react";
 
-const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
+const CustomChannelHeader = ({ channel, authUser }) => {
   const navigate = useNavigate();
   const { members } = useChannelStateContext();
   const { client } = useChatContext();
@@ -45,17 +44,22 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
   if (!channel || !authUser || !otherUser) return null;
 
   const handleBack = () => {
-    navigate(-1); // 👈 go back in browser history
+    navigate(-1);
   };
 
   const handleProfileClick = () => {
-    // navigate(`/profile/${otherUser.id}`);
+    const role = authUser.role;
+    const routePrefix =
+      role === "tutor" ? "/student-profile" : "/tutor-profile";
+
+    if (role === "student") {
+      navigate(`${routePrefix}/${otherUser.user.id}`);
+    }
   };
 
   return (
     <div className="flex items-center justify-between p-2 border-b bg-white">
       <div className="flex items-center space-x-2">
-        {/* 👈 Back button */}
         <button
           onClick={handleBack}
           className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -97,11 +101,6 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
           </div>
         </div>
       </div>
-
-      {/* Uncomment if you want the call button */}
-      {/* <div className="flex items-center space-x-2">
-        <CallButton handleVideoCall={handleVideoCall} />
-      </div> */}
     </div>
   );
 };

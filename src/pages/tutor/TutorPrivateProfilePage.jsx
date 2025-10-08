@@ -1,31 +1,27 @@
-import { useTutorProfile } from "../../hooks/tutor/useTutorProfile";
+import { usePrivateTutorProfile } from "../../hooks/tutor/useTutorProfile";
 import RatingSummary from "../../components/common/RatingSummary";
 import ReviewList from "../../components/common/ReviewList";
 import BackButton from "../../components/common/BackButton";
 import Spinner from "../../components/common/Spinner";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const TutorPrivateProfilePage = () => {
-  const { id } = useParams();
-
   const {
     profile,
     reviews,
     reviewSummary,
-    isLoading,
-    error,
     isLoadingProfileQuery,
     isLoadingReviewSummaryQuery,
     isLoadingReviewsQuery,
     errorProfileQuery,
     errorReviewSummaryQuery,
     errorReviewsQuery,
-  } = useTutorProfile(id);
+  } = usePrivateTutorProfile();
 
   return (
     <div className="w-full overflow-x-hidden">
       <div className="px-4 ">
-        <BackButton to="/tutor/dashboard" />
+        <BackButton to={-1} />
       </div>
 
       <div className="px-2 sm:px-8 md:pb-8 sm:mt-8">
@@ -41,8 +37,8 @@ const TutorPrivateProfilePage = () => {
               <div className="avatar avatar-online shrink-0">
                 <div className="w-20 sm:w-24 rounded-full">
                   <img
-                    src={profile?.user.profileImageUrl}
-                    alt={`${profile?.user.firstName} ${profile?.user.lastName}`}
+                    src={profile?.profileImageUrl}
+                    alt={`${profile?.firstName} ${profile?.lastName}`}
                     className="w-auto sm:w-full h-full object-cover"
                   />
                 </div>
@@ -51,11 +47,11 @@ const TutorPrivateProfilePage = () => {
               {/* Name, Subjects, and Edit Button */}
               <div className="flex-1 min-w-0 w-full text-center sm:text-left">
                 <h1 className="font-bold text-xl sm:text-2xl break-words">
-                  {profile?.user.firstName} {profile?.user.lastName}
+                  {profile?.firstName} {profile?.lastName}
                 </h1>
                 <div className="mt-2">
                   <p className="text-sm text-primary font-semibold break-words">
-                    {profile?.subjects?.map((s) => s.name).join(" · ")}
+                    {profile?.tutor?.subjects?.map((s) => s.name).join(" · ")}
                   </p>
                 </div>
 

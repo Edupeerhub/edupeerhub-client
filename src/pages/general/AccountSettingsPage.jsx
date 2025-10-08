@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   UserIcon,
   LockIcon,
@@ -7,7 +7,6 @@ import {
   BookOpen,
   GraduationCap,
 } from "lucide-react";
-import { getUserProfile } from "../../lib/api/user/userApi";
 import { useUpdateProfile } from "../../hooks/profile/useUpdateProfile";
 import { useUpdateStudentProfile } from "../../hooks/profile/useUpdateStudentProfile";
 import { useUpdateTutorProfile } from "../../hooks/profile/useUpdateTutorProfile";
@@ -15,6 +14,7 @@ import { useChangePassword } from "../../hooks/profile/useChangePassword";
 import useSubjects from "../../hooks/useSubjects";
 import toast from "react-hot-toast";
 import { handleToastError } from "../../utils/toastDisplayHandler";
+import { useUserProfile } from "../../hooks/profile/useUserProfile";
 
 const AccountSettingsPage = () => {
   const fileInputRef = useRef(null);
@@ -26,10 +26,7 @@ const AccountSettingsPage = () => {
   const [imageFile, setImageFile] = useState(null);
 
   // fetch full profile (with student/tutor relations)
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: getUserProfile,
-  });
+  const { data: user, isLoading } = useUserProfile();
 
   const { subjects, subjectLoading } = useSubjects();
 
@@ -127,7 +124,6 @@ const AccountSettingsPage = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success("Profile updated successfully!");
       setIsEditing(false);
       setImagePreview(null);
