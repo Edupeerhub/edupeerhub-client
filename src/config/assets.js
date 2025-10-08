@@ -63,7 +63,7 @@ export const ASSETS = {
 export const TESTIMONIALS = [
   {
     id: 1,
-    name: "Ahmad Jibril",
+    name: "Olumide Balogun",
     role: "Secondary tutor",
     rating: 5,
     text: "Great education hub but should improve on their timing on classes.",
@@ -72,7 +72,7 @@ export const TESTIMONIALS = [
   },
   {
     id: 2,
-    name: "Monikoro Hyelnayi",
+    name: "Chinelo Okafor",
     role: "Student",
     rating: 5,
     text: "I'm so glad Edupeerhub exists. I have been able to grow in my field with the help of my tutor.",
@@ -81,7 +81,7 @@ export const TESTIMONIALS = [
   },
   {
     id: 3,
-    name: "Taiwo Godson",
+    name: "Abubakar Bello",
     role: "Student",
     rating: 5,
     text: "I was able to understand everything I was taught at the beginning but I got confused with virtue learning. Thanks to what happened to him and no one told me anything, they just changed him.",

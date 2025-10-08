@@ -1,4 +1,3 @@
-import useAuthUser from "../../hooks/auth/useAuthUser";
 import Calendar from "../../components/Calendar";
 import streakIcon from "../../assets/Student-icon/streak.svg";
 import quizIcon from "../../assets/Student-icon/quiz.svg";
@@ -24,9 +23,10 @@ import {
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
 import { formatCalendarDate, formatDate } from "../../utils/time";
+import { useUserProfile } from "../../hooks/profile/useUserProfile";
 
 const StudentDashboardPage = () => {
-  const { authUser } = useAuthUser();
+  const { data: user } = useUserProfile();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -40,6 +40,7 @@ const StudentDashboardPage = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["recommendedTutors"],
     queryFn: () => getRecommendedTutors(),
+    staleTime: 60 * 60 * 1000, // 1 hour
   });
 
   // Monthly bookings query - fetch bookings for the current month
@@ -63,7 +64,7 @@ const StudentDashboardPage = () => {
     isLoading: upcomingSessionsLoading,
     error: upcomingSessionsError,
   } = useQuery({
-    queryKey: ["upcomingSession"],
+    queryKey: ["studentUpcomingSession"],
     queryFn: getUpcomingSession,
   });
 
@@ -71,7 +72,7 @@ const StudentDashboardPage = () => {
     mutationFn: ({ id, cancellationReason }) =>
       cancelStudentBooking(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["upcomingSession"]);
+      queryClient.invalidateQueries(["studentUpcomingSession"]);
       queryClient.invalidateQueries(["studentBookings"]);
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
@@ -135,19 +136,19 @@ const StudentDashboardPage = () => {
 
   return (
     <>
-      <div className="space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
+      <div className="p-1 sm:p-0 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-2 md:space-y-6">
-            <h1 className="text-2xl md:mb-4 font-semibold pl-2 md:pl-0">
-              Welcome back, {authUser?.firstName || "Student"}
+            <h1 className="text-2xl mb-4 font-semibold pl-2 md:pl-0">
+              Welcome back, {user?.firstName || "Student"}
             </h1>
 
             {/* Overview */}
             <div className="">
-              <h2 className="text-lg font-semibold mb-4 pl-2 md:pl-0">
+              {/* <h2 className="text-lg font-semibold mb-4 pl-2 md:pl-0">
                 Overview
-              </h2>
+              </h2> */}
               <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <OverviewPanel icon={streakIcon} text="Daily Streak" />
                 <OverviewPanel icon={quizIcon} text="Quizzes" />
@@ -243,7 +244,7 @@ const StudentDashboardPage = () => {
         </div>
 
         {/* Recommended Tutors */}
-        <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full max-w-[21rem] sm:max-w-[60rem] mx-auto border shadow-md overflow-x-hidden">
+        <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full max-w-[21rem] sm:max-w-[60rem] md:max-w-6xl mx-auto border shadow-md overflow-x-hidden">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-lg px-2 md:px-0">
               Recommended Tutors

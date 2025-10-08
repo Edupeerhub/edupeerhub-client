@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bookSession } from "../../lib/api/common/bookingApi";
 import {
   handleToastError,
@@ -16,6 +16,8 @@ import {
   formatDuration,
   formatSlotTime,
 } from "../../utils/time";
+import { useStudentTutorProfile } from "../../hooks/student/useStudentTutorProfile";
+import BackButton from "../../components/common/BackButton";
 
 // Progress Indicator Component
 const ProgressIndicator = ({ currentStep, totalSteps }) => {
@@ -90,21 +92,31 @@ export default function BookingSession() {
     formatCalendarDate(new Date(), "yyyy-MM")
   );
 
+  const queryClient = useQueryClient();
+
   const {
-    tutorProfile,
-    tutorLoading,
-    tutorError,
-    availabilityData,
-    availabilityLoading,
-  } = useStudentBooking(id, null, currentMonth);
+    data: tutorProfile,
+    isLoading: tutorLoading,
+    error: tutorError,
+  } = useStudentTutorProfile(id);
+
+  const { availabilityData, availabilityLoading } = useStudentBooking(
+    id,
+    null,
+    currentMonth
+  );
 
   const bookingMutation = useMutation({
     mutationFn: bookSession,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["availability"] });
       handleToastSuccess("Request Sent!");
       setStep(4);
     },
-    onError: handleToastError,
+    onError: (error) => {
+      queryClient.invalidateQueries({ queryKey: ["availability"] });
+      handleToastError(error);
+    },
   });
 
   const bookedDates = useMemo(() => {
@@ -181,6 +193,7 @@ export default function BookingSession() {
 
   return (
     <div className="max-w-5xl mx-auto px-2 md:px-4">
+      <BackButton to={-1} />
       <div className="mb-4 md:mb-3">
         <h1 className="text-2xl font-bold text-center text-gray-900">
           Book Your Session

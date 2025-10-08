@@ -148,6 +148,7 @@ export default function App() {
           />
           <Route path="settings" element={<AccountSettingsPage />} />
           <Route path="profile" element={<TutorPrivateProfilePage />} />
+          <Route path="faq" element={<FAQPage />} />
           <Route path="booking-requests" element={<BookingRequestsPage />} />
         </Route>
 

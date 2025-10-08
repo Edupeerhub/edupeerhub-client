@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   UserIcon,
   LockIcon,
@@ -7,7 +7,6 @@ import {
   BookOpen,
   GraduationCap,
 } from "lucide-react";
-import { getUserProfile } from "../../lib/api/user/userApi";
 import { useUpdateProfile } from "../../hooks/profile/useUpdateProfile";
 import { useUpdateStudentProfile } from "../../hooks/profile/useUpdateStudentProfile";
 import { useUpdateTutorProfile } from "../../hooks/profile/useUpdateTutorProfile";
@@ -15,6 +14,7 @@ import { useChangePassword } from "../../hooks/profile/useChangePassword";
 import useSubjects from "../../hooks/useSubjects";
 import toast from "react-hot-toast";
 import { handleToastError } from "../../utils/toastDisplayHandler";
+import { useUserProfile } from "../../hooks/profile/useUserProfile";
 
 const AccountSettingsPage = () => {
   const fileInputRef = useRef(null);
@@ -26,10 +26,7 @@ const AccountSettingsPage = () => {
   const [imageFile, setImageFile] = useState(null);
 
   // fetch full profile (with student/tutor relations)
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: getUserProfile,
-  });
+  const { data: user, isLoading } = useUserProfile();
 
   const { subjects, subjectLoading } = useSubjects();
 
@@ -230,9 +227,9 @@ const AccountSettingsPage = () => {
   const displayImage = imagePreview || user?.profileImageUrl;
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto px-2">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-600 mt-2">
           Manage your account settings and preferences
         </p>
@@ -255,9 +252,9 @@ const AccountSettingsPage = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full hover:bg-primary/90"
+                    className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full hover:bg-primary/90"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload className="w-5 h-5" />
                   </button>
                 )}
                 <input
@@ -314,7 +311,7 @@ const AccountSettingsPage = () => {
                         name="firstName"
                         value={profileData.firstName}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:outline-none"
                         required
                       />
                     </div>
@@ -327,7 +324,7 @@ const AccountSettingsPage = () => {
                         name="lastName"
                         value={profileData.lastName}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:outline-none"
                         required
                       />
                     </div>

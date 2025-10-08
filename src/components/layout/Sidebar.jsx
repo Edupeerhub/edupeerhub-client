@@ -2,39 +2,19 @@ import { NavLink } from "react-router-dom";
 import LogoutIcon from "../../assets/images/layout-icons/logout.svg?react";
 import Logo from "../../assets/images/edupeerhub-logo1.svg?react";
 import useLogout from "../../hooks/auth/useLogout";
-import { useQuery } from "@tanstack/react-query";
-import { getUserProfile } from "../../lib/api/user/userApi";
-import useAuthUser from "../../hooks/auth/useAuthUser";
+import { useAuth } from "../../hooks/useAuthContext";
+import { useIsSuperAdmin, useTutorStatus } from "../../hooks/auth/useUserRoles";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { logoutMutation } = useLogout();
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
 
-  const { data: user } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: getUserProfile,
-    enabled:
-      !!authUser && (authUser.role === "tutor" || authUser.role === "admin"),
-  });
+  const tutorStatus = useTutorStatus();
+  const isSuperAdmin = useIsSuperAdmin();
 
   const sidebarLinks = links.filter(
-    (link) => !link.superAdminOnly || user?.admin?.isSuperAdmin
+    (link) => !link.superAdminOnly || isSuperAdmin
   );
-
-  const tutor = user?.tutor;
-
-  const getTutorStatus = () => {
-    if (!tutor) return null;
-    if (
-      tutor.approvalStatus === "approved" &&
-      user.accountStatus === "active"
-    ) {
-      return "active";
-    }
-    return tutor.approvalStatus;
-  };
-
-  const tutorStatus = getTutorStatus();
 
   const isTutorAndRestricted =
     authUser?.role === "tutor" &&

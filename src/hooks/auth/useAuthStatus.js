@@ -1,7 +1,7 @@
-import useAuthUser from "./useAuthUser";
+import { useAuth } from "../useAuthContext";
 
 const useAuthStatus = () => {
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
   const isAuthenticated = !!authUser;
 
   const roleLink =

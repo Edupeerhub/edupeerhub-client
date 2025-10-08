@@ -15,9 +15,9 @@ export const profileDropdownItems = {
     { label: "Sign Out", path: "/logout", icon: LogOut, danger: true },
   ],
   tutor: [
-    // { label: "View Profile", path: "/tutor/profile", icon: User },
+    { label: "View Profile", path: "/tutor/profile", icon: User },
     { label: "Account Settings", path: "/tutor/settings", icon: Settings },
-    // { label: "Help & Support", path: "/tutor/faq", icon: HelpCircle },
+    { label: "Help & Support", path: "/tutor/faq", icon: HelpCircle },
     { label: "Sign Out", path: "/logout", icon: LogOut, danger: true },
   ],
   admin: [

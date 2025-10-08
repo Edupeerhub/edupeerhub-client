@@ -1,13 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatContext, Avatar } from "stream-chat-react";
-import useAuthUser from "../../hooks/auth/useAuthUser";
 import "./channelPreview.css";
+import { useAuth } from "../../hooks/useAuthContext";
 
 const CustomChannelPreview = ({ channel }) => {
   const { client } = useChatContext();
   const navigate = useNavigate();
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
 
   const lastMessage = channel.state.messages[channel.state.messages.length - 1];
   const otherMember = Object.values(channel.state.members).find(

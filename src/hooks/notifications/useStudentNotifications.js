@@ -8,17 +8,21 @@ import { formatSessionDate } from "../../utils/time";
 
 export function useStudentNotifications(enabled = true) {
   const upcomingSession = useQuery({
-    queryKey: ["upcomingSession"],
+    queryKey: ["studentNotificationsUpcomingSession"],
     queryFn: getUpcomingSession,
-    staleTime: 30000,
+    // staleTime: 30000,
+    staleTime: 1000 * 60 * 5, // 5 mins
+    cacheTime: 1000 * 60 * 10, // 10 mins
     enabled,
   });
 
   const bookings = useQuery({
-    queryKey: ["studentBookings"],
+    queryKey: ["studentNotificationsBookings"],
     queryFn: () =>
       getAllStudentBookings({ status: ["confirmed", "cancelled"] }),
-    staleTime: 30000,
+    // staleTime: 30000,
+    staleTime: 1000 * 60 * 5, // 5 mins
+    cacheTime: 1000 * 60 * 10, // 10 mins
     enabled,
   });
 
