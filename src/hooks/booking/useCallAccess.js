@@ -1,8 +1,8 @@
 import { formatTimeRemaining } from "../../utils/time";
-import useAuthUser from "../auth/useAuthUser";
+import { useAuth } from "../useAuthContext";
 
 const useCallAccess = (booking) => {
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
 
   if (!booking || !authUser) {
     return {
@@ -30,7 +30,7 @@ const useCallAccess = (booking) => {
     sessionEndTime.getTime() + 15 * 60 * 1000
   ); // Allow joining up to 15 minutes after session ends
 
-  // 1. Check if the current user is part of the booking
+  // Check if the current user is part of the booking
   const isUserInBooking =
     (isStudent && booking?.student?.user.id === authUser.id) ||
     (isTutor && booking?.tutor?.user?.id === authUser.id);
@@ -43,7 +43,7 @@ const useCallAccess = (booking) => {
     };
   }
 
-  // 2. Check session status
+  // Check session status
   if (booking.status !== "confirmed") {
     return {
       canAccess: false,
@@ -52,7 +52,7 @@ const useCallAccess = (booking) => {
     };
   }
 
-  // 3. Check time-based access (15 minutes before to 15 minutes after start)
+  // Check time-based access (15 minutes before to 15 minutes after start)
   if (now < fifteenMinutesBefore) {
     const timeDifferenceMs = fifteenMinutesBefore.getTime() - now.getTime();
 

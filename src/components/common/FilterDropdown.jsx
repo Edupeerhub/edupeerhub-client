@@ -33,13 +33,13 @@ const FilterDropdown = ({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm transition ${
+        className={`flex items-center gap-2 px-2 sm:px-4 py-1 sm:py-3 border border-gray-300 rounded-lg text-sm transition ${
           hasActiveFilters
             ? "bg-primary text-white hover:bg-primary-focus"
             : "bg-gray-100 hover:bg-gray-200"
         }`}
       >
-        Filter
+        <span className="hidden sm:inline">Filter</span>
         {hasActiveFilters && (
           <span className="ml-1 px-2 py-0.5 bg-white text-primary text-xs rounded-full">
             {appliedFilters.subjects.length +

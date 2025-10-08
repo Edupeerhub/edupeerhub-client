@@ -4,9 +4,13 @@ import {
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
 import { logout } from "../../lib/api/auth/authApi";
+import useChatClient from "../messaging/useChatClient";
+import { useAuth } from "../useAuthContext";
 
 const useLogout = () => {
+  const { authUser } = useAuth();
   const queryClient = useQueryClient();
+  const { disconnectChatClient } = useChatClient(authUser);
 
   const {
     mutate: logoutMutation,
@@ -14,7 +18,9 @@ const useLogout = () => {
     error,
   } = useMutation({
     mutationFn: logout,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await disconnectChatClient();
+      queryClient.removeQueries({ queryKey: ["streamToken"] });
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Logout successful! See you next time!");
     },

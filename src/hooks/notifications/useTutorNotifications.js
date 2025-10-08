@@ -8,16 +8,19 @@ import { formatTimeRemaining } from "../../utils/time";
 
 export function useTutorNotifications(enabled = true) {
   const bookings = useQuery({
-    queryKey: ["tutorBookings"],
+    queryKey: ["tutorNotificationsBookings"],
     queryFn: () => fetchTutorBookings({ status: ["pending", "confirmed"] }),
-    staleTime: 30000,
+    // staleTime: 30000, // 30 secs
+    staleTime: 1000 * 60 * 5, // 5 mins
+    cacheTime: 1000 * 60 * 10, // 10 mins
     enabled,
   });
 
   const sessions = useQuery({
-    queryKey: ["upcomingSessions"],
+    queryKey: ["tutorNotificationsUpcomingSessions"],
     queryFn: getUpcomingSession,
-    staleTime: 30000,
+    staleTime: 1000 * 60 * 5, // 5 mins
+    cacheTime: 1000 * 60 * 10, // 10 mins
     enabled,
   });
 

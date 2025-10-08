@@ -70,7 +70,7 @@ const StudentTutorsPage = () => {
   const totalPages = Math.ceil(meta.total / meta.limit);
 
   return (
-    <div className="mx-auto px-1 sm:px-6 lg:px-8 md:py-6">
+    <div className="mx-auto px-1 sm:px-0">
       <div className="flex items-center gap-2 md:gap-4 mb-6 relative">
         <SearchBar
           value={searchQuery}

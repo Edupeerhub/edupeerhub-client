@@ -5,6 +5,7 @@ import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
+import { getUserProfile } from "../../lib/api/user/userApi";
 
 const useLogin = () => {
   const queryClient = useQueryClient();
@@ -15,7 +16,11 @@ const useLogin = () => {
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: login,
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.prefetchQuery({
+        queryKey: ["userProfile"],
+        queryFn: getUserProfile,
+      });
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Login successful! Welcome back!");
       setRetryAfter(null);

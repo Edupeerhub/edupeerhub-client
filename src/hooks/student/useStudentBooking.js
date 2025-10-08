@@ -1,19 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTutorProfile } from "../../lib/api/tutor/tutorApi";
 import { fetchStudentTutorAvailability } from "../../lib/api/common/bookingApi";
 import { endOfMonth, parseISO } from "date-fns";
 
 export function useStudentBooking(tutorId, date, monthString = null) {
-  const {
-    data: tutorProfile,
-    isLoading: tutorLoading,
-    error: tutorError,
-  } = useQuery({
-    queryKey: ["tutorProfile", tutorId],
-    queryFn: () => getTutorProfile(tutorId),
-    enabled: !!tutorId,
-  });
-
   // Support both single date and monthly fetching
   let start = null;
   let end = null;
@@ -75,9 +64,6 @@ export function useStudentBooking(tutorId, date, monthString = null) {
     })) || [];
 
   return {
-    tutorProfile,
-    tutorLoading,
-    tutorError,
     availabilityData,
     availabilityLoading,
     availableTimes,

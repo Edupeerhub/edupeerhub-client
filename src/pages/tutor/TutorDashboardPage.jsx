@@ -9,7 +9,6 @@ import {
 import ViewModal from "../../components/tutor/ViewModal";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getUserProfile } from "../../lib/api/user/userApi";
 import {
   updateBookingAvailabilityStatus,
   cancelBookingAvailability,
@@ -25,28 +24,29 @@ import {
 } from "../../utils/toastDisplayHandler";
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 import RescheduleBookingModal from "../../components/common/RescheduleBookingModal";
-import { getTutorReviewSummary } from "../../lib/api/tutor/tutorApi";
 import PendingLayout from "../../layouts/tutor/PendingLayout";
 import RejectedLayout from "../../layouts/tutor/RejectedLayout";
 import ApprovedLayout from "../../layouts/tutor/ApprovedLayout";
 import ActiveLayout from "../../layouts/tutor/ActiveLayout";
+import { useNotifications } from "../../hooks/notifications/useNotfications";
+import { useTutorStatus } from "../../hooks/auth/useUserRoles";
+import { useTutorDashboard } from "../../hooks/tutor/useTutorProfile";
 
 const TutorDashboardPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+
   const queryClient = useQueryClient();
 
   const {
-    data: user,
-    isLoading: isLoadingUser,
-    isError: isErrorUser,
-    error: errorUser,
-  } = useQuery({
-    queryKey: ["userProfile"],
-    queryFn: getUserProfile,
-  });
+    reviewSummary,
+    profile: user,
+    isLoadingProfileQuery: isLoadingUser,
+    isErrorUser,
+    errorProfileQuery: errorUser,
+  } = useTutorDashboard();
 
   const {
     data: tutorBookingsData,
@@ -57,12 +57,6 @@ const TutorDashboardPage = () => {
     queryKey: ["tutorBookings"],
     queryFn: () => fetchTutorBookings({ status: ["confirmed", "pending"] }),
     enabled: !!user,
-  });
-
-  const { data: reviewSummary } = useQuery({
-    queryKey: ["tutorReviewSummary", user?.id],
-    queryFn: () => getTutorReviewSummary(user?.id),
-    enabled: !!user?.id,
   });
 
   const updateBookingStatusMutation = useMutation({
@@ -90,6 +84,13 @@ const TutorDashboardPage = () => {
     },
   });
 
+  const { notifications, isLoading: activityLoading } = useNotifications(
+    user?.role
+  );
+
+  // Filter only the most recent activities
+  const recentActivities = notifications?.slice(0, 5) || [];
+
   const upcomingSessions =
     tutorBookingsData?.filter((b) => b.status === "confirmed") || [];
   const pendingBookingRequests =
@@ -97,6 +98,7 @@ const TutorDashboardPage = () => {
 
   const tutor = user?.tutor;
   const rating = reviewSummary?.averageRating ?? 0;
+  const tutorStatus = useTutorStatus();
 
   const handleView = (session) => {
     setSelectedSession(session);
@@ -128,19 +130,6 @@ const TutorDashboardPage = () => {
       cancelMutation.mutate({ id: selectedSession.id, cancellationReason });
     }
   };
-
-  const getTutorStatus = () => {
-    if (!tutor) return "pending";
-    if (
-      tutor.approvalStatus === "approved" &&
-      user.accountStatus === "active"
-    ) {
-      return "active";
-    }
-    return tutor.approvalStatus;
-  };
-
-  const tutorStatus = getTutorStatus();
 
   const profileStatus = {
     pending: {
@@ -208,7 +197,7 @@ const TutorDashboardPage = () => {
               />
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="flex flex-col items-center justify-center text-center">
               <Calendar1Icon className="w-12 h-12 text-gray-400 mb-4" />{" "}
               {/* Using Calendar1Icon from lucide-react */}
               <p className="text-lg font-semibold text-gray-700 mb-2">
@@ -282,7 +271,7 @@ const TutorDashboardPage = () => {
 
     return (
       <Link
-        to="/tutor/profile"
+        to={`/tutor/profile`}
         className="btn bg-primary hover:bg-primary-focus text-white w-full mt-4 rounded-full"
       >
         {btnMessage}
@@ -292,7 +281,7 @@ const TutorDashboardPage = () => {
 
   return (
     <>
-      <div className="p-2 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
+      <div className="p-2 sm:p-0 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-2 md:space-y-6">
@@ -303,14 +292,21 @@ const TutorDashboardPage = () => {
             {/* Status-specific Layout */}
             {tutorStatus === "pending" && <PendingLayout />}
             {tutorStatus === "rejected" && <RejectedLayout />}
-            {tutorStatus === "approved" && <ApprovedLayout rating={rating} />}
+            {tutorStatus === "approved" && (
+              <ApprovedLayout
+                rating={rating}
+                recentActivities={recentActivities}
+                isLoadingActivities={activityLoading}
+              />
+            )}
             {tutorStatus === "active" && (
               <ActiveLayout
                 tutor={tutor}
-                upcomingSessions={upcomingSessions}
                 pendingBookingRequests={pendingBookingRequests}
                 handleView={handleView}
                 rating={rating}
+                recentActivities={recentActivities}
+                isLoadingActivities={activityLoading}
               />
             )}
           </div>
@@ -379,7 +375,7 @@ const TutorDashboardPage = () => {
             {/* Upcoming Sessions */}
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Upcoming Sessions</h2>
-              <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="flex flex-col items-center justify-center py-2 text-center">
                 {sessionIcon}
                 {sessionMessage}
               </div>

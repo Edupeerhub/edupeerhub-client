@@ -1,5 +1,5 @@
 import { AuthContext } from "../hooks/useAuthContext";
-import useAuthUser from "../hooks/auth/useAuthUser";
+import useAuthUser from "../hooks/auth/useFetchAuthUser";
 import PageLoader from "../components/common/PageLoader";
 
 export function AuthProvider({ children }) {

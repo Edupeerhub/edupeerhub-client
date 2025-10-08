@@ -6,14 +6,24 @@ const HorizontalScrollTutors = ({ tutors }) => {
   const [showLeftButton, setShowLeftButton] = useState(false);
   const [showRightButton, setShowRightButton] = useState(false);
 
+  // NEW: state for atLeft / atRight
+  const [atLeft, setAtLeft] = useState(true);
+  const [atRight, setAtRight] = useState(false);
+
   const CARD_WIDTH = 320;
   const GAP = 16;
 
+  // Check scroll position to toggle buttons on desktop AND update edge state
   const checkScrollButtons = () => {
     if (!containerRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
+
     setShowLeftButton(scrollLeft > 10);
     setShowRightButton(scrollLeft < scrollWidth - clientWidth - 10);
+
+    // update edge state
+    setAtLeft(scrollLeft <= 0);
+    setAtRight(scrollLeft >= scrollWidth - clientWidth - 1);
   };
 
   const scroll = (direction) => {
@@ -38,15 +48,23 @@ const HorizontalScrollTutors = ({ tutors }) => {
     return () => window.removeEventListener("resize", checkScrollButtons);
   }, []);
 
+  // Always show buttons on mobile if more than one card
+  const alwaysShowButtonsMobile = tutors.length > 1;
+
   return (
     <div className="relative overflow-hidden group">
-      {showLeftButton && (
+      {/* Left Button */}
+      {(showLeftButton || alwaysShowButtonsMobile) && (
         <button
           onClick={() => scroll("left")}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 
-                     bg-white border border-gray-300 rounded-full p-2 shadow-lg
-                     hover:bg-gray-50 hover:shadow-xl transition-opacity duration-200
-                     opacity-0 group-hover:opacity-100"
+          disabled={atLeft}
+          className={`
+            absolute left-2 top-1/3 sm:top-1/2 -translate-y-1/3 sm:-translate-y-1/2 z-10 
+            bg-white border border-gray-300 rounded-full p-2 shadow-lg
+            hover:bg-gray-50 hover:shadow-xl transition-opacity duration-200
+            opacity-100 sm:opacity-0 group-hover:sm:opacity-100
+            ${atLeft ? "opacity-50 cursor-not-allowed" : ""}
+          `}
           aria-label="Scroll left"
         >
           <svg
@@ -65,6 +83,7 @@ const HorizontalScrollTutors = ({ tutors }) => {
         </button>
       )}
 
+      {/* Scrollable container */}
       <div
         ref={containerRef}
         className="flex gap-4 overflow-x-auto py-4 px-2 scroll-smooth w-full flex-nowrap scrollbar-hide"
@@ -77,13 +96,18 @@ const HorizontalScrollTutors = ({ tutors }) => {
         ))}
       </div>
 
-      {showRightButton && (
+      {/* Right Button */}
+      {(showRightButton || alwaysShowButtonsMobile) && (
         <button
           onClick={() => scroll("right")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 
-                     bg-white border border-gray-300 rounded-full p-2 shadow-lg
-                     hover:bg-gray-50 hover:shadow-xl transition-opacity duration-200
-                     opacity-0 group-hover:opacity-100"
+          disabled={atRight}
+          className={`
+            absolute right-2 top-1/3 sm:top-1/2 -translate-y-1/3 sm:-translate-y-1/2 z-10 
+            bg-white border border-gray-300 rounded-full p-2 shadow-lg
+            hover:bg-gray-50 hover:shadow-xl transition-opacity duration-200
+            opacity-100 sm:opacity-0 group-hover:sm:opacity-100
+            ${atRight ? "opacity-50 cursor-not-allowed" : ""}
+          `}
           aria-label="Scroll right"
         >
           <svg
