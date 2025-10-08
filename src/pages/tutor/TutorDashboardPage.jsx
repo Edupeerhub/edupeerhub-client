@@ -30,12 +30,14 @@ import PendingLayout from "../../layouts/tutor/PendingLayout";
 import RejectedLayout from "../../layouts/tutor/RejectedLayout";
 import ApprovedLayout from "../../layouts/tutor/ApprovedLayout";
 import ActiveLayout from "../../layouts/tutor/ActiveLayout";
+import { useNotifications } from "../../hooks/notifications/useNotfications";
 
 const TutorDashboardPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+
   const queryClient = useQueryClient();
 
   const {
@@ -90,6 +92,13 @@ const TutorDashboardPage = () => {
     },
   });
 
+  const { notifications, isLoading: activityLoading } = useNotifications(
+    user?.role
+  );
+
+  // Filter only the most recent activities
+  const recentActivities = notifications?.slice(0, 5) || [];
+
   const upcomingSessions =
     tutorBookingsData?.filter((b) => b.status === "confirmed") || [];
   const pendingBookingRequests =
@@ -133,7 +142,7 @@ const TutorDashboardPage = () => {
     if (!tutor) return "pending";
     if (
       tutor.approvalStatus === "approved" &&
-      user.accountStatus === "active"
+      tutor.profileVisibility === "active"
     ) {
       return "active";
     }
@@ -303,14 +312,21 @@ const TutorDashboardPage = () => {
             {/* Status-specific Layout */}
             {tutorStatus === "pending" && <PendingLayout />}
             {tutorStatus === "rejected" && <RejectedLayout />}
-            {tutorStatus === "approved" && <ApprovedLayout rating={rating} />}
+            {tutorStatus === "approved" && (
+              <ApprovedLayout
+                rating={rating}
+                recentActivities={recentActivities}
+                isLoadingActivities={activityLoading}
+              />
+            )}
             {tutorStatus === "active" && (
               <ActiveLayout
                 tutor={tutor}
-                upcomingSessions={upcomingSessions}
                 pendingBookingRequests={pendingBookingRequests}
                 handleView={handleView}
                 rating={rating}
+                recentActivities={recentActivities}
+                isLoadingActivities={activityLoading}
               />
             )}
           </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom"; // Added Link
-import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getStreamToken } from "../../lib/api/common/getStreamApi";
 import {
   StreamVideo,
@@ -35,6 +35,11 @@ const CallPage = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const { authUser } = useAuth();
 
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const startTimeRef = useRef(null);
+
+  // fetch stream token
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
@@ -48,10 +53,7 @@ const CallPage = () => {
     enabled: !!bookingId,
   });
 
-  const navigate = useNavigate();
-  const startTimeRef = useRef(null);
-
-  // Use the new hook for access control
+  // use access control
   const { canAccess, reason, dashboardLink } = useCallAccess(bookingData);
 
   useEffect(() => {
@@ -92,31 +94,60 @@ const CallPage = () => {
 
         setClient(videoClient);
         setCall(callInstance);
-        setIsConnecting(false);
       } catch (error) {
         console.error("Error joining call:", error);
         handleToastError(error, "Could not join the call. Please try again.");
+      } finally {
         setIsConnecting(false);
       }
     };
 
     initCall();
 
-    // cleanup
+    // ✅ cleanup for unmount / browser close
     return () => {
-      if (callInstance) {
-        callInstance.leave().catch((err) => {
-          if (!err.message.includes("already been left")) {
-            console.error("Error leaving call:", err);
+      const startTimeSnapshot = startTimeRef.current;
+
+      (async () => {
+        try {
+          // Gracefully leave if still joined
+          if (callInstance.state?.callingState !== CallingState.LEFT) {
+            await callInstance.leave();
           }
-        });
-      }
+
+          // ✅ Only mark completed if session actually started
+          if (startTimeSnapshot) {
+            const now = new Date();
+            const durationMs = now - startTimeSnapshot;
+            const minDurationMs = 10 * 1000; // 10s buffer
+
+            if (durationMs >= minDurationMs) {
+              await trackSessionCompleted({
+                sessionId: callInstance.id,
+                studentId: authUser.role === "student" ? authUser.id : null,
+                tutorId: authUser.role === "tutor" ? authUser.id : null,
+                startedAt: startTimeSnapshot,
+              });
+              await new Promise((res) => setTimeout(res, 1500));
+              queryClient.invalidateQueries(["booking", bookingId]);
+            } else {
+              console.log("Skipped completion — call too short (<10s).");
+            }
+          }
+
+          // ✅ Disconnect Stream client safely
+          await videoClient.disconnectUser?.();
+        } catch (err) {
+          if (!err.message?.includes("already been left")) {
+            console.error("Cleanup error on unmount:", err);
+          }
+        }
+      })();
     };
   }, [tokenData, authUser, bookingId, bookingData, canAccess]);
 
   if (isBookingLoading || isConnecting) return <PageLoader />;
 
-  // If access is denied, display a message
   if (!canAccess) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-4">
@@ -167,8 +198,9 @@ const CallContent = ({
   const completedRef = useRef(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { createReviewMutation, isCreatingReview } = useCreateReview();
+  const queryClient = useQueryClient();
 
-  // ✅ Determine reviewee from booking
+  // Determine reviewee
   const storedReviewee =
     authUser.role === "student"
       ? bookingData?.tutor?.user
@@ -200,22 +232,18 @@ const CallContent = ({
         type:
           authUser.role === "student" ? "student_to_tutor" : "tutor_to_student",
       },
-      {
-        onSettled: () => {
-          handleCloseModal();
-        },
-      }
+      { onSettled: handleCloseModal }
     );
   };
 
-  // track start
+  // Track call start
   useEffect(() => {
     if (callingState === CallingState.JOINED && !startTimeRef.current) {
       startTimeRef.current = new Date();
     }
   }, [callingState, startTimeRef]);
 
-  // track end
+  // Track call end
   useEffect(() => {
     if (
       callingState === CallingState.LEFT &&
@@ -224,6 +252,15 @@ const CallContent = ({
     ) {
       completedRef.current = true;
       (async () => {
+        const now = new Date();
+        const durationMs = now - startTimeRef.current;
+        const minDurationMs = 10 * 1000; // 10-second buffer
+
+        if (durationMs < minDurationMs) {
+          console.log("Skipping session completion – too short (<10s)");
+          return;
+        }
+
         try {
           await trackSessionCompleted({
             sessionId: call.id,
@@ -231,9 +268,12 @@ const CallContent = ({
             tutorId: authUser.role === "tutor" ? authUser.id : null,
             startedAt: startTimeRef.current,
           });
+          await new Promise((res) => setTimeout(res, 1500));
+          await queryClient.invalidateQueries(["booking", call.id]);
         } catch (err) {
           console.error("Failed to track session completion:", err);
         }
+
         setShowFeedbackModal(true);
       })();
     }

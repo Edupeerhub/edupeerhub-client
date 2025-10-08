@@ -1,11 +1,12 @@
-import {
-  AlertCircle,
-  Calendar1Icon,
-  ChevronRight,
-  CalendarSyncIcon,
-} from "lucide-react";
+import { Calendar1Icon, CalendarSyncIcon } from "lucide-react";
+import renderIcon from "../../components/tutor/RenderRecentActivityIcon";
+import { formatDateTime } from "../../utils/time";
 
-export default function ApprovedLayout({ rating }) {
+export default function ApprovedLayout({
+  rating,
+  recentActivities,
+  isLoadingActivities,
+}) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -66,14 +67,35 @@ export default function ApprovedLayout({ rating }) {
       {/* Recent Activity */}
       <div className="bg-white rounded-lg border shadow p-4">
         <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-        <div className="flex items-center gap-3 p-3 border rounded-lg">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <AlertCircle className="w-5 h-5 text-primary" />
+
+        {isLoadingActivities ? (
+          <p className="text-gray-500 text-sm text-center py-4">
+            Loading activity...
+          </p>
+        ) : recentActivities.length === 0 ? (
+          <p className="text-gray-500 text-sm text-center py-4">
+            No recent activity yet.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {renderIcon(activity.type)}
+                <div className="flex-1">
+                  <p className="text-sm">
+                    {activity.sender ?? activity.sender} {activity.message}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDateTime(activity.timestamp)}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="flex-1">
-            <p className="text-sm">You do not have any recent activities</p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

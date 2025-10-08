@@ -1,16 +1,18 @@
 import BookingCard from "../../components/tutor/BookingCard";
-import { formatDate, formatTimeRange } from "../../utils/time";
+import { formatDate, formatDateTime, formatTimeRange } from "../../utils/time";
 import StudentIcon from "../../assets/tutor-dashboard-icons/students.svg?react";
 import RatingsIcon from "../../assets/tutor-dashboard-icons/ratings.svg?react";
 import CalendarIcon from "../../assets/tutor-dashboard-icons/calendar.svg?react";
 import { Link } from "react-router-dom";
-import { Check, ChevronRight, Calendar1 } from "lucide-react";
+import renderIcon from "../../components/tutor/RenderRecentActivityIcon";
 
 export default function ActiveLayout({
   tutor,
   pendingBookingRequests,
   handleView,
   rating,
+  recentActivities,
+  isLoadingActivities,
 }) {
   return (
     <div className="space-y-6">
@@ -126,30 +128,35 @@ export default function ActiveLayout({
       {/* Recent Activity */}
       <div className="bg-white rounded-lg border shadow p-4">
         <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 p-3 border rounded-lg">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-              <Check className="w-5 h-5 text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm">
-                Completed session with Chima Eke on integration and
-                differentiation
-              </p>
-              <p className="text-xs text-gray-500">2 hours ago</p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3 p-3 border rounded-lg">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Calendar1 className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm">New booking request from Yinka Doe</p>
-              <p className="text-xs text-gray-500">2 hours ago</p>
-            </div>
+        {isLoadingActivities ? (
+          <p className="text-gray-500 text-sm text-center py-4">
+            Loading activity...
+          </p>
+        ) : recentActivities.length === 0 ? (
+          <p className="text-gray-500 text-sm text-center py-4">
+            No recent activity yet.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {renderIcon(activity.type)}
+                <div className="flex-1">
+                  <p className="text-sm">
+                    {activity.sender ?? activity.sender} {activity.message}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDateTime(activity.timestamp)}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
