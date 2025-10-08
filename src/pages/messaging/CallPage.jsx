@@ -15,7 +15,6 @@ import {
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import PageLoader from "../../components/common/PageLoader";
 import { handleToastError } from "../../utils/toastDisplayHandler";
-import useAuthUser from "../../hooks/auth/useAuthUser";
 import {
   trackSessionCompleted,
   trackSessionStart,
@@ -23,7 +22,8 @@ import {
 import FeedbackModal from "../../components/messaging/FeedbackModal";
 import useCreateReview from "../../hooks/review/useCreateReview";
 import { fetchBookingById } from "../../lib/api/common/bookingApi";
-import useCallAccess from "../../hooks/booking/useCallAccess"; // New import
+import useCallAccess from "../../hooks/booking/useCallAccess";
+import { useAuth } from "../../hooks/useAuthContext";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
@@ -33,7 +33,7 @@ const CallPage = () => {
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
 
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],

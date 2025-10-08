@@ -49,7 +49,7 @@ const CustomChannelHeader = ({ channel, authUser, handleVideoCall }) => {
   };
 
   const handleProfileClick = () => {
-    navigate(`/profile/${otherUser.id}`);
+    // navigate(`/profile/${otherUser.id}`);
   };
 
   return (

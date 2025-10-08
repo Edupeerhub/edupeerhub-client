@@ -7,6 +7,7 @@ import ReviewList from "../../components/common/ReviewList";
 import BackButton from "../../components/common/BackButton";
 import TutorSchedule from "../../components/tutor/TutorSchedule";
 import Spinner from "../../components/common/Spinner";
+import { useStudentBooking } from "../../hooks/student/useStudentBooking";
 
 const StudentTutorProfilePage = () => {
   const navigate = useNavigate();
@@ -26,12 +27,15 @@ const StudentTutorProfilePage = () => {
     errorReviewsQuery,
   } = useTutorProfile(id);
 
-  const { data: availability, isLoading: availabilityLoading } =
-    useAvailability({
-      start: new Date().toLocaleDateString("en-CA"),
-      end: new Date().toLocaleDateString("en-CA"),
-      tutorId: id,
-    });
+  // const { data: availability, isLoading: availabilityLoading } =
+  //   useAvailability({
+  //     start: new Date().toLocaleDateString("en-CA"),
+  //     end: new Date().toLocaleDateString("en-CA"),
+  //     tutorId: id,
+  //   });
+
+  const { availabilityData: availability, availabilityLoading } =
+    useStudentBooking(id, new Date(), null);
 
   // if (isLoading) return <Spinner />;
   // if (error)

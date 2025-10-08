@@ -1,8 +1,8 @@
 import { formatTimeRemaining } from "../../utils/time";
-import useAuthUser from "../auth/useAuthUser";
+import { useAuth } from "../useAuthContext";
 
 const useCallAccess = (booking) => {
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
 
   if (!booking || !authUser) {
     return {

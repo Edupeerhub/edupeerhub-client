@@ -4,11 +4,11 @@ import Logo from "../../assets/images/edupeerhub-logo1.svg?react";
 import useLogout from "../../hooks/auth/useLogout";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "../../lib/api/user/userApi";
-import useAuthUser from "../../hooks/auth/useAuthUser";
+import { useAuth } from "../../hooks/useAuthContext";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
   const { logoutMutation } = useLogout();
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
 
   const { data: user } = useQuery({
     queryKey: ["userProfile"],

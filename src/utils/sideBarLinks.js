@@ -35,6 +35,7 @@ export const tutorSidebarLinks = [
     icon: AvailabilityIcon,
   },
   { path: "/tutor/chats", label: "Messages", icon: MessageIcon },
+  { path: "/tutor/faq", label: "Ask Questions", icon: AskIcon },
   { path: "/tutor/settings", label: "Settings", icon: SettingsIcon },
 ];
 

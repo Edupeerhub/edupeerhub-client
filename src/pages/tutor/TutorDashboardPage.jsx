@@ -208,7 +208,7 @@ const TutorDashboardPage = () => {
               />
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="flex flex-col items-center justify-center text-center">
               <Calendar1Icon className="w-12 h-12 text-gray-400 mb-4" />{" "}
               {/* Using Calendar1Icon from lucide-react */}
               <p className="text-lg font-semibold text-gray-700 mb-2">
@@ -282,7 +282,7 @@ const TutorDashboardPage = () => {
 
     return (
       <Link
-        to="/tutor/profile"
+        to={`/tutor/profile/${user?.id}`}
         className="btn bg-primary hover:bg-primary-focus text-white w-full mt-4 rounded-full"
       >
         {btnMessage}
@@ -292,7 +292,7 @@ const TutorDashboardPage = () => {
 
   return (
     <>
-      <div className="p-2 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
+      <div className="p-2 sm:p-0 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-2 md:space-y-6">
@@ -379,7 +379,7 @@ const TutorDashboardPage = () => {
             {/* Upcoming Sessions */}
             <div className="bg-white rounded-lg border shadow p-4">
               <h2 className="text-lg font-semibold mb-4">Upcoming Sessions</h2>
-              <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="flex flex-col items-center justify-center py-2 text-center">
                 {sessionIcon}
                 {sessionMessage}
               </div>

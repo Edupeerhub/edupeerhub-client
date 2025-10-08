@@ -127,152 +127,158 @@ function ViewButton({ onClick }) {
 /* --- Page --- */
 export default function AdminReportsPage() {
   return (
-    <div className="max-w-6xl space-y-8">
-      {/* top search area (keeps layout same as screenshot) */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <input
-            className="w-full px-4 py-3 border rounded-lg bg-white placeholder-gray-400 text-sm"
-            placeholder="Search"
-            aria-label="Search"
-          />
-        </div>
-      </div>
-
-      {/* stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {stats.map((s) => (
-          <StatCard
-            key={s.id}
-            title={s.title}
-            value={s.value}
-            note={s.note}
-            noteClass={s.noteClass}
-          />
-        ))}
-      </div>
-
-      {/* Engagement overview */}
-      <section className="bg-white rounded-xl p-6 shadow-sm border">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <h3 className="text-lg font-semibold">Quick Engagement Overview</h3>
-            <div className="mt-2 text-3xl font-bold text-gray-900">+15%</div>
-            <div className="text-sm text-green-600 mt-1">Last 30 Days +15%</div>
-          </div>
-
-          <button
-            className="p-2 rounded-full hover:bg-gray-50"
-            aria-label="Open details"
-          >
-            <svg
-              className="w-5 h-5 text-gray-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* four mini-area charts */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-          <div className="p-4">
-            <SmallArea
-              id={1}
-              pathD="M0,50 C20,10 40,10 60,40 C80,60 100,50 100,50 L100,60 L0,60 Z"
-            />
-            <div className="text-center text-sm text-gray-500 mt-2">Week 1</div>
-          </div>
-
-          <div className="p-4">
-            <SmallArea
-              id={2}
-              pathD="M0,60 C20,30 40,40 60,12 C80,4 100,60 100,60 L100,60 L0,60 Z"
-            />
-            <div className="text-center text-sm text-gray-500 mt-2">Week 2</div>
-          </div>
-
-          <div className="p-4">
-            <SmallArea
-              id={3}
-              pathD="M0,50 C18,38 36,20 54,30 C72,40 90,35 100,50 L100,60 L0,60 Z"
-            />
-            <div className="text-center text-sm text-gray-500 mt-2">Week 3</div>
-          </div>
-
-          <div className="p-4">
-            <SmallArea
-              id={4}
-              pathD="M0,60 C15,35 35,5 55,10 C75,20 95,55 100,45 L100,60 L0,60 Z"
-            />
-            <div className="text-center text-sm text-gray-500 mt-2">Week 4</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Subscriptions table */}
-      <section className="bg-white rounded-xl p-6 shadow-sm border">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg">Subscriptions</h3>
-          <a className="text-sm text-blue-600" href="#view-all">
-            View All
-          </a>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <TableHeader
-              cols={[
-                "Name",
-                "Registration Date",
-                "Completed sections",
-                "Status",
-                "Action",
-              ]}
-            />
-
-            <tbody>
-              {subscriptions.map((s, idx) => (
-                <tr
-                  key={s.id}
-                  className={`${
-                    idx < subscriptions.length - 1 ? "border-b" : ""
-                  }`}
-                >
-                  <td className="px-6 py-4 text-sm text-gray-700">{s.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{s.date}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {s.completed}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-block px-3 py-1 text-xs rounded-full ${
-                        s.status === "Active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {s.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <ViewButton
-                      onClick={() => alert(`Open subscription ${s.id}`)}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
+    <h1 className="text-3xl font-extrabold text-gray-900 mb-4 text-center">
+      Coming Soon...
+    </h1>
   );
+
+  // return (
+  //   <div className="max-w-6xl space-y-8">
+  //     {/* top search area (keeps layout same as screenshot) */}
+  //     <div className="flex items-center gap-4">
+  //       <div className="flex-1">
+  //         <input
+  //           className="w-full px-4 py-3 border rounded-lg bg-white placeholder-gray-400 text-sm"
+  //           placeholder="Search"
+  //           aria-label="Search"
+  //         />
+  //       </div>
+  //     </div>
+
+  //     {/* stats */}
+  //     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+  //       {stats.map((s) => (
+  //         <StatCard
+  //           key={s.id}
+  //           title={s.title}
+  //           value={s.value}
+  //           note={s.note}
+  //           noteClass={s.noteClass}
+  //         />
+  //       ))}
+  //     </div>
+
+  //     {/* Engagement overview */}
+  //     <section className="bg-white rounded-xl p-6 shadow-sm border">
+  //       <div className="flex items-start justify-between mb-6">
+  //         <div>
+  //           <h3 className="text-lg font-semibold">Quick Engagement Overview</h3>
+  //           <div className="mt-2 text-3xl font-bold text-gray-900">+15%</div>
+  //           <div className="text-sm text-green-600 mt-1">Last 30 Days +15%</div>
+  //         </div>
+
+  //         <button
+  //           className="p-2 rounded-full hover:bg-gray-50"
+  //           aria-label="Open details"
+  //         >
+  //           <svg
+  //             className="w-5 h-5 text-gray-400"
+  //             viewBox="0 0 24 24"
+  //             fill="none"
+  //             stroke="currentColor"
+  //           >
+  //             <path
+  //               strokeWidth="2"
+  //               strokeLinecap="round"
+  //               strokeLinejoin="round"
+  //               d="M9 5l7 7-7 7"
+  //             />
+  //           </svg>
+  //         </button>
+  //       </div>
+
+  //       {/* four mini-area charts */}
+  //       <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+  //         <div className="p-4">
+  //           <SmallArea
+  //             id={1}
+  //             pathD="M0,50 C20,10 40,10 60,40 C80,60 100,50 100,50 L100,60 L0,60 Z"
+  //           />
+  //           <div className="text-center text-sm text-gray-500 mt-2">Week 1</div>
+  //         </div>
+
+  //         <div className="p-4">
+  //           <SmallArea
+  //             id={2}
+  //             pathD="M0,60 C20,30 40,40 60,12 C80,4 100,60 100,60 L100,60 L0,60 Z"
+  //           />
+  //           <div className="text-center text-sm text-gray-500 mt-2">Week 2</div>
+  //         </div>
+
+  //         <div className="p-4">
+  //           <SmallArea
+  //             id={3}
+  //             pathD="M0,50 C18,38 36,20 54,30 C72,40 90,35 100,50 L100,60 L0,60 Z"
+  //           />
+  //           <div className="text-center text-sm text-gray-500 mt-2">Week 3</div>
+  //         </div>
+
+  //         <div className="p-4">
+  //           <SmallArea
+  //             id={4}
+  //             pathD="M0,60 C15,35 35,5 55,10 C75,20 95,55 100,45 L100,60 L0,60 Z"
+  //           />
+  //           <div className="text-center text-sm text-gray-500 mt-2">Week 4</div>
+  //         </div>
+  //       </div>
+  //     </section>
+
+  //     {/* Subscriptions table */}
+  //     <section className="bg-white rounded-xl p-6 shadow-sm border">
+  //       <div className="flex items-center justify-between mb-4">
+  //         <h3 className="font-semibold text-lg">Subscriptions</h3>
+  //         <a className="text-sm text-blue-600" href="#view-all">
+  //           View All
+  //         </a>
+  //       </div>
+
+  //       <div className="overflow-x-auto">
+  //         <table className="w-full">
+  //           <TableHeader
+  //             cols={[
+  //               "Name",
+  //               "Registration Date",
+  //               "Completed sections",
+  //               "Status",
+  //               "Action",
+  //             ]}
+  //           />
+
+  //           <tbody>
+  //             {subscriptions.map((s, idx) => (
+  //               <tr
+  //                 key={s.id}
+  //                 className={`${
+  //                   idx < subscriptions.length - 1 ? "border-b" : ""
+  //                 }`}
+  //               >
+  //                 <td className="px-6 py-4 text-sm text-gray-700">{s.name}</td>
+  //                 <td className="px-6 py-4 text-sm text-gray-600">{s.date}</td>
+  //                 <td className="px-6 py-4 text-sm text-gray-600">
+  //                   {s.completed}
+  //                 </td>
+  //                 <td className="px-6 py-4">
+  //                   <span
+  //                     className={`inline-block px-3 py-1 text-xs rounded-full ${
+  //                       s.status === "Active"
+  //                         ? "bg-green-100 text-green-700"
+  //                         : "bg-red-100 text-red-600"
+  //                     }`}
+  //                   >
+  //                     {s.status}
+  //                   </span>
+  //                 </td>
+  //                 <td className="px-6 py-4 text-right">
+  //                   <ViewButton
+  //                     onClick={() => alert(`Open subscription ${s.id}`)}
+  //                   />
+  //                 </td>
+  //               </tr>
+  //             ))}
+  //           </tbody>
+  //         </table>
+  //       </div>
+  //     </section>
+  //   </div>
+  // );
 }

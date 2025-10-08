@@ -147,7 +147,8 @@ export default function App() {
             element={<CallPage key={location.pathname} />}
           />
           <Route path="settings" element={<AccountSettingsPage />} />
-          <Route path="profile" element={<TutorPrivateProfilePage />} />
+          <Route path="profile/:id" element={<TutorPrivateProfilePage />} />
+          <Route path="faq" element={<FAQPage />} />
           <Route path="booking-requests" element={<BookingRequestsPage />} />
         </Route>
 

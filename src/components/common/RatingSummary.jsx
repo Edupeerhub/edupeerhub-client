@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 
 const RatingSummary = ({ rating }) => {
   return (
-    <div className="bg-background md:p-4 rounded-lg shadow-sm w-full">
+    <div className="bg-background md:p-4 rounded-lg shadow-sm w-full md:w-fit">
       <div className="flex flex-col md:flex-row md:gap-8">
         {/* Average Rating */}
         <div className="text-center md:text-left md:w-auto">

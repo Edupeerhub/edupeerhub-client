@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bookSession } from "../../lib/api/common/bookingApi";
 import {
   handleToastError,
@@ -90,6 +90,7 @@ export default function BookingSession() {
     formatCalendarDate(new Date(), "yyyy-MM")
   );
 
+  const queryClient = useQueryClient();
   const {
     tutorProfile,
     tutorLoading,
@@ -101,10 +102,14 @@ export default function BookingSession() {
   const bookingMutation = useMutation({
     mutationFn: bookSession,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["availability"] });
       handleToastSuccess("Request Sent!");
       setStep(4);
     },
-    onError: handleToastError,
+    onError: (error) => {
+      queryClient.invalidateQueries({ queryKey: ["availability"] });
+      handleToastError(error);
+    },
   });
 
   const bookedDates = useMemo(() => {

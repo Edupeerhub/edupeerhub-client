@@ -10,22 +10,27 @@ const ProfileDropdown = ({ authUser, logoutMutation, closeDropdown }) => {
   const { data: user } = useQuery({
     queryKey: ["userProfile"],
     queryFn: getUserProfile,
-    enabled: !!authUser,
+    enabled: !!authUser && authUser.role === "tutor",
   });
 
   const tutor = user?.tutor;
 
   const getTutorStatus = () => {
     if (!tutor) return null;
-    if (tutor.approvalStatus === 'approved' && user.accountStatus === 'active') {
-      return 'active';
+    if (
+      tutor.approvalStatus === "approved" &&
+      user.accountStatus === "active"
+    ) {
+      return "active";
     }
     return tutor.approvalStatus;
-  }
+  };
 
   const tutorStatus = getTutorStatus();
 
-  const isTutorAndRestricted = authUser?.role === 'tutor' && (tutorStatus === 'pending' || tutorStatus === 'rejected');
+  const isTutorAndRestricted =
+    authUser?.role === "tutor" &&
+    (tutorStatus === "pending" || tutorStatus === "rejected");
 
   return (
     <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
@@ -34,7 +39,7 @@ const ProfileDropdown = ({ authUser, logoutMutation, closeDropdown }) => {
         <p className="text-sm font-medium text-gray-900">
           {authUser?.firstName} {authUser?.lastName}
         </p>
-        <p className="text-sm text-gray-500 truncate">{authUser?.email}</p>
+        <p className="text-sm text-gray-500 break-all">{authUser?.email}</p>
       </div>
 
       {/* Items */}
@@ -42,18 +47,18 @@ const ProfileDropdown = ({ authUser, logoutMutation, closeDropdown }) => {
         {items
           .filter((item) => item.label !== "Sign Out")
           .map(({ label, path, icon: Icon }, index) => {
-            const isDisabled = isTutorAndRestricted && label !== 'Dashboard';
+            const isDisabled = isTutorAndRestricted && label !== "Dashboard";
             return (
-                <DropdownItem
+              <DropdownItem
                 key={index}
                 label={label}
-                path={isDisabled ? '#' : path}
+                path={isDisabled ? "#" : path}
                 icon={Icon}
                 onClick={isDisabled ? (e) => e.preventDefault() : closeDropdown}
                 disabled={isDisabled}
-                />
+              />
             );
-            })}
+          })}
       </div>
 
       {/* Footer */}

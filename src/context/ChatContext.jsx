@@ -1,9 +1,9 @@
 import { ChatContext } from "../hooks/messaging/useChatContext";
 import useChatClient from "../hooks/messaging/useChatClient";
-import useAuthUser from "../hooks/auth/useAuthUser";
+import { useAuth } from "../hooks/useAuthContext";
 
 export function ChatProvider({ children }) {
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
   const { isLoading, chatClient, disconnectChatClient } =
     useChatClient(authUser);
 

@@ -1,5 +1,3 @@
-import React, { useState } from "react";
-import { X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchTutorBookings,
@@ -8,15 +6,12 @@ import {
 import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { formatDate, formatTimeRange } from "../../utils/time";
-import ViewModal from "../../components/tutor/ViewModal";
 import {
   handleToastError,
   handleToastSuccess,
 } from "../../utils/toastDisplayHandler";
 
 const BookingRequestsPage = () => {
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -65,10 +60,10 @@ const BookingRequestsPage = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl flex flex-col p-6 bg-white">
-      <h1 className="text-xl font-semibold mb-6">Booking Requests</h1>
+    <div className="w-full max-w-7xl flex flex-col p-2 sm:p-0 bg-white">
+      <h1 className="text-2xl font-semibold mb-6">Booking Requests</h1>
 
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(250px,auto))] justify-start">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(250px,auto))] justify-center">
         {bookingRequests?.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-2">
@@ -81,8 +76,8 @@ const BookingRequestsPage = () => {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V7a2 2 0 00-2 2v6a2 2 0 002 2h8a2 2 0 002-2V9a2 2 0 00-2-2V7"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3M3 11h18M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                 />
               </svg>
             </div>
@@ -163,12 +158,6 @@ const BookingRequestsPage = () => {
           </div>
         ))}
       </div>
-
-      <ViewModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        session={selectedSession}
-      />
     </div>
   );
 };

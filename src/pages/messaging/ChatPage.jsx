@@ -12,10 +12,10 @@ import {
 import ChatLoader from "../../components/ui/ChatLoader";
 import CallButton from "../../components/ui/CallButton";
 // import { handleToastSuccess } from "../../utils/toastDisplayHandler";
-import useAuthUser from "../../hooks/auth/useAuthUser";
 import generateDmChannelId from "../../utils/generateChannelId";
 import CustomChannelHeader from "../../components/messaging/CustomChannelHeader";
 import useChat from "../../hooks/messaging/useChatContext";
+import { useAuth } from "../../hooks/useAuthContext";
 
 const ChatPage = () => {
   const { id: targetUserId } = useParams();
@@ -23,7 +23,7 @@ const ChatPage = () => {
   const [isLoading, setLoading] = useState(true);
   // const navigate = useNavigate();
 
-  const { authUser } = useAuthUser();
+  const { authUser } = useAuth();
 
   const { chatClient } = useChat();
 

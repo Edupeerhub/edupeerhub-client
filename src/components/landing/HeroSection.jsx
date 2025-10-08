@@ -20,7 +20,7 @@ const HeroSection = () => {
 
       <div className="relative z-10 max-w-7xl p-6 sm:px-6 lg:px-8 text-center md:text-left mt-6 md:mt-0">
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-          <span className="text-blue-500">Peer Tutoring</span> that Bridges
+          <span className="text-blue-500">Peer Tutoring</span> that Bridges{" "}
           <br className="hidden md:block" />
           the Education Gap.
         </h1>
