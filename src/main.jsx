@@ -3,11 +3,13 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import "stream-chat-react/dist/css/v2/index.css";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ChatProvider } from "./context/ChatContext";
 import { AuthProvider } from "./context/AuthContext";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
+import { StreamProvider } from "./context/StreamContext";
 
 const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -15,9 +17,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <AuthProvider>
-          <ChatProvider>
-            <App />
-          </ChatProvider>
+          <StreamProvider>
+            <ChatProvider>
+              <App />
+            </ChatProvider>
+          </StreamProvider>
         </AuthProvider>
       </ErrorBoundary>
     </QueryClientProvider>
