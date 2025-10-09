@@ -3,6 +3,7 @@ import Spinner from "../../components/common/Spinner";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { useAdmins, useCreateAdmin } from "../../hooks/admin";
 import { useIsSuperAdmin } from "../../hooks/auth/useUserRoles";
+import Input from "../../components/ui/Input";
 
 export default function AdminSettingsPage() {
   const isSuperAdmin = useIsSuperAdmin();
@@ -165,7 +166,7 @@ export default function AdminSettingsPage() {
               <label className="block text-sm font-medium text-gray-700">
                 First Name
               </label>
-              <input
+              <Input
                 name="firstName"
                 value={formState.firstName}
                 onChange={handleChange}
@@ -178,7 +179,7 @@ export default function AdminSettingsPage() {
               <label className="block text-sm font-medium text-gray-700">
                 Last Name
               </label>
-              <input
+              <Input
                 name="lastName"
                 value={formState.lastName}
                 onChange={handleChange}
@@ -194,7 +195,7 @@ export default function AdminSettingsPage() {
               <label className="block text-sm font-medium text-gray-700">
                 Email
               </label>
-              <input
+              <Input
                 type="email"
                 name="email"
                 value={formState.email}
@@ -208,7 +209,7 @@ export default function AdminSettingsPage() {
               <label className="block text-sm font-medium text-gray-700">
                 Temporary Password
               </label>
-              <input
+              <Input
                 type="password"
                 name="password"
                 value={formState.password}

@@ -109,12 +109,18 @@ export default function BookingSession() {
   const bookingMutation = useMutation({
     mutationFn: bookSession,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["availability"] });
+      queryClient.invalidateQueries({
+        queryKey: ["availability"],
+        exact: true,
+      });
       handleToastSuccess("Request Sent!");
       setStep(4);
     },
     onError: (error) => {
-      queryClient.invalidateQueries({ queryKey: ["availability"] });
+      queryClient.invalidateQueries({
+        queryKey: ["availability"],
+        exact: true,
+      });
       handleToastError(error);
     },
   });

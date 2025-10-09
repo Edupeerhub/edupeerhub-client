@@ -15,6 +15,8 @@ import useSubjects from "../../hooks/useSubjects";
 import toast from "react-hot-toast";
 import { handleToastError } from "../../utils/toastDisplayHandler";
 import { useUserProfile } from "../../hooks/profile/useUserProfile";
+import Input from "../../components/ui/Input";
+import ErrorAlert from "../../components/common/ErrorAlert";
 
 const AccountSettingsPage = () => {
   const fileInputRef = useRef(null);
@@ -682,6 +684,7 @@ const AccountSettingsPage = () => {
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <LockIcon className="w-5 h-5" /> Change Password
                 </h3>
+
                 {!isChangingPassword && (
                   <button
                     onClick={() => setIsChangingPassword(true)}
@@ -692,15 +695,18 @@ const AccountSettingsPage = () => {
                 )}
               </div>
 
+              {changePasswordMutation.error && (
+                <ErrorAlert error={changePasswordMutation.error} />
+              )}
               {isChangingPassword ? (
                 <form onSubmit={handlePasswordSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Current Password
                     </label>
-                    <input
-                      type="password"
+                    <Input
                       name="currentPassword"
+                      type="password"
                       value={passwordData.currentPassword}
                       onChange={handlePasswordChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -713,28 +719,26 @@ const AccountSettingsPage = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         New Password
                       </label>
-                      <input
-                        type="password"
+                      <Input
                         name="newPassword"
+                        type="password"
                         value={passwordData.newPassword}
                         onChange={handlePasswordChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         required
-                        minLength={6}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Confirm New Password
                       </label>
-                      <input
+                      <Input
                         type="password"
                         name="confirmPassword"
                         value={passwordData.confirmPassword}
                         onChange={handlePasswordChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         required
-                        minLength={6}
                       />
                     </div>
                   </div>

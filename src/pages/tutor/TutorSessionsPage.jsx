@@ -42,7 +42,10 @@ const TutorSessionsPage = () => {
     mutationFn: ({ id, cancellationReason }) =>
       cancelBookingAvailability(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["tutorSessions"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorSessions"],
+        exact: true,
+      });
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
@@ -55,7 +58,10 @@ const TutorSessionsPage = () => {
     mutationFn: ({ availabilityId, status }) =>
       updateBookingAvailabilityStatus(availabilityId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries(["tutorSessions"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorSessions"],
+        exact: true,
+      });
       handleToastSuccess("Booking request updated successfully!");
       setIsPendingModalOpen(false);
     },
@@ -231,7 +237,12 @@ const TutorSessionsPage = () => {
         isOpen={isRescheduleModalOpen}
         onClose={handleCloseRescheduleModal}
         booking={selectedSession}
-        onReschedule={() => queryClient.invalidateQueries(["tutorSessions"])}
+        onReschedule={() =>
+          queryClient.invalidateQueries({
+            queryKey: ["tutorSessions"],
+            exact: true,
+          })
+        }
       />
       <ViewModal
         isOpen={isPendingModalOpen}

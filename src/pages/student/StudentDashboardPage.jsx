@@ -72,8 +72,14 @@ const StudentDashboardPage = () => {
     mutationFn: ({ id, cancellationReason }) =>
       cancelStudentBooking(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["studentUpcomingSession"]);
-      queryClient.invalidateQueries(["studentBookings"]);
+      queryClient.invalidateQueries({
+        queryKey: ["studentUpcomingSession"],
+        exact: true,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["studentBookings"],
+        exact: true,
+      });
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
