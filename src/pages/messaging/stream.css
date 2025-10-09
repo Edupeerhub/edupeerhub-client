@@ -1,7 +1,16 @@
-.str-video.light {
-  --str-video__background-color: #ffffff;
-  --str-video__text-color1: #111111;
-  --str-video__text-color2: #333333;
-  --str-video__primary-color: #2563eb; /* blue */
-  --str-video__border-color: #e5e7eb;
+.str-video {
+  /* --str-video__background-color: #ee2727; */
+  color: white;
+  /* --str-video__text-color1: #fff;
+  --str-video__text-color2: #fff;
+  --str-video__primary-color: #2563eb;
+  --str-video__border-color: #e5e7eb; */
 }
+
+/* .str-video__participant-details__name {
+  color: white;
+}
+
+.str-video__menu-container {
+  color: white;
+} */

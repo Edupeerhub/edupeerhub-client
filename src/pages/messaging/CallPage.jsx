@@ -10,6 +10,8 @@ import {
   CallingState,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
+
 import "./stream.css";
 import PageLoader from "../../components/common/PageLoader";
 import FeedbackModal from "../../components/messaging/FeedbackModal";
@@ -139,7 +141,7 @@ const CallPage = () => {
     <div className="h-screen flex flex-col items-center justify-center">
       {videoClient && call && bookingData ? (
         <StreamVideo client={videoClient}>
-          <StreamTheme className="light">
+          <StreamTheme theme="light">
             {" "}
             {/* or className="my-light-theme" */}
             <StreamCall call={call}>
@@ -252,7 +254,7 @@ const CallContent = ({
   }, [callingState, authUser, call]);
 
   return (
-    <StreamTheme className="light">
+    <StreamTheme theme="light">
       <SpeakerLayout />
       <CallControls
         onLeave={async () => {

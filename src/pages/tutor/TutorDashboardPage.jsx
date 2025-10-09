@@ -63,7 +63,10 @@ const TutorDashboardPage = () => {
     mutationFn: ({ availabilityId, status }) =>
       updateBookingAvailabilityStatus(availabilityId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries(["tutorBookings"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorBookings"],
+        exact: true,
+      });
       handleToastSuccess("Booking request updated successfully!");
     },
     onError: (err) => {
@@ -75,7 +78,10 @@ const TutorDashboardPage = () => {
     mutationFn: ({ id, cancellationReason }) =>
       cancelBookingAvailability(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["tutorBookings"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorBookings"],
+        exact: true,
+      });
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
@@ -402,7 +408,12 @@ const TutorDashboardPage = () => {
         isOpen={isRescheduleModalOpen}
         onClose={handleCloseRescheduleModal}
         booking={selectedSession}
-        onReschedule={() => queryClient.invalidateQueries(["tutorBookings"])}
+        onReschedule={() =>
+          queryClient.invalidateQueries({
+            queryKey: ["tutorBookings"],
+            exact: true,
+          })
+        }
       />
     </>
   );

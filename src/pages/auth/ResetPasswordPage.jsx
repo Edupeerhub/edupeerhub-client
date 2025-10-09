@@ -9,6 +9,7 @@ import ErrorAlert from "../../components/common/ErrorAlert";
 import AuthLayout from "../../layouts/AuthLayout";
 import Button from "../../components/ui/Button";
 import { useCooldown } from "../../hooks/auth/useCooldown";
+import Input from "../../components/ui/Input";
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -19,7 +20,7 @@ const ResetPasswordPage = () => {
   const {
     resetPasswordMutation,
     fieldErrors,
-    generalError,
+    error,
     clearErrors,
     isPending,
     retryAfter,
@@ -49,18 +50,17 @@ const ResetPasswordPage = () => {
         <img src={logo} alt="Edupeerhub" />
         <h2 className="text-xl font-semibold  text-start">Reset Password</h2>
       </div>
-      {generalError && <ErrorAlert error={generalError} />}
+      {error && <ErrorAlert error={error} />}
       <div className="w-full">
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <div className="flex flex-col gap-4">
-                <div className="form-control w-full space-y-2">
-                  <input
-                    icon={Lock}
-                    type="password"
-                    className="input input-bordered w-full"
+              <div className="flex flex-col gap-2">
+                <div className="form-control w-full space-y-1">
+                  <Input
+                    name="password"
                     placeholder="New Password"
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -72,11 +72,10 @@ const ResetPasswordPage = () => {
                   )}
                 </div>
                 <div className="form-control w-full space-y-2">
-                  <input
-                    icon={Lock}
-                    type="password"
-                    className="input input-bordered w-full"
+                  <Input
+                    name="password"
                     placeholder="Confirm New Password"
+                    type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required

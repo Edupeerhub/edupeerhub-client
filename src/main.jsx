@@ -3,7 +3,6 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import "stream-chat-react/dist/css/v2/index.css";
-import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ChatProvider } from "./context/ChatContext";
