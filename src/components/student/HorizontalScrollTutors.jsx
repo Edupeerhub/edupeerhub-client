@@ -86,11 +86,11 @@ const HorizontalScrollTutors = ({ tutors }) => {
       {/* Scrollable container */}
       <div
         ref={containerRef}
-        className="flex gap-4 overflow-x-auto py-4 px-2 scroll-smooth w-full flex-nowrap scrollbar-hide"
+        className="flex gap-4 overflow-x-auto py-4 px-2 scroll-smooth w-full flex-nowrap items-stretch scrollbar-hide"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {tutors.map((tutor, index) => (
-          <div key={tutor.userId || index} className="flex-shrink-0 w-80">
+          <div key={tutor.userId || index} className="flex-shrink-0 w-80 flex">
             <TutorSearchCard tutor={tutor} />
           </div>
         ))}

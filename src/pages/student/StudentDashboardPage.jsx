@@ -142,7 +142,7 @@ const StudentDashboardPage = () => {
 
   return (
     <>
-      <div className="p-1 sm:p-0 space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-6xl mx-auto">
+      <div className="space-y-4 w-full max-w-[420px] sm:max-w-xl md:max-w-7xl mx-auto">
         {/* Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-2 md:space-y-6">
@@ -250,7 +250,7 @@ const StudentDashboardPage = () => {
         </div>
 
         {/* Recommended Tutors */}
-        <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full max-w-[21rem] sm:max-w-[60rem] md:max-w-6xl mx-auto border shadow-md overflow-x-hidden">
+        <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full mx-auto border shadow-md">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-lg px-2 md:px-0">
               Recommended Tutors
