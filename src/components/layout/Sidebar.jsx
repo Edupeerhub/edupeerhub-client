@@ -85,7 +85,7 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex-1 p-4 space-y-5 md:space-y-4 mt-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-4 md:space-y-4 mt-1 overflow-y-auto">
           {sidebarLinks.map(({ path, label, icon: Icon }) => {
             const isDisabled = isTutorAndRestricted && label !== "Dashboard";
             return (

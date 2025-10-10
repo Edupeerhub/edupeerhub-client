@@ -24,7 +24,7 @@ export function useNotifications(userRole) {
     if (!userRole) return; // don’t load until we know the role
     const saved = localStorage.getItem(`readNotifications_${userRole}`);
     if (saved) {
-      const parsed = JSON.parse(saved);
+      const parsed = JSON.parse(saved).map((id) => String(id));
       setReadIds((prev) => {
         const merged = new Set([...prev, ...parsed]);
         return [...merged];
@@ -34,7 +34,7 @@ export function useNotifications(userRole) {
 
   // Persist to localStorage
   useEffect(() => {
-    if (!userRole) return;
+    if (!userRole || readIds.length === 0) return;
     localStorage.setItem(
       `readNotifications_${userRole}`,
       JSON.stringify(readIds)
@@ -43,6 +43,8 @@ export function useNotifications(userRole) {
 
   // Cleanup old read IDs (30 days)
   useEffect(() => {
+    if (!notifications.length) return;
+
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const validIds = readIds.filter((id) => {
       const notification = notifications.find((n) => n.id === id);

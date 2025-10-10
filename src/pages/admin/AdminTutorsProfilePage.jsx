@@ -122,7 +122,6 @@ export default function AdminTutorsProfilePage() {
 
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState("");
 
   const documents = useMemo(() => {
     if (!tutor?.documentUrl) return [];

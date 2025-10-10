@@ -37,7 +37,7 @@ export function useStudentNotifications(enabled = true) {
       const startTime = formatSessionDate(session.scheduledStart);
 
       result.push({
-        id: `session-${session.id}`,
+        id: `session-${String(session.id)}`,
         type: "session",
         sender: "System",
         message: `You have an upcoming session with ${tutorName} on ${startTime}`,
@@ -57,7 +57,7 @@ export function useStudentNotifications(enabled = true) {
         const isConfirmed = booking.status === "confirmed";
 
         result.push({
-          id: `booking-${booking.id}`,
+          id: `booking-${String(booking.id)}`,
           type: isConfirmed ? "success" : "warning",
           sender: tutorName,
           message: isConfirmed

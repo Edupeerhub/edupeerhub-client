@@ -59,7 +59,7 @@ const HorizontalScrollTutors = ({ tutors }) => {
           onClick={() => scroll("left")}
           disabled={atLeft}
           className={`
-            absolute left-2 top-1/3 sm:top-1/2 -translate-y-1/3 sm:-translate-y-1/2 z-10 
+            absolute left-2 top-1/2 -translate-y-1/2 z-10 
             bg-white border border-gray-300 rounded-full p-2 shadow-lg
             hover:bg-gray-50 hover:shadow-xl transition-opacity duration-200
             opacity-100 sm:opacity-0 group-hover:sm:opacity-100
@@ -86,12 +86,12 @@ const HorizontalScrollTutors = ({ tutors }) => {
       {/* Scrollable container */}
       <div
         ref={containerRef}
-        className="flex gap-4 overflow-x-auto py-4 px-2 scroll-smooth w-full flex-nowrap scrollbar-hide"
+        className="flex gap-4 overflow-x-auto py-4 pl-4 pr-4 scroll-smooth w-full flex-nowrap items-stretch scrollbar-hide"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {tutors.map((tutor, index) => (
-          <div key={tutor.userId || index} className="flex-shrink-0 w-80">
-            <TutorSearchCard tutor={tutor} />
+          <div key={tutor.userId || index} className="flex-shrink-0 w-80 flex">
+            <TutorSearchCard tutor={tutor} compact={true} />
           </div>
         ))}
       </div>
@@ -102,7 +102,7 @@ const HorizontalScrollTutors = ({ tutors }) => {
           onClick={() => scroll("right")}
           disabled={atRight}
           className={`
-            absolute right-2 top-1/3 sm:top-1/2 -translate-y-1/3 sm:-translate-y-1/2 z-10 
+            absolute right-2 top-1/2 -translate-y-1/2 z-10 
             bg-white border border-gray-300 rounded-full p-2 shadow-lg
             hover:bg-gray-50 hover:shadow-xl transition-opacity duration-200
             opacity-100 sm:opacity-0 group-hover:sm:opacity-100
