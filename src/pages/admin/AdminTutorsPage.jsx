@@ -304,15 +304,16 @@ export default function AdminTutorsPage() {
     <div className="space-y-6 p-2 sm:p-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-semibold">Tutors</h1>
-        <div className="flex gap-3">
+
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           <input
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            className="flex-1 sm:flex-none px-3 py-2 border rounded-md"
+            className="flex-1 px-3 py-2 border rounded-md min-w-0"
             placeholder="Search tutors..."
             type="search"
           />
-          <button className="px-4 py-2 bg-primary text-white rounded-md whitespace-nowrap">
+          <button className="px-4 py-2 bg-primary text-white rounded-md whitespace-nowrap w-full sm:w-auto">
             Search
           </button>
         </div>
