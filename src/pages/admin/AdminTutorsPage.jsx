@@ -18,22 +18,20 @@ function getUserName(user) {
   if (!user) return "—";
   const userDetails = user.user || user;
   if (userDetails.fullName) return userDetails.fullName;
-  const nameParts = [userDetails.firstName, userDetails.lastName].filter(Boolean);
+  const nameParts = [userDetails.firstName, userDetails.lastName].filter(
+    Boolean
+  );
   if (nameParts.length) return nameParts.join(" ");
   return userDetails.name || "—";
 }
 
 function formatDate(value) {
   if (!value) return "—";
-  try {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return "—";
-    }
-    return date.toLocaleDateString();
-  } catch (error) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
     return "—";
   }
+  return date.toLocaleDateString();
 }
 
 export default function AdminTutorsPage() {
@@ -45,7 +43,6 @@ export default function AdminTutorsPage() {
   const {
     data: tutorsData,
     isLoading: isLoadingTutors,
-    isError: isTutorsError,
     error: tutorsError,
   } = useUsers({ role: "tutor", limit: 50 });
 
@@ -54,7 +51,6 @@ export default function AdminTutorsPage() {
   const {
     data: pendingTutors,
     isLoading: isLoadingPending,
-    isError: isPendingError,
     error: pendingError,
   } = usePendingTutors();
 
@@ -105,18 +101,41 @@ export default function AdminTutorsPage() {
     (t) => t?.tutor?.approvalStatus === "approved"
   );
 
+  const rejectedTutors = filteredTutors.filter(
+    (t) => t?.tutor?.approvalStatus === "rejected"
+  );
+
   const pendingTutorColumns = [
-    { header: "Name", cell: (tutor) => getUserName(tutor) },
+    {
+      header: "Name",
+      cell: (tutor) => (
+        <div className="flex items-center gap-3 min-w-[150px]">
+          <img
+            src={tutor.profileImageUrl}
+            alt={getUserName(tutor)}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
+          />
+          <span className="text-sm text-gray-700 break-words">
+            {getUserName(tutor)}
+          </span>
+        </div>
+      ),
+    },
     { header: "Email", cell: (tutor) => tutor?.email ?? "—" },
     {
       header: "Applied",
-      cell: (tutor) => formatDate(tutor?.createdAt || tutor?.appliedAt),
+      cell: (tutor) => formatDate(tutor?.createdAt),
     },
   ];
 
   const renderPendingTutorCard = (tutor) => (
     <div className="border rounded-lg p-4 space-y-3">
       <div>
+        <img
+          src={tutor.profileImageUrl}
+          alt={getUserName(tutor)}
+          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+        />
         <p className="font-medium text-gray-900">{getUserName(tutor)}</p>
         <p className="text-sm text-gray-500 mt-1">{tutor?.email ?? "—"}</p>
         <p className="text-xs text-gray-400 mt-1">
@@ -153,7 +172,21 @@ export default function AdminTutorsPage() {
   );
 
   const activeTutorColumns = [
-    { header: "Name", cell: (tutor) => getUserName(tutor) },
+    {
+      header: "Name",
+      cell: (tutor) => (
+        <div className="flex items-center gap-3 min-w-[150px]">
+          <img
+            src={tutor.profileImageUrl}
+            alt={getUserName(tutor)}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
+          />
+          <span className="text-sm text-gray-700 break-words">
+            {getUserName(tutor)}
+          </span>
+        </div>
+      ),
+    },
     { header: "Email", cell: (tutor) => tutor?.email ?? "—" },
     { header: "Since", cell: (tutor) => formatDate(tutor?.createdAt) },
     {
@@ -180,6 +213,11 @@ export default function AdminTutorsPage() {
     return (
       <div className="border rounded-lg p-4 space-y-3">
         <div>
+          <img
+            src={tutor.profileImageUrl}
+            alt={getUserName(tutor)}
+            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+          />
           <p className="font-medium text-gray-900">{getUserName(tutor)}</p>
           <p className="text-sm text-gray-500 mt-1">{tutor?.email ?? "—"}</p>
           <p className="text-xs text-gray-400 mt-1">
@@ -206,6 +244,61 @@ export default function AdminTutorsPage() {
       </div>
     );
   };
+
+  const rejectedTutorColumns = [
+    {
+      header: "Name",
+      cell: (tutor) => (
+        <div className="flex items-center gap-3 min-w-[150px]">
+          <img
+            src={tutor.profileImageUrl}
+            alt={getUserName(tutor)}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
+          />
+          <span className="text-sm text-gray-700 break-words">
+            {getUserName(tutor)}
+          </span>
+        </div>
+      ),
+    },
+    { header: "Email", cell: (tutor) => tutor?.email ?? "—" },
+    // {
+    //   header: "Rejected On",
+    //   cell: (tutor) => formatDate(tutor?.tutor?.updatedAt),
+    // },
+    {
+      header: "Reason",
+      cell: (tutor) => tutor?.tutor?.rejectionReason ?? "—",
+    },
+  ];
+
+  const renderRejectedTutorCard = (tutor) => (
+    <div className="border rounded-lg p-4 space-y-3">
+      <div>
+        <img
+          src={tutor.profileImageUrl}
+          alt={getUserName(tutor)}
+          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+        />
+        <p className="font-medium text-gray-900">{getUserName(tutor)}</p>
+        <p className="text-sm text-gray-500 mt-1">{tutor?.email ?? "—"}</p>
+        {/* <p className="text-xs text-gray-400 mt-1">
+          Rejected: {formatDate(tutor?.tutor?.updatedAt)}
+        </p> */}
+        {tutor?.tutor?.rejectionReason && (
+          <p className="text-xs text-red-500 mt-2">
+            Reason: {tutor?.tutor?.rejectionReason}
+          </p>
+        )}
+      </div>
+      <Link
+        className="block w-full text-center px-3 py-2 bg-white border rounded-full text-blue-600 text-sm"
+        to={`/admin/tutors/${tutor?.id}`}
+      >
+        View
+      </Link>
+    </div>
+  );
 
   return (
     <div className="space-y-6 p-2 sm:p-0">
@@ -245,6 +338,17 @@ export default function AdminTutorsPage() {
         isLoading={isLoadingTutors}
         error={tutorsError}
         emptyMessage="No active tutors found."
+      />
+
+      <ResponsiveDataSection
+        title="Rejected Tutors"
+        data={rejectedTutors}
+        columns={rejectedTutorColumns}
+        renderCard={renderRejectedTutorCard}
+        getLink={(tutor) => `/admin/tutors/${tutor.id}`}
+        isLoading={isLoadingTutors}
+        error={tutorsError}
+        emptyMessage="No rejected tutors found."
       />
 
       {/* Modals */}

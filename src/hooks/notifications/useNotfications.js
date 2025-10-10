@@ -71,15 +71,6 @@ export function useNotifications(userRole) {
     setReadIds(notifications.map((n) => normalizeId(n.id)));
   };
 
-  useEffect(() => {
-    console.log("Read IDs:", readIds);
-    console.log(
-      "Notifications:",
-      notifications.map((n) => n.id)
-    );
-    console.log("unread: ", unreadNotifications);
-  }, [readIds, notifications, unreadNotifications]);
-
   return {
     notifications,
     unreadNotifications,

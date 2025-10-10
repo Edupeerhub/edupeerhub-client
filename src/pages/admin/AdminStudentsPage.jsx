@@ -17,19 +17,29 @@ function getUserName(user) {
 
 function formatDate(value) {
   if (!value) return "—";
-  try {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return "—";
-    }
-    return date.toLocaleDateString();
-  } catch (error) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
     return "—";
   }
+  return date.toLocaleDateString();
 }
 
 const studentColumns = [
-  { header: "Name", cell: (student) => getUserName(student) },
+  {
+    header: "Name",
+    cell: (student) => (
+      <div className="flex items-center gap-3 min-w-[150px]">
+        <img
+          src={student.profileImageUrl}
+          alt={getUserName(student)}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
+        />
+        <span className="text-sm text-gray-700 break-words">
+          {getUserName(student)}
+        </span>
+      </div>
+    ),
+  },
   { header: "Email", cell: (student) => student?.email ?? "—" },
   { header: "Date Joined", cell: (student) => formatDate(student?.createdAt) },
   {
@@ -57,6 +67,11 @@ const renderStudentCard = (student) => {
   const status = student?.accountStatus || student?.status || "—";
   return (
     <div className="border rounded-lg p-4 space-y-3">
+      <img
+        src={student.profileImageUrl}
+        alt={getUserName(student)}
+        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+      />
       <p className="font-medium text-gray-900">{getUserName(student)}</p>
       <p className="text-sm text-gray-500 mt-1">{student?.email ?? "—"}</p>
       <div className="flex items-center justify-between pt-2">
@@ -84,13 +99,11 @@ const renderStudentCard = (student) => {
 
 export default function AdminStudentsPage() {
   const [page, setPage] = useState(1);
-  const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-  } = useUsers({ role: "student", page, limit: PAGE_SIZE });
+  const { data, isLoading, isFetching, error } = useUsers({
+    role: "student",
+    page,
+    limit: PAGE_SIZE,
+  });
 
   const students = data?.users ?? [];
   const meta = data?.meta;
