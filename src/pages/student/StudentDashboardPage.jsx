@@ -250,11 +250,9 @@ const StudentDashboardPage = () => {
         </div>
 
         {/* Recommended Tutors */}
-        <div className="bg-[#F9FAFB] rounded-lg p-2 md:p-4 w-full mx-auto border shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-lg px-2 md:px-0">
-              Recommended Tutors
-            </h3>
+        <div className="bg-[#F9FAFB] rounded-lg p-0 md:p-4 w-full mx-auto border shadow-md">
+          <div className="flex items-center justify-between mb-4 px-4 pt-4">
+            <h3 className="font-semibold text-lg">Recommended Tutors</h3>
             <Link
               to="/student/tutors"
               className="text-blue-600 text-sm font-medium hover:underline"
@@ -264,14 +262,14 @@ const StudentDashboardPage = () => {
           </div>
 
           {isLoading && (
-            <div className="flex flex-col justify-center items-center py-8">
+            <div className="flex flex-col justify-center items-center py-8 px-4">
               <Spinner />
               <p className="text-gray-600">Loading tutors...</p>
             </div>
           )}
 
           {error && (
-            <div className="flex justify-center items-center py-8">
+            <div className="flex justify-center items-center py-8 px-4">
               <div className="flex flex-col items-center gap-3 text-center">
                 <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                   <svg
