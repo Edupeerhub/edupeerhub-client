@@ -4,12 +4,95 @@ import ErrorAlert from "../../components/common/ErrorAlert";
 import { useAdmins, useCreateAdmin } from "../../hooks/admin";
 import { useIsSuperAdmin } from "../../hooks/auth/useUserRoles";
 import Input from "../../components/ui/Input";
+import ResponsiveDataSection from "../../components/admin/ResponsiveDataSection";
+
+const getUserName = (user) => {
+  if (!user) return "—";
+  const userDetails = user.user || user;
+  const name =
+    `${userDetails.firstName || ""} ${userDetails.lastName || ""}`.trim() ||
+    "—";
+  return name;
+};
+
+const adminColumns = [
+  {
+    header: "Name",
+    cell: (admin) => (
+      <div className="flex items-center gap-2">
+        <img
+          src={admin.user.profileImageUrl}
+          alt={getUserName(admin)}
+          className="w-8 h-8 rounded-full object-cover"
+        />
+        {getUserName(admin)}
+      </div>
+    ),
+  },
+  { header: "Email", cell: (admin) => admin.user.email ?? "—" },
+  { header: "Role", cell: (admin) => admin.user.role ?? "—", cellClassName: "capitalize" },
+  {
+    header: "Status",
+    cell: (admin) => (
+      <span
+        className={`px-2 py-1 text-xs rounded-full ${
+          admin.user.accountStatus === "active"
+            ? "bg-green-100 text-green-800"
+            : "bg-gray-100 text-gray-600"
+        }`}
+      >
+        {admin.user.accountStatus ?? "—"}
+      </span>
+    ),
+  },
+  {
+    header: "Type",
+    cell: (admin) =>
+      admin.isSuperAdmin ? (
+        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+          Super Admin
+        </span>
+      ) : (
+        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+          Admin
+        </span>
+      ),
+  },
+];
+
+const renderAdminCard = (admin) => (
+  <div className="border rounded-lg p-4 space-y-3">
+    <div className="flex items-center gap-3">
+      <img
+        src={admin.user.profileImageUrl}
+        alt={getUserName(admin)}
+        className="w-10 h-10 rounded-full object-cover"
+      />
+      <div>
+        <p className="font-medium text-gray-900">{getUserName(admin)}</p>
+        <p className="text-sm text-gray-500">{admin.user.email ?? "—"}</p>
+      </div>
+    </div>
+    <div className="flex items-center justify-between text-sm">
+      <p className="text-gray-600 capitalize">{admin.user.role ?? "—"}</p>
+      <div>
+        {admin.isSuperAdmin ? (
+          <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+            Super Admin
+          </span>
+        ) : (
+          <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+            Admin
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
+);
 
 export default function AdminSettingsPage() {
   const isSuperAdmin = useIsSuperAdmin();
-
   const { data: admins, isLoading, isError, error } = useAdmins();
-
   const [formState, setFormState] = useState({
     firstName: "",
     lastName: "",
@@ -33,7 +116,6 @@ export default function AdminSettingsPage() {
     createAdminMutation.mutate(formState);
   };
 
-  // Restrict access to only superadmins
   if (!isSuperAdmin) {
     return (
       <div className="flex items-center justify-center h-64 text-center">
@@ -61,91 +143,16 @@ export default function AdminSettingsPage() {
         </p>
       </div>
 
-      {/* ================= Admin List ================= */}
-      <section className="bg-white border rounded-xl shadow-sm">
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold">Admin Accounts</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Overview of administrators with access to the platform.
-          </p>
-        </div>
-        <div className="p-6">
-          {isError && <ErrorAlert error={error} />}
-          {isLoading ? (
-            <Spinner />
-          ) : !admins || admins.length === 0 ? (
-            <p className="text-sm text-gray-500">No admins found.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-blue-50">
-                  <tr>
-                    <th className="p-4">Name</th>
-                    <th className="p-4">Email</th>
-                    <th className="p-4">Role</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4">Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {admins.map((admin, index) => {
-                    const user = admin.user || {};
-                    const name =
-                      `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
-                      "—";
-                    return (
-                      <tr
-                        key={user.id ?? index}
-                        className={index < admins.length - 1 ? "border-b" : ""}
-                      >
-                        <td className="p-4 text-gray-700 flex items-center gap-2">
-                          <img
-                            src={
-                              user.profileImageUrl ||
-                              `https://ui-avatars.com/api/?name=${name}&background=4ca1f0&color=fff`
-                            }
-                            alt={name}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                          {name}
-                        </td>
-                        <td className="p-4 text-gray-600">
-                          {user.email ?? "—"}
-                        </td>
-                        <td className="p-4 text-gray-600 capitalize">
-                          {user.role ?? "—"}
-                        </td>
-                        <td className="p-4">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              user.accountStatus === "active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {user.accountStatus ?? "—"}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          {admin.isSuperAdmin ? (
-                            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
-                              Super Admin
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
-                              Admin
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </section>
+      <ResponsiveDataSection
+        title="Admin Accounts"
+        data={admins}
+        columns={adminColumns}
+        renderCard={renderAdminCard}
+        getLink={() => "#"} // No view link for admins in this context
+        isLoading={isLoading}
+        error={error}
+        emptyMessage="No admins found."
+      />
 
       {/* ================= Add New Admin ================= */}
       <section className="bg-white border rounded-xl shadow-sm">
