@@ -4,9 +4,11 @@ import Logo from "../../assets/images/edupeerhub-logo1.svg?react";
 import useLogout from "../../hooks/auth/useLogout";
 import { useAuth } from "../../hooks/useAuthContext";
 import { useIsSuperAdmin, useTutorStatus } from "../../hooks/auth/useUserRoles";
+import PageLoader from "../common/PageLoader";
+import LogoutPageLoader from "../ui/LogoutPageLoader";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
-  const { logoutMutation } = useLogout();
+  const { logoutMutation, isPending } = useLogout();
   const { authUser } = useAuth();
 
   const tutorStatus = useTutorStatus();
@@ -35,6 +37,8 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
 
   return (
     <>
+      {isPending && <LogoutPageLoader />}
+
       {/* Mobile Overlay - Dark background when sidebar is open */}
       {/* Only shows on mobile (lg:hidden) when sidebar is open */}
       {isOpen && (
