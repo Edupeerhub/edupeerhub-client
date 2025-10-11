@@ -31,7 +31,6 @@ const CallPage = () => {
   const { authUser } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const startTimeRef = useRef(null);
 
   const { videoClient, isReady } = useStreamContext();
 
@@ -56,7 +55,12 @@ const CallPage = () => {
     const joinCall = async () => {
       try {
         setIsConnecting(true);
-        await callInstance.join({ create: true });
+        await callInstance.camera.disable();
+        // await callInstance.microphone.disable();
+
+        await callInstance.join({
+          create: true,
+        });
         joined = true;
 
         await trackSessionStart({
@@ -76,40 +80,15 @@ const CallPage = () => {
 
     joinCall();
 
+    // ✅ Cleanup only handles leaving the call, NOT completion tracking
     return () => {
-      const startTimeSnapshot = startTimeRef.current;
-
       (async () => {
         try {
-          // Leave the call gracefully on navigation
           if (
             joined &&
             callInstance.state?.callingState !== CallingState.LEFT
           ) {
             await callInstance.leave();
-          }
-
-          // Only mark completed if call actually started
-          if (startTimeSnapshot) {
-            const now = new Date();
-            const durationMs = now - startTimeSnapshot;
-            const minDurationMs = 10 * 1000; // 10s buffer
-
-            if (durationMs >= minDurationMs) {
-              await trackSessionCompleted({
-                sessionId: callInstance.id,
-                studentId: authUser.role === "student" ? authUser.id : null,
-                tutorId: authUser.role === "tutor" ? authUser.id : null,
-                startedAt: startTimeSnapshot,
-              });
-
-              // small buffer to let analytics & server updates finish
-              await new Promise((res) => setTimeout(res, 1500));
-
-              queryClient.invalidateQueries(["booking", bookingId]);
-            } else {
-              console.log("Skipped completion — call too short (<10s).");
-            }
           }
         } catch (err) {
           if (!err.message?.includes("already been left")) {
@@ -118,7 +97,7 @@ const CallPage = () => {
         }
       })();
     };
-  }, [isReady, videoClient, authUser?.id, bookingId, canAccess]);
+  }, [isReady, videoClient, authUser, bookingId, canAccess]);
 
   if (isBookingLoading || isConnecting) return <PageLoader />;
 
@@ -142,14 +121,11 @@ const CallPage = () => {
       {videoClient && call && bookingData ? (
         <StreamVideo client={videoClient}>
           <StreamTheme theme="light">
-            {" "}
-            {/* or className="my-light-theme" */}
             <StreamCall call={call}>
               <CallContent
                 call={call}
                 authUser={authUser}
                 navigate={navigate}
-                startTimeRef={startTimeRef}
                 bookingData={bookingData}
                 queryClient={queryClient}
               />
@@ -169,12 +145,12 @@ const CallContent = ({
   call,
   authUser,
   navigate,
-  startTimeRef,
   bookingData,
   queryClient,
 }) => {
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
+  const startTimeRef = useRef(null);
   const completedRef = useRef(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { createReviewMutation, isCreatingReview } = useCreateReview();
@@ -212,12 +188,14 @@ const CallContent = ({
     );
   };
 
+  // ✅ Track when call starts
   useEffect(() => {
     if (callingState === CallingState.JOINED && !startTimeRef.current) {
       startTimeRef.current = new Date();
     }
-  }, [callingState, startTimeRef]);
+  }, [callingState]);
 
+  // ✅ Track when call ends and show feedback modal
   useEffect(() => {
     if (
       callingState === CallingState.LEFT &&
@@ -225,13 +203,15 @@ const CallContent = ({
       !completedRef.current
     ) {
       completedRef.current = true;
+
       (async () => {
         const now = new Date();
         const durationMs = now - startTimeRef.current;
-        const minDurationMs = 10 * 1000;
+        const minDurationMs = 10 * 1000; // 10 seconds minimum
 
         if (durationMs < minDurationMs) {
           console.log("Skipping completion – call too short (<10s)");
+          setShowFeedbackModal(true); // ✅ Still show modal even for short calls
           return;
         }
 
@@ -242,16 +222,22 @@ const CallContent = ({
             tutorId: authUser.role === "tutor" ? authUser.id : null,
             startedAt: startTimeRef.current,
           });
+
+          // Small delay to let server process
           await new Promise((res) => setTimeout(res, 1500));
-          await queryClient.invalidateQueries(["booking", call.id]);
+
+          // await queryClient.invalidateQueries(["booking", call.id]);
+
+          console.log("Session completed successfully");
         } catch (err) {
           console.error("Failed to track session completion:", err);
         }
 
+        // ✅ Show feedback modal after tracking
         setShowFeedbackModal(true);
       })();
     }
-  }, [callingState, authUser, call]);
+  }, [callingState, authUser, call, queryClient]);
 
   return (
     <StreamTheme theme="light">
@@ -261,7 +247,7 @@ const CallContent = ({
           try {
             await call.leave();
           } catch (err) {
-            if (!err.message.includes("already been left")) {
+            if (!err.message?.includes("already been left")) {
               console.error("Call leave error:", err);
             }
           }
@@ -272,7 +258,7 @@ const CallContent = ({
           isOpen={showFeedbackModal}
           onClose={handleCloseModal}
           onSubmit={handleSubmitFeedback}
-          revieweeName={storedReviewee?.name || "the other participant"}
+          revieweeName={storedReviewee?.name ?? "the other participant"}
           isSubmitting={isCreatingReview}
         />
       )}
