@@ -13,7 +13,9 @@ import {
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
 import "./stream.css";
-import PageLoader from "../../components/common/PageLoader";
+import PageLoader, {
+  PageLoaderMessage,
+} from "../../components/common/PageLoader";
 import FeedbackModal from "../../components/messaging/FeedbackModal";
 import { handleToastError } from "../../utils/toastDisplayHandler";
 import { fetchBookingById } from "../../lib/api/common/bookingApi";
@@ -41,6 +43,8 @@ const CallPage = () => {
     queryKey: ["booking", bookingId],
     queryFn: () => fetchBookingById(bookingId),
     enabled: !!bookingId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { canAccess, reason, dashboardLink } = useCallAccess(bookingData);
@@ -80,7 +84,6 @@ const CallPage = () => {
 
     joinCall();
 
-    // ✅ Cleanup only handles leaving the call, NOT completion tracking
     return () => {
       (async () => {
         try {
@@ -99,11 +102,11 @@ const CallPage = () => {
     };
   }, [isReady, videoClient, authUser, bookingId, canAccess]);
 
-  if (isBookingLoading || isConnecting) return <PageLoader />;
+  if (isBookingLoading || isConnecting || !isReady) return <PageLoader />;
 
   if (!canAccess) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
         <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
         <p className="text-lg text-gray-800 mb-6 text-center">{reason}</p>
         <Link
@@ -150,8 +153,11 @@ const CallContent = ({
 }) => {
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
+
   const startTimeRef = useRef(null);
   const completedRef = useRef(false);
+
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { createReviewMutation, isCreatingReview } = useCreateReview();
 
@@ -197,50 +203,61 @@ const CallContent = ({
 
   // ✅ Track when call ends and show feedback modal
   useEffect(() => {
+    const handleDisconnect = async () => {
+      setIsDisconnecting(true);
+
+      const now = new Date();
+      const durationMs = now - startTimeRef.current;
+      const minDurationMs = 10 * 1000; // 10 seconds minimum
+
+      if (durationMs < minDurationMs) {
+        console.log("Skipping completion – call too short (<10s)");
+        setIsDisconnecting(false);
+        setShowFeedbackModal(true);
+        return;
+      }
+
+      try {
+        await trackSessionCompleted({
+          sessionId: call.id,
+          studentId: authUser.role === "student" ? authUser.id : null,
+          tutorId: authUser.role === "tutor" ? authUser.id : null,
+          startedAt: startTimeRef.current,
+        });
+
+        // Optional: give backend a second to settle
+        await new Promise((res) => setTimeout(res, 1000));
+
+        console.log("Session completed successfully");
+      } catch (err) {
+        console.error("Failed to track session completion:", err);
+      }
+
+      setIsDisconnecting(false);
+      setShowFeedbackModal(true);
+    };
+
+    if (callingState === CallingState.LEAVING) {
+      // Immediately show loader
+      setIsDisconnecting(true);
+    }
+
     if (
       callingState === CallingState.LEFT &&
       startTimeRef.current &&
       !completedRef.current
     ) {
       completedRef.current = true;
-
-      (async () => {
-        const now = new Date();
-        const durationMs = now - startTimeRef.current;
-        const minDurationMs = 10 * 1000; // 10 seconds minimum
-
-        if (durationMs < minDurationMs) {
-          console.log("Skipping completion – call too short (<10s)");
-          setShowFeedbackModal(true); // ✅ Still show modal even for short calls
-          return;
-        }
-
-        try {
-          await trackSessionCompleted({
-            sessionId: call.id,
-            studentId: authUser.role === "student" ? authUser.id : null,
-            tutorId: authUser.role === "tutor" ? authUser.id : null,
-            startedAt: startTimeRef.current,
-          });
-
-          // Small delay to let server process
-          await new Promise((res) => setTimeout(res, 1500));
-
-          // await queryClient.invalidateQueries(["booking", call.id]);
-
-          console.log("Session completed successfully");
-        } catch (err) {
-          console.error("Failed to track session completion:", err);
-        }
-
-        // ✅ Show feedback modal after tracking
-        setShowFeedbackModal(true);
-      })();
+      handleDisconnect();
     }
   }, [callingState, authUser, call, queryClient]);
 
   return (
     <StreamTheme theme="light">
+      {isDisconnecting && (
+        <PageLoaderMessage message="Disconnecting from call..." />
+      )}
+
       <SpeakerLayout />
       <CallControls
         onLeave={async () => {
