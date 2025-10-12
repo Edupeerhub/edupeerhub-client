@@ -399,6 +399,7 @@ const TutorDashboardPage = () => {
         booking={selectedSession}
         userType="tutor"
         onCancel={handleCancelBooking}
+        isCancelling={cancelMutation.isPending}
         onReschedule={handleOpenRescheduleModal}
       />
       <RescheduleBookingModal

@@ -230,6 +230,7 @@ const TutorSessionsPage = () => {
         booking={selectedSession}
         userType="tutor"
         onCancel={handleCancelBooking}
+        isCancelling={cancelMutation.isPending}
         onReschedule={handleOpenRescheduleModal}
         isPast={activeTab === "past" || activeTab === "cancelled"}
       />

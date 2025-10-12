@@ -10,11 +10,20 @@ const BookingDetailsModal = ({
   isOpen,
   onClose,
   onCancel,
+  isCancelling,
   onReschedule,
   isPast,
 }) => {
   const [cancellationReason, setCancellationReason] = useState("");
   const { canAccess, reason } = useCallAccess(booking);
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      setCancellationReason("");
+    } else {
+      setCancellationReason("");
+    }
+  }, [isOpen, booking?.id]);
 
   if (!isOpen || !booking) {
     return null;
@@ -135,9 +144,9 @@ const BookingDetailsModal = ({
             <button
               onClick={handleCancel}
               className="btn btn-outline flex-1"
-              disabled={!cancellationReason}
+              disabled={!cancellationReason || isCancelling}
             >
-              Cancel Booking
+              {isCancelling ? "Cancelling..." : " Cancel Booking"}
             </button>
             {isStudent ? (
               <Link
