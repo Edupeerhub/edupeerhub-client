@@ -21,10 +21,10 @@ const ChatPage = () => {
 
   const { authUser } = useAuth();
 
-  const { chatClient } = useChat();
+  const { chatClient, isReady } = useChat();
 
   useEffect(() => {
-    if (!chatClient || !authUser || !targetUserId) return;
+    if (!isReady || !chatClient || !authUser || !targetUserId) return;
 
     const initChannel = async () => {
       try {
@@ -50,9 +50,9 @@ const ChatPage = () => {
         channel.stopWatching().catch(console.error);
       }
     };
-  }, [chatClient, authUser, targetUserId]);
+  }, [isReady, chatClient, authUser, targetUserId]);
 
-  if (!chatClient || !channel || isLoading) return <ChatLoader />;
+  if (!chatClient || !channel || isLoading || !isReady) return <ChatLoader />;
 
   return (
     <div className="fixed inset-0 top-16 left-0 lg:left-64 flex flex-col bg-white">

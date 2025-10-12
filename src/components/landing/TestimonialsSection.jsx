@@ -1,17 +1,12 @@
-import { Star } from "lucide-react";
 import Section from "../common/Section";
 import { TESTIMONIALS } from "../../config/assets";
+import StarRating from "../common/StarRatings";
 
 const TestimonialCard = ({ testimonial }) => {
   return (
-    <div className="bg-white rounded-xl p-6 md:p-8 shadow-md hover:shadow-xl transition-shadow duration-300">
+    <div className="bg-white flex flex-col justify-between rounded-xl p-6 md:p-8 shadow-md hover:shadow-xl transition-shadow duration-300">
       <div className="flex items-center mb-4">
-        {[...Array(testimonial.rating)].map((_, index) => (
-          <Star
-            key={index}
-            className="w-5 h-5 fill-yellow-400 text-yellow-400"
-          />
-        ))}
+        <StarRating rating={testimonial.rating} />
       </div>
 
       <p className="text-gray-700 mb-6 leading-relaxed italic">

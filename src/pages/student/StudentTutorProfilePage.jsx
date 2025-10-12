@@ -14,21 +14,14 @@ const StudentTutorProfilePage = () => {
   const {
     profile,
     reviews,
-    reviewSummary,
     isLoadingProfileQuery,
-    isLoadingReviewSummaryQuery,
     isLoadingReviewsQuery,
     errorProfileQuery,
-    errorReviewSummaryQuery,
     errorReviewsQuery,
   } = useStudentTutorPage(id);
 
   const { availabilityData: availability, availabilityLoading } =
     useStudentBooking(id, new Date(), null);
-
-  // if (isLoading) return <Spinner />;
-  // if (error)
-  //   return <p className="text-red-500">Failed to load tutor profile.</p>;
 
   return (
     <div className="w-full overflow-x-hidden">
@@ -94,19 +87,12 @@ const StudentTutorProfilePage = () => {
                 {profile?.bio || "No bio"}
               </p>
             </div>
+            {/* Rating */}
+            <div className="mt-3 md:mt-6">
+              <RatingSummary stats={profile?.stats} />
+            </div>
           </>
         )}
-
-        {/* Rating */}
-        <div className="mt-3 md:mt-6">
-          {isLoadingReviewSummaryQuery ? (
-            <Spinner />
-          ) : errorReviewSummaryQuery ? (
-            <p className="text-red-500">Failed to load tutor ratings.</p>
-          ) : (
-            <RatingSummary rating={reviewSummary} />
-          )}
-        </div>
 
         {/* Reviews */}
         <div className="mt-6">

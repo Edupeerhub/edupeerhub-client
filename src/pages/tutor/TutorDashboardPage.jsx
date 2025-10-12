@@ -41,7 +41,6 @@ const TutorDashboardPage = () => {
   const queryClient = useQueryClient();
 
   const {
-    reviewSummary,
     profile: user,
     isLoadingProfileQuery: isLoadingUser,
     isErrorUser,
@@ -103,7 +102,6 @@ const TutorDashboardPage = () => {
     tutorBookingsData?.filter((b) => b.status === "pending") || [];
 
   const tutor = user?.tutor;
-  const rating = reviewSummary?.averageRating ?? 0;
   const tutorStatus = useTutorStatus();
 
   const handleView = (session) => {
@@ -300,7 +298,7 @@ const TutorDashboardPage = () => {
             {tutorStatus === "rejected" && <RejectedLayout />}
             {tutorStatus === "approved" && (
               <ApprovedLayout
-                rating={rating}
+                tutor={tutor}
                 recentActivities={recentActivities}
                 isLoadingActivities={activityLoading}
               />
@@ -310,7 +308,6 @@ const TutorDashboardPage = () => {
                 tutor={tutor}
                 pendingBookingRequests={pendingBookingRequests}
                 handleView={handleView}
-                rating={rating}
                 recentActivities={recentActivities}
                 isLoadingActivities={activityLoading}
               />

@@ -24,25 +24,6 @@ export const ASSETS = {
     alt: "Student learning with laptop",
   },
 
-  // Testimonials - User Profile Images
-  testimonials: {
-    ahmadJibril: {
-      image:
-        "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150",
-      alt: "Ahmad Jibril profile photo",
-    },
-    monikoroHyelnayi: {
-      image:
-        "https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=150",
-      alt: "Monikoro Hyelnayi profile photo",
-    },
-    taiwoGodson: {
-      image:
-        "https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=150",
-      alt: "Taiwo Godson profile photo",
-    },
-  },
-
   // Call-to-Action Section
   cta: {
     backgroundImage: "/images/cta.png",
@@ -51,7 +32,7 @@ export const ASSETS = {
 
   // Logo (you can replace this with your actual logo path)
   logo: {
-    image: "/images/logo.png", // Set to '/images/logo.png' when you have your logo, or leave null to use icon
+    image: "/images/logo.png",
     alt: "EduPeerHub Logo",
   },
 };
@@ -63,30 +44,63 @@ export const ASSETS = {
 export const TESTIMONIALS = [
   {
     id: 1,
-    name: "Olumide Balogun",
-    role: "Secondary tutor",
-    rating: 5,
-    text: "Great education hub but should improve on their timing on classes.",
-    image: ASSETS.testimonials.ahmadJibril.image,
-    alt: ASSETS.testimonials.ahmadJibril.alt,
+    name: "Aminat Olaleye",
+    role: "SS3 Student",
+    rating: 4.88,
+    text: "My WAEC preparation was stressful until I found a tutor on EduPeerHub. She made Physics so simple and I scored A1!",
+    image:
+      "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/iwaria-inc-SESt1VL2D-w-unsplash_piqb8c",
+    alt: "Nigerian female student smiling",
   },
   {
     id: 2,
-    name: "Chinelo Okafor",
-    role: "Student",
-    rating: 5,
-    text: "I'm so glad Edupeerhub exists. I have been able to grow in my field with the help of my tutor.",
-    image: ASSETS.testimonials.monikoroHyelnayi.image,
-    alt: ASSETS.testimonials.monikoroHyelnayi.alt,
+    name: "Blessing Okoro",
+    role: "NYSC Tutor",
+    rating: 4.6,
+    text: "During my service year, EduPeerHub helped me earn extra income while making a difference. The students are eager to learn and the platform is reliable.",
+    image:
+      "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/ikechukwu-julius-ugwu-F9bkOxw-dyQ-unsplash_gsvuwj",
+    alt: "Nigerian female young tutor",
   },
   {
     id: 3,
-    name: "Abubakar Bello",
-    role: "Student",
+    name: "David Adeyemi",
+    role: "SS2 Student",
     rating: 5,
-    text: "I was able to understand everything I was taught at the beginning but I got confused with virtue learning. Thanks to what happened to him and no one told me anything, they just changed him.",
-    image: ASSETS.testimonials.taiwoGodson.image,
-    alt: ASSETS.testimonials.taiwoGodson.alt,
+    text: "I was failing Mathematics badly but my tutor on EduPeerHub was so patient with me. Now I actually understand algebra and geometry!",
+    image:
+      "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/josh-kidd-2gOu7Nfrnns-unsplash_hbaaqm",
+    alt: "Nigerian male student",
+  },
+  {
+    id: 4,
+    name: "Emmanuel Nnamdi",
+    role: "University Graduate Tutor",
+    rating: 4.4,
+    text: "As a fresh graduate, EduPeerHub gave me a great way to stay sharp in my field while helping secondary school students. The scheduling is flexible which I really appreciate.",
+    image:
+      "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/johnson-sesbire-K-USwvom-Pw-unsplash_jt4uej",
+    alt: "Nigerian male young professional",
+  },
+  {
+    id: 5,
+    name: "Khadijah Musa",
+    role: "SS1 Student",
+    rating: 4.8,
+    text: "Chemistry used to confuse me so much but my tutor breaks everything down step by step. EduPeerHub made it easy to find someone who actually cares about my progress!",
+    image:
+      "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/adeniji-abdullahi-a-CPz2KWjCwDQ-unsplash_lcttjh",
+    alt: "Nigerian female student studying",
+  },
+  {
+    id: 6,
+    name: "Ibrahim Lawal",
+    role: "NYSC Tutor",
+    rating: 5,
+    text: "Teaching English on EduPeerHub has been amazing. I get to help students improve their writing and speaking skills while earning during my service year. Win-win!",
+    image:
+      "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/mubarak-showole-Ve7xjKImd28-unsplash_tnhkcv",
+    alt: "Nigerian male tutor smiling",
   },
 ];
 
