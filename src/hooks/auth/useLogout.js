@@ -20,7 +20,9 @@ const useLogout = () => {
     onSuccess: async () => {
       await disconnectStreamClients();
       queryClient.removeQueries({ queryKey: ["streamToken"] });
-      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      queryClient.removeQueries({ queryKey: ["userProfile"] });
+      queryClient.removeQueries({ queryKey: ["authUser"] });
+      // queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Logout successful! See you next time!");
       navigate("/login", { replace: true });
     },
