@@ -149,7 +149,7 @@ const RescheduleBookingModal = ({ booking, isOpen, onClose, onReschedule }) => {
               !formData.date ||
               !formData.startTime ||
               !formData.endTime ||
-              rescheduleBookingMutation.isLoading
+              rescheduleBookingMutation.isPending
             }
           >
             Confirm Reschedule
