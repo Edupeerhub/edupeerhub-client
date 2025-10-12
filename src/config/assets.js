@@ -24,25 +24,6 @@ export const ASSETS = {
     alt: "Student learning with laptop",
   },
 
-  // Testimonials - User Profile Images
-  testimonials: {
-    ahmadJibril: {
-      image:
-        "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150",
-      alt: "Ahmad Jibril profile photo",
-    },
-    monikoroHyelnayi: {
-      image:
-        "https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=150",
-      alt: "Monikoro Hyelnayi profile photo",
-    },
-    taiwoGodson: {
-      image:
-        "https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=150",
-      alt: "Taiwo Godson profile photo",
-    },
-  },
-
   // Call-to-Action Section
   cta: {
     backgroundImage: "/images/cta.png",
@@ -51,7 +32,7 @@ export const ASSETS = {
 
   // Logo (you can replace this with your actual logo path)
   logo: {
-    image: "/images/logo.png", // Set to '/images/logo.png' when you have your logo, or leave null to use icon
+    image: "/images/logo.png",
     alt: "EduPeerHub Logo",
   },
 };
@@ -60,54 +41,12 @@ export const ASSETS = {
  * TESTIMONIALS DATA
  * Update the testimonial content here to match your actual user testimonials
  */
-// export const TESTIMONIALS = [
-//   {
-//     id: 1,
-//     name: "Chioma Nwosu",
-//     role: "University Student",
-//     rating: 5,
-//     text: "EduPeerHub connected me with an amazing tutor who helped me ace my calculus exam. The platform is easy to use and tutors are always on time!",
-//     image:
-//       "https://images.pexels.com/photos/5905857/pexels-photo-5905857.jpeg?auto=compress&cs=tinysrgb&w=400",
-//     alt: "Nigerian female student smiling",
-//   },
-//   {
-//     id: 2,
-//     name: "Tunde Adebayo",
-//     role: "Mathematics Tutor",
-//     rating: 5,
-//     text: "As a young tutor, EduPeerHub has given me the opportunity to reach students who truly want to learn. The scheduling system works perfectly for my busy life.",
-//     image:
-//       "https://images.pexels.com/photos/5212317/pexels-photo-5212317.jpeg?auto=compress&cs=tinysrgb&w=400",
-//     alt: "Nigerian male tutor teaching",
-//   },
-//   {
-//     id: 3,
-//     name: "Zainab Ibrahim",
-//     role: "Secondary School Student",
-//     rating: 5,
-//     text: "I struggled with Chemistry until I found my tutor on EduPeerHub. Now I'm confident and my grades have improved so much. Highly recommend!",
-//     image:
-//       "https://images.pexels.com/photos/5905497/pexels-photo-5905497.jpeg?auto=compress&cs=tinysrgb&w=400",
-//     alt: "Nigerian female student studying",
-//   },
-//   {
-//     id: 4,
-//     name: "Emmanuel Okonkwo",
-//     role: "English Tutor",
-//     rating: 4,
-//     text: "Great platform for connecting with serious students. The only improvement I'd suggest is adding more payment options, but overall it's been a fantastic experience.",
-//     image:
-//       "https://images.pexels.com/photos/5212332/pexels-photo-5212332.jpeg?auto=compress&cs=tinysrgb&w=400",
-//     alt: "Nigerian male professional smiling",
-//   },
-// ];
 export const TESTIMONIALS = [
   {
     id: 1,
     name: "Aminat Olaleye",
     role: "SS3 Student",
-    rating: 5,
+    rating: 4.88,
     text: "My WAEC preparation was stressful until I found a tutor on EduPeerHub. She made Physics so simple and I scored A1!",
     image:
       "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/iwaria-inc-SESt1VL2D-w-unsplash_piqb8c",
@@ -117,7 +56,7 @@ export const TESTIMONIALS = [
     id: 2,
     name: "Blessing Okoro",
     role: "NYSC Tutor",
-    rating: 4,
+    rating: 4.6,
     text: "During my service year, EduPeerHub helped me earn extra income while making a difference. The students are eager to learn and the platform is reliable.",
     image:
       "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/ikechukwu-julius-ugwu-F9bkOxw-dyQ-unsplash_gsvuwj",
@@ -137,7 +76,7 @@ export const TESTIMONIALS = [
     id: 4,
     name: "Emmanuel Nnamdi",
     role: "University Graduate Tutor",
-    rating: 4,
+    rating: 4.4,
     text: "As a fresh graduate, EduPeerHub gave me a great way to stay sharp in my field while helping secondary school students. The scheduling is flexible which I really appreciate.",
     image:
       "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/johnson-sesbire-K-USwvom-Pw-unsplash_jt4uej",
@@ -147,7 +86,7 @@ export const TESTIMONIALS = [
     id: 5,
     name: "Khadijah Musa",
     role: "SS1 Student",
-    rating: 5,
+    rating: 4.8,
     text: "Chemistry used to confuse me so much but my tutor breaks everything down step by step. EduPeerHub made it easy to find someone who actually cares about my progress!",
     image:
       "https://res.cloudinary.com/dwllr51vn/image/upload/t_edupeerhub-landing-testimonials/adeniji-abdullahi-a-CPz2KWjCwDQ-unsplash_lcttjh",

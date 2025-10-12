@@ -11,25 +11,24 @@ export function useStudentTutorPage(id) {
 
   const reviewsQuery = useTutorReviews(id);
 
-  const reviewSummaryQuery = useTutorReviewSummary(id);
+  // const reviewSummaryQuery = useTutorReviewSummary(id);
 
   return {
     profile: profileQuery.data,
     reviews: reviewsQuery.data,
-    reviewSummary: reviewSummaryQuery.data,
+    // reviewSummary: reviewSummaryQuery.data,
     isLoadingProfileQuery: profileQuery.isLoading,
     isLoadingReviewsQuery: !id || reviewsQuery.isLoading,
-    isLoadingReviewSummaryQuery: !id || reviewSummaryQuery.isLoading,
-    isLoading:
-      profileQuery.isLoading ||
-      reviewsQuery.isLoading ||
-      !id ||
-      reviewSummaryQuery.isLoading,
+    isLoadingReviewSummaryQuery: !id,
+    // || reviewSummaryQuery.isLoading,
+    isLoading: profileQuery.isLoading || reviewsQuery.isLoading || !id,
+    // || reviewSummaryQuery.isLoading,
     isErrorUser: profileQuery.isError,
-    error: profileQuery.error || reviewsQuery.error || reviewSummaryQuery.error,
+    error: profileQuery.error || reviewsQuery.error,
+    // || reviewSummaryQuery.error,
     errorProfileQuery: profileQuery.error,
     errorReviewsQuery: reviewsQuery.error,
-    errorReviewSummaryQuery: reviewSummaryQuery.error,
+    // errorReviewSummaryQuery: reviewSummaryQuery.error,
   };
 }
 
@@ -40,25 +39,24 @@ export function usePrivateTutorProfile() {
 
   const reviewsQuery = useTutorReviews(id);
 
-  const reviewSummaryQuery = useTutorReviewSummary(id);
+  // const reviewSummaryQuery = useTutorReviewSummary(id);
 
   return {
     profile: profileQuery.data,
     reviews: reviewsQuery.data,
-    reviewSummary: reviewSummaryQuery.data,
+    // reviewSummary: reviewSummaryQuery.data,
     isLoadingProfileQuery: profileQuery.isLoading,
     isLoadingReviewsQuery: !id || reviewsQuery.isLoading,
-    isLoadingReviewSummaryQuery: !id || reviewSummaryQuery.isLoading,
-    isLoading:
-      profileQuery.isLoading ||
-      reviewsQuery.isLoading ||
-      !id ||
-      reviewSummaryQuery.isLoading,
+    isLoadingReviewSummaryQuery: !id,
+    // || reviewSummaryQuery.isLoading,
+    isLoading: profileQuery.isLoading || reviewsQuery.isLoading || !id,
+    // || reviewSummaryQuery.isLoading,
     isErrorUser: profileQuery.isError,
-    error: profileQuery.error || reviewsQuery.error || reviewSummaryQuery.error,
+    error: profileQuery.error || reviewsQuery.error,
+    // || reviewSummaryQuery.error,
     errorProfileQuery: profileQuery.error,
     errorReviewsQuery: reviewsQuery.error,
-    errorReviewSummaryQuery: reviewSummaryQuery.error,
+    // errorReviewSummaryQuery: reviewSummaryQuery.error,
   };
 }
 
@@ -69,18 +67,21 @@ export function useTutorDashboard() {
 
   id = profileQuery.data?.id;
 
-  const reviewSummaryQuery = useTutorReviewSummary(id);
+  // const reviewSummaryQuery = useTutorReviewSummary(id);
 
   return {
     profile: profileQuery.data,
-    reviewSummary: reviewSummaryQuery.data,
+    // reviewSummary: reviewSummaryQuery.data,
     isLoadingProfileQuery: profileQuery.isLoading,
-    isLoadingReviewSummaryQuery: !id || reviewSummaryQuery.isLoading,
-    isLoading: profileQuery.isLoading || !id || reviewSummaryQuery.isLoading,
+    isLoadingReviewSummaryQuery: !id,
+    // || reviewSummaryQuery.isLoading,
+    isLoading: profileQuery.isLoading || !id,
+    // || reviewSummaryQuery.isLoading,
     isErrorUser: profileQuery.isError,
-    error: profileQuery.error || reviewSummaryQuery.error,
+    error: profileQuery.error,
+    // || reviewSummaryQuery.error,
     errorProfileQuery: profileQuery.error,
-    errorReviewSummaryQuery: reviewSummaryQuery.error,
+    // errorReviewSummaryQuery: reviewSummaryQuery.error,
   };
 }
 

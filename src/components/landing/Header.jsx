@@ -40,9 +40,9 @@ const Header = () => {
                 <img
                   src={ASSETS.logo?.image}
                   alt={ASSETS.logo?.alt}
-                  className="h-8 md:h-8"
+                  className="h-8 md:h-7"
                 />
-                <p className="hidden sm:block text-xl md:text-xl font-bold text-blue-600">
+                <p className="hidden sm:block text-xl md:text-lg font-bold text-gray-900">
                   edupeerhub
                 </p>
               </div>

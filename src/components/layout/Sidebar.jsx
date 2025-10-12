@@ -1,10 +1,9 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import LogoutIcon from "../../assets/images/layout-icons/logout.svg?react";
 import Logo from "../../assets/images/edupeerhub-logo1.svg?react";
 import useLogout from "../../hooks/auth/useLogout";
 import { useAuth } from "../../hooks/useAuthContext";
 import { useIsSuperAdmin, useTutorStatus } from "../../hooks/auth/useUserRoles";
-import PageLoader from "../common/PageLoader";
 import LogoutPageLoader from "../ui/LogoutPageLoader";
 
 const Sidebar = ({ isOpen, onClose, links = [] }) => {
@@ -63,10 +62,13 @@ const Sidebar = ({ isOpen, onClose, links = [] }) => {
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-center gap-3 p-5 ">
-          <Logo className="hidden md:block size-10  " />{" "}
-          <h1 className="hidden md:block text-2xl font-bold text-gray-900">
-            Edupeerhub
-          </h1>
+          <Link to="/" className="flex items-center space-x-2">
+            <Logo className="hidden md:block size-10" />
+            <h1 className="hidden md:block text-2xl font-bold text-gray-900">
+              edupeerhub
+            </h1>
+          </Link>
+
           {/* Close button - only visible on mobile */}
           <button
             onClick={onClose}
