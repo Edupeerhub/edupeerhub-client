@@ -35,7 +35,7 @@ export function useTutorNotifications(enabled = true) {
           const studentName = booking.student?.user?.firstName || "A student";
 
           result.push({
-            id: `booking-${booking.id}`,
+            id: `booking-${String(booking.id)}`,
             type: "request",
             sender: studentName,
             message: "sent you a new booking request",
@@ -61,7 +61,7 @@ export function useTutorNotifications(enabled = true) {
         const timeRemaining = formatTimeRemaining(msUntil);
 
         result.push({
-          id: `session-${session.id}`,
+          id: `session-${String(session.id)}`,
           type: "session",
           sender: "System",
           message: `Your session with ${studentName} starts in ${timeRemaining}`,

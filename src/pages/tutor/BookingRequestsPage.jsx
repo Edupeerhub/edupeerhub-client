@@ -30,7 +30,10 @@ const BookingRequestsPage = () => {
     mutationFn: ({ availabilityId, status }) =>
       updateBookingAvailabilityStatus(availabilityId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries(["bookingRequests"]);
+      queryClient.invalidateQueries({
+        queryKey: ["bookingRequests"],
+        exact: true,
+      });
       handleToastSuccess("Booking request updated successfully!");
       setActiveAction(null);
     },

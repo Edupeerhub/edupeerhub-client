@@ -41,7 +41,6 @@ const TutorDashboardPage = () => {
   const queryClient = useQueryClient();
 
   const {
-    reviewSummary,
     profile: user,
     isLoadingProfileQuery: isLoadingUser,
     isErrorUser,
@@ -63,7 +62,10 @@ const TutorDashboardPage = () => {
     mutationFn: ({ availabilityId, status }) =>
       updateBookingAvailabilityStatus(availabilityId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries(["tutorBookings"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorBookings"],
+        exact: true,
+      });
       handleToastSuccess("Booking request updated successfully!");
     },
     onError: (err) => {
@@ -75,7 +77,10 @@ const TutorDashboardPage = () => {
     mutationFn: ({ id, cancellationReason }) =>
       cancelBookingAvailability(id, cancellationReason),
     onSuccess: () => {
-      queryClient.invalidateQueries(["tutorBookings"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorBookings"],
+        exact: true,
+      });
       handleToastSuccess("Booking cancelled successfully!");
       setIsDetailsModalOpen(false);
     },
@@ -97,7 +102,6 @@ const TutorDashboardPage = () => {
     tutorBookingsData?.filter((b) => b.status === "pending") || [];
 
   const tutor = user?.tutor;
-  const rating = reviewSummary?.averageRating ?? 0;
   const tutorStatus = useTutorStatus();
 
   const handleView = (session) => {
@@ -294,7 +298,7 @@ const TutorDashboardPage = () => {
             {tutorStatus === "rejected" && <RejectedLayout />}
             {tutorStatus === "approved" && (
               <ApprovedLayout
-                rating={rating}
+                tutor={tutor}
                 recentActivities={recentActivities}
                 isLoadingActivities={activityLoading}
               />
@@ -304,7 +308,6 @@ const TutorDashboardPage = () => {
                 tutor={tutor}
                 pendingBookingRequests={pendingBookingRequests}
                 handleView={handleView}
-                rating={rating}
                 recentActivities={recentActivities}
                 isLoadingActivities={activityLoading}
               />
@@ -402,7 +405,12 @@ const TutorDashboardPage = () => {
         isOpen={isRescheduleModalOpen}
         onClose={handleCloseRescheduleModal}
         booking={selectedSession}
-        onReschedule={() => queryClient.invalidateQueries(["tutorBookings"])}
+        onReschedule={() =>
+          queryClient.invalidateQueries({
+            queryKey: ["tutorBookings"],
+            exact: true,
+          })
+        }
       />
     </>
   );

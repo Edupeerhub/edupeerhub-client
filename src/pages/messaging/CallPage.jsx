@@ -1,10 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getStreamToken } from "../../lib/api/common/getStreamApi";
 import {
   StreamVideo,
-  StreamVideoClient,
   StreamCall,
   CallControls,
   SpeakerLayout,
@@ -13,78 +11,61 @@ import {
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
-import PageLoader from "../../components/common/PageLoader";
+
+import "./stream.css";
+import PageLoader, {
+  PageLoaderMessage,
+} from "../../components/common/PageLoader";
+import FeedbackModal from "../../components/messaging/FeedbackModal";
 import { handleToastError } from "../../utils/toastDisplayHandler";
+import { fetchBookingById } from "../../lib/api/common/bookingApi";
+import { useAuth } from "../../hooks/useAuthContext";
+import useCreateReview from "../../hooks/review/useCreateReview";
+import useCallAccess from "../../hooks/booking/useCallAccess";
 import {
   trackSessionCompleted,
   trackSessionStart,
 } from "../../lib/api/analytics/trackEventApi";
-import FeedbackModal from "../../components/messaging/FeedbackModal";
-import useCreateReview from "../../hooks/review/useCreateReview";
-import { fetchBookingById } from "../../lib/api/common/bookingApi";
-import useCallAccess from "../../hooks/booking/useCallAccess";
-import { useAuth } from "../../hooks/useAuthContext";
-
-const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
+import { useStreamContext } from "../../hooks/messaging/useStreamContext";
 
 const CallPage = () => {
   const { id: bookingId } = useParams();
+  const { authUser } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [client, setClient] = useState(null);
+  const { videoClient, isReady } = useStreamContext();
+
   const [call, setCall] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { authUser } = useAuth();
 
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const startTimeRef = useRef(null);
-
-  // fetch stream token
-  const { data: tokenData } = useQuery({
-    queryKey: ["streamToken", authUser?.id],
-    queryFn: getStreamToken,
-    enabled: !!authUser,
-  });
-
-  // fetch booking details (contains tutor + student info)
   const { data: bookingData, isLoading: isBookingLoading } = useQuery({
     queryKey: ["booking", bookingId],
     queryFn: () => fetchBookingById(bookingId),
     enabled: !!bookingId,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
-  // use access control
   const { canAccess, reason, dashboardLink } = useCallAccess(bookingData);
 
   useEffect(() => {
-    if (
-      !tokenData?.token ||
-      !authUser ||
-      !bookingId ||
-      !bookingData ||
-      !canAccess
-    )
+    if (!isReady || !videoClient || !authUser || !bookingId || !canAccess)
       return;
 
-    const user = {
-      id: authUser.id,
-      name: `${authUser.firstName} ${authUser.lastName}`,
-      image: authUser.profileImageUrl,
-    };
-
-    const videoClient = StreamVideoClient.getOrCreateInstance({
-      apiKey: STREAM_API_KEY,
-      user,
-      token: tokenData.token,
-    });
-
     const callInstance = videoClient.call("default", bookingId);
+    let joined = false;
 
-    const initCall = async () => {
+    const joinCall = async () => {
       try {
         setIsConnecting(true);
+        await callInstance.camera.disable();
+        // await callInstance.microphone.disable();
 
-        await callInstance.join({ create: true });
+        await callInstance.join({
+          create: true,
+        });
+        joined = true;
 
         await trackSessionStart({
           sessionId: callInstance.id,
@@ -92,51 +73,26 @@ const CallPage = () => {
           tutorId: authUser.role === "tutor" ? authUser.id : null,
         });
 
-        setClient(videoClient);
         setCall(callInstance);
       } catch (error) {
         console.error("Error joining call:", error);
-        handleToastError(error, "Could not join the call. Please try again.");
+        handleToastError(error, "Could not join the call.");
       } finally {
         setIsConnecting(false);
       }
     };
 
-    initCall();
+    joinCall();
 
-    // ✅ cleanup for unmount / browser close
     return () => {
-      const startTimeSnapshot = startTimeRef.current;
-
       (async () => {
         try {
-          // Gracefully leave if still joined
-          if (callInstance.state?.callingState !== CallingState.LEFT) {
+          if (
+            joined &&
+            callInstance.state?.callingState !== CallingState.LEFT
+          ) {
             await callInstance.leave();
           }
-
-          // ✅ Only mark completed if session actually started
-          if (startTimeSnapshot) {
-            const now = new Date();
-            const durationMs = now - startTimeSnapshot;
-            const minDurationMs = 10 * 1000; // 10s buffer
-
-            if (durationMs >= minDurationMs) {
-              await trackSessionCompleted({
-                sessionId: callInstance.id,
-                studentId: authUser.role === "student" ? authUser.id : null,
-                tutorId: authUser.role === "tutor" ? authUser.id : null,
-                startedAt: startTimeSnapshot,
-              });
-              await new Promise((res) => setTimeout(res, 1500));
-              queryClient.invalidateQueries(["booking", bookingId]);
-            } else {
-              console.log("Skipped completion — call too short (<10s).");
-            }
-          }
-
-          // ✅ Disconnect Stream client safely
-          await videoClient.disconnectUser?.();
         } catch (err) {
           if (!err.message?.includes("already been left")) {
             console.error("Cleanup error on unmount:", err);
@@ -144,13 +100,13 @@ const CallPage = () => {
         }
       })();
     };
-  }, [tokenData, authUser, bookingId, bookingData, canAccess]);
+  }, [isReady, videoClient, authUser, bookingId, canAccess]);
 
-  if (isBookingLoading || isConnecting) return <PageLoader />;
+  if (isBookingLoading || isConnecting || !isReady) return <PageLoader />;
 
   if (!canAccess) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-gray-100 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
         <h2 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
         <p className="text-lg text-gray-800 mb-6 text-center">{reason}</p>
         <Link
@@ -165,17 +121,19 @@ const CallPage = () => {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center">
-      {client && call && bookingData ? (
-        <StreamVideo client={client}>
-          <StreamCall call={call}>
-            <CallContent
-              call={call}
-              authUser={authUser}
-              navigate={navigate}
-              startTimeRef={startTimeRef}
-              bookingData={bookingData}
-            />
-          </StreamCall>
+      {videoClient && call && bookingData ? (
+        <StreamVideo client={videoClient}>
+          <StreamTheme theme="light">
+            <StreamCall call={call}>
+              <CallContent
+                call={call}
+                authUser={authUser}
+                navigate={navigate}
+                bookingData={bookingData}
+                queryClient={queryClient}
+              />
+            </StreamCall>
+          </StreamTheme>
         </StreamVideo>
       ) : (
         <div className="flex items-center justify-center h-full">
@@ -190,26 +148,26 @@ const CallContent = ({
   call,
   authUser,
   navigate,
-  startTimeRef,
   bookingData,
+  queryClient,
 }) => {
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
+
+  const startTimeRef = useRef(null);
   const completedRef = useRef(false);
+
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { createReviewMutation, isCreatingReview } = useCreateReview();
-  const queryClient = useQueryClient();
 
-  // Determine reviewee
   const storedReviewee =
     authUser.role === "student"
       ? bookingData?.tutor?.user
       : bookingData?.student?.user;
 
   const handleNavigate = () => {
-    if (authUser.role === "student") navigate("/student");
-    else if (authUser.role === "tutor") navigate("/tutor");
-    else navigate("/");
+    navigate(authUser.role === "student" ? "/student" : "/tutor");
   };
 
   const handleCloseModal = () => {
@@ -236,58 +194,77 @@ const CallContent = ({
     );
   };
 
-  // Track call start
+  // ✅ Track when call starts
   useEffect(() => {
     if (callingState === CallingState.JOINED && !startTimeRef.current) {
       startTimeRef.current = new Date();
     }
-  }, [callingState, startTimeRef]);
+  }, [callingState]);
 
-  // Track call end
+  // ✅ Track when call ends and show feedback modal
   useEffect(() => {
+    const handleDisconnect = async () => {
+      setIsDisconnecting(true);
+
+      const now = new Date();
+      const durationMs = now - startTimeRef.current;
+      const minDurationMs = 10 * 1000; // 10 seconds minimum
+
+      if (durationMs < minDurationMs) {
+        console.log("Skipping completion – call too short (<10s)");
+        setIsDisconnecting(false);
+        setShowFeedbackModal(true);
+        return;
+      }
+
+      try {
+        await trackSessionCompleted({
+          sessionId: call.id,
+          studentId: authUser.role === "student" ? authUser.id : null,
+          tutorId: authUser.role === "tutor" ? authUser.id : null,
+          startedAt: startTimeRef.current,
+        });
+
+        // Optional: give backend a second to settle
+        await new Promise((res) => setTimeout(res, 1000));
+
+        console.log("Session completed successfully");
+      } catch (err) {
+        console.error("Failed to track session completion:", err);
+      }
+
+      setIsDisconnecting(false);
+      setShowFeedbackModal(true);
+    };
+
+    if (callingState === CallingState.LEAVING) {
+      // Immediately show loader
+      setIsDisconnecting(true);
+    }
+
     if (
       callingState === CallingState.LEFT &&
       startTimeRef.current &&
       !completedRef.current
     ) {
       completedRef.current = true;
-      (async () => {
-        const now = new Date();
-        const durationMs = now - startTimeRef.current;
-        const minDurationMs = 10 * 1000; // 10-second buffer
-
-        if (durationMs < minDurationMs) {
-          console.log("Skipping session completion – too short (<10s)");
-          return;
-        }
-
-        try {
-          await trackSessionCompleted({
-            sessionId: call.id,
-            studentId: authUser.role === "student" ? authUser.id : null,
-            tutorId: authUser.role === "tutor" ? authUser.id : null,
-            startedAt: startTimeRef.current,
-          });
-          await new Promise((res) => setTimeout(res, 1500));
-          await queryClient.invalidateQueries(["booking", call.id]);
-        } catch (err) {
-          console.error("Failed to track session completion:", err);
-        }
-
-        setShowFeedbackModal(true);
-      })();
+      handleDisconnect();
     }
-  }, [callingState, authUser, call]);
+  }, [callingState, authUser, call, queryClient]);
 
   return (
-    <StreamTheme>
+    <StreamTheme theme="light">
+      {isDisconnecting && (
+        <PageLoaderMessage message="Disconnecting from call..." />
+      )}
+
       <SpeakerLayout />
       <CallControls
         onLeave={async () => {
           try {
             await call.leave();
           } catch (err) {
-            if (!err.message.includes("already been left")) {
+            if (!err.message?.includes("already been left")) {
               console.error("Call leave error:", err);
             }
           }
@@ -298,7 +275,7 @@ const CallContent = ({
           isOpen={showFeedbackModal}
           onClose={handleCloseModal}
           onSubmit={handleSubmitFeedback}
-          revieweeName={storedReviewee?.name || "the other participant"}
+          revieweeName={storedReviewee?.name ?? "the other participant"}
           isSubmitting={isCreatingReview}
         />
       )}

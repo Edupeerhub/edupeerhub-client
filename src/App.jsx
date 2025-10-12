@@ -91,7 +91,7 @@ export default function App() {
           path="/student"
           element={
             <StudentRoute>
-              <Layout fullHeight={true} sidebarLinks={studentSidebarLinks} />
+              <Layout sidebarLinks={studentSidebarLinks} />
             </StudentRoute>
           }
         >
@@ -126,7 +126,7 @@ export default function App() {
           path="/tutor"
           element={
             <TutorRoute>
-              <Layout fullHeight={true} sidebarLinks={tutorSidebarLinks} />
+              <Layout sidebarLinks={tutorSidebarLinks} />
             </TutorRoute>
           }
         >
@@ -157,7 +157,7 @@ export default function App() {
           path="/admin"
           element={
             <AdminRoute>
-              <Layout fullHeight={true} sidebarLinks={adminSidebarLinks} />
+              <Layout sidebarLinks={adminSidebarLinks} />
             </AdminRoute>
           }
         >

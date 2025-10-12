@@ -1,13 +1,11 @@
 import { ChatContext } from "../hooks/messaging/useChatContext";
-import useChatClient from "../hooks/messaging/useChatClient";
-import { useAuth } from "../hooks/useAuthContext";
+import { useStreamContext } from "../hooks/messaging/useStreamContext";
 
 export function ChatProvider({ children }) {
-  const { authUser } = useAuth();
-  const { chatClient, disconnectChatClient } = useChatClient(authUser);
+  const { chatClient, isReady } = useStreamContext();
 
   return (
-    <ChatContext.Provider value={{ chatClient, disconnectChatClient }}>
+    <ChatContext.Provider value={{ chatClient, isReady }}>
       {children}
     </ChatContext.Provider>
   );

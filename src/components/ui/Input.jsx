@@ -8,6 +8,7 @@ const Input = ({
   value,
   onChange,
   placeholder,
+  className,
   required = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +26,11 @@ const Input = ({
           onChange={onChange}
           placeholder={placeholder}
           required={required}
-          className="w-full px-3 py-1 border input input-bordered rounded pr-10"
+          className={
+            className
+              ? className
+              : "w-full px-3 py-1 border input input-bordered rounded pr-10"
+          }
         />
         {isPasswordField && (
           <button

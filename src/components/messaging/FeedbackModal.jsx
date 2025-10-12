@@ -38,7 +38,7 @@ const FeedbackModal = ({
           <StarRating rating={rating} onRatingChange={setRating} />
         </div>
         <textarea
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border border-gray-300 rounded-md text-gray-900"
           rows="4"
           placeholder="Leave a comment..."
           value={comment}

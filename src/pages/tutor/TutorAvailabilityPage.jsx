@@ -117,7 +117,10 @@ const TutorAvailabilityPage = () => {
     mutationFn: createBookingAvailability,
     onSuccess: () => {
       handleToastSuccess("Availability added successfully!");
-      queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorOpenAvailabilities"],
+        exact: true,
+      });
       setFormData({
         scheduledStart: "",
         scheduledEnd: "",
@@ -137,7 +140,10 @@ const TutorAvailabilityPage = () => {
       updateBookingAvailability(availabilityId, updateData),
     onSuccess: () => {
       handleToastSuccess("Availability updated successfully!");
-      queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorOpenAvailabilities"],
+        exact: true,
+      });
       setEditingAvailability(null);
       setFormData({
         scheduledStart: "",
@@ -157,7 +163,10 @@ const TutorAvailabilityPage = () => {
     mutationFn: deleteBookingAvailability,
     onSuccess: () => {
       handleToastSuccess("Availability deleted successfully!");
-      queryClient.invalidateQueries(["tutorOpenAvailabilities"]);
+      queryClient.invalidateQueries({
+        queryKey: ["tutorOpenAvailabilities"],
+        exact: true,
+      });
     },
     onError: (err) => {
       handleToastError(err, "Failed to delete availability.");

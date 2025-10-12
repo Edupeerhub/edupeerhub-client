@@ -9,12 +9,9 @@ const TutorPrivateProfilePage = () => {
   const {
     profile,
     reviews,
-    reviewSummary,
     isLoadingProfileQuery,
-    isLoadingReviewSummaryQuery,
     isLoadingReviewsQuery,
     errorProfileQuery,
-    errorReviewSummaryQuery,
     errorReviewsQuery,
   } = usePrivateTutorProfile();
 
@@ -71,22 +68,15 @@ const TutorPrivateProfilePage = () => {
             <div className="mt-6">
               <h2 className="font-bold text-lg">About Me</h2>
               <p className="text-sm mt-2 text-gray-500 leading-relaxed break-words">
-                {profile?.bio || "No bio"}
+                {profile?.tutor.bio || "No bio"}
               </p>
+            </div>
+            {/* Rating */}
+            <div className="mt-3 md:mt-6">
+              <RatingSummary stats={profile?.tutor?.stats} />
             </div>
           </>
         )}
-
-        {/* Rating */}
-        <div className="mt-3 md:mt-6">
-          {isLoadingReviewSummaryQuery ? (
-            <Spinner />
-          ) : errorReviewSummaryQuery ? (
-            <p className="text-red-500">Failed to load tutor ratings.</p>
-          ) : (
-            <RatingSummary rating={reviewSummary} />
-          )}
-        </div>
 
         {/* Reviews */}
         <div className="mt-6">

@@ -10,7 +10,6 @@ export default function ActiveLayout({
   tutor,
   pendingBookingRequests,
   handleView,
-  rating,
   recentActivities,
   isLoadingActivities,
 }) {
@@ -26,7 +25,9 @@ export default function ActiveLayout({
             {/* <ChevronRight className="w-4 h-4 text-gray-400" /> */}
           </div>
           <p className="text-sm text-gray-600">Total Students</p>
-          <p className="text-2xl font-bold">{tutor?.students?.length || 0}</p>
+          <p className="text-2xl font-bold">
+            {tutor?.stats?.totalStudents ?? 0}
+          </p>
         </div>
 
         <div className="bg-white rounded-lg border shadow p-4">
@@ -37,7 +38,9 @@ export default function ActiveLayout({
             {/* <ChevronRight className="w-4 h-4 text-gray-400" /> */}
           </div>
           <p className="text-sm text-gray-600">Weekly Sessions</p>
-          <p className="text-2xl font-bold">{tutor?.weeklySessions || 0}</p>
+          <p className="text-2xl font-bold">
+            {tutor?.stats?.totalWeeklySessions ?? 0}
+          </p>
         </div>
 
         <div className="bg-white rounded-lg border shadow p-4">
@@ -48,7 +51,7 @@ export default function ActiveLayout({
             {/* <ChevronRight className="w-4 h-4 text-gray-400" /> */}
           </div>
           <p className="text-sm text-gray-600">Ratings</p>
-          <p className="text-2xl font-bold">{rating}</p>
+          <p className="text-2xl font-bold">{tutor.stats.averageRating ?? 0}</p>
         </div>
       </div>
 

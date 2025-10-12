@@ -4,14 +4,14 @@ import { Outlet } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 
-const Layout = ({ children, fullHeight = false, sidebarLinks = [] }) => {
+const Layout = ({ children, sidebarLinks = [] }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className={`flex flex-col ${fullHeight ? "min-h-screen" : ""}`}>
+    <div className="flex flex-col">
       {/* Navbar - fixed at top */}
       <Navbar onToggleSidebar={toggleSidebar} />
 
@@ -24,9 +24,7 @@ const Layout = ({ children, fullHeight = false, sidebarLinks = [] }) => {
         />
 
         {/* Main Content Area */}
-        <MainContent fullHeight={fullHeight}>
-          {children || <Outlet />}
-        </MainContent>
+        <MainContent>{children || <Outlet />}</MainContent>
       </div>
     </div>
   );

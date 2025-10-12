@@ -5,6 +5,10 @@
 @layer base {
   html {
     @apply font-sans;
+    @apply overflow-x-hidden;
+  }
+  body {
+    @apply overflow-x-hidden;
   }
 }
 

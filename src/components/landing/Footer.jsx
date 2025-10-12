@@ -64,7 +64,7 @@ const Footer = () => {
                   alt={ASSETS.logo?.alt}
                   className="h-8 md:h-8"
                 />
-                <p className=" text-xl md:text-xl font-bold text-blue-600">
+                <p className=" text-xl md:text-xl font-bold text-gray-900">
                   edupeerhub
                 </p>
               </div>
