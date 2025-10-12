@@ -13,7 +13,7 @@ const StarRating = ({ rating, onRatingChange }) => {
             type="button"
             key={starValue}
             className={`text-3xl ${
-              starValue <= (hover || rating) ? "text-yellow-400" : "text-gray-300"
+              starValue <= (hover || rating) ? "text-primary" : "text-gray-300"
             }`}
             onClick={() => onRatingChange(starValue)}
             onMouseEnter={() => setHover(starValue)}

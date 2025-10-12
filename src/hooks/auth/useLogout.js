@@ -5,9 +5,11 @@ import {
 } from "../../utils/toastDisplayHandler";
 import { logout } from "../../lib/api/auth/authApi";
 import { disconnectStreamClients } from "../../lib/stream/streamClientManager";
+import { useNavigate } from "react-router-dom";
 
 const useLogout = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const {
     mutate: logoutMutation,
@@ -20,6 +22,7 @@ const useLogout = () => {
       queryClient.removeQueries({ queryKey: ["streamToken"] });
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Logout successful! See you next time!");
+      navigate("/login", { replace: true });
     },
     onError: (error) => {
       handleToastError(error);

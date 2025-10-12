@@ -4,12 +4,15 @@ import { TESTIMONIALS } from "../../config/assets";
 
 const TestimonialCard = ({ testimonial }) => {
   return (
-    <div className="bg-white rounded-xl p-6 md:p-8 shadow-md hover:shadow-xl transition-shadow duration-300">
+    <div className="bg-white flex flex-col justify-between rounded-xl p-6 md:p-8 shadow-md hover:shadow-xl transition-shadow duration-300">
       <div className="flex items-center mb-4">
-        {[...Array(testimonial.rating)].map((_, index) => (
+        {[...Array(5)].map((_, index) => (
           <Star
             key={index}
-            className="w-5 h-5 fill-yellow-400 text-yellow-400"
+            fill={index < (testimonial.rating || 0) ? "currentColor" : "none"}
+            className={`text-primary w-5 h-5  ${
+              index >= (testimonial.rating || 0) ? "opacity-30" : ""
+            }`}
           />
         ))}
       </div>
