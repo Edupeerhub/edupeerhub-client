@@ -191,6 +191,7 @@ const StudentSessionsPage = () => {
         booking={selectedBooking}
         userType="student"
         onCancel={handleCancelBooking}
+        isCancelling={cancelMutation.isPending}
         isPast={activeTab === "past" || activeTab === "cancelled"}
       />
     </>

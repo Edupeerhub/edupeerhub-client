@@ -30,7 +30,11 @@ const adminColumns = [
     ),
   },
   { header: "Email", cell: (admin) => admin.user.email ?? "—" },
-  { header: "Role", cell: (admin) => admin.user.role ?? "—", cellClassName: "capitalize" },
+  {
+    header: "Role",
+    cell: (admin) => admin.user.role ?? "—",
+    cellClassName: "capitalize",
+  },
   {
     header: "Status",
     cell: (admin) => (
@@ -92,7 +96,7 @@ const renderAdminCard = (admin) => (
 
 export default function AdminSettingsPage() {
   const isSuperAdmin = useIsSuperAdmin();
-  const { data: admins, isLoading, isError, error } = useAdmins();
+  const { data: admins, isLoading, error } = useAdmins();
   const [formState, setFormState] = useState({
     firstName: "",
     lastName: "",

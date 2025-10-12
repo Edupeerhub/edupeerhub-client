@@ -333,6 +333,7 @@ const StudentDashboardPage = () => {
         booking={selectedBooking}
         userType="student"
         onCancel={handleCancelBooking}
+        isCancelling={cancelMutation.isPending}
       />
     </>
   );

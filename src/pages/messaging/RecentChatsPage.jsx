@@ -7,9 +7,9 @@ import { useAuth } from "../../hooks/useAuthContext";
 
 const RecentChatsPage = () => {
   const { authUser } = useAuth();
-  const { chatClient } = useChat();
+  const { chatClient, isReady } = useChat();
 
-  if (!chatClient) return <Spinner />;
+  if (!chatClient || !isReady) return <Spinner />;
 
   return (
     <div className="flex flex-col h-full">

@@ -286,25 +286,18 @@ const TutorAvailabilityPage = () => {
                 )}
                 <Button
                   type="submit"
-                  disabled={
-                    createAvailabilityMutation.isLoading ||
-                    updateAvailabilityMutation.isLoading
+                  loading={
+                    createAvailabilityMutation.isPending ||
+                    updateAvailabilityMutation.isPending
                   }
-                  className={`${
-                    editingAvailability ? "flex-1" : "w-full"
-                  } bg-primary hover:bg-primary/90`}
+                  disabled={
+                    createAvailabilityMutation.isPending ||
+                    updateAvailabilityMutation.isPending
+                  }
                 >
-                  {editingAvailability ? (
-                    updateAvailabilityMutation.isLoading ? (
-                      <Spinner size="small" />
-                    ) : (
-                      "Update Availability"
-                    )
-                  ) : createAvailabilityMutation.isLoading ? (
-                    <Spinner size="small" />
-                  ) : (
-                    "Add Availability"
-                  )}
+                  {editingAvailability
+                    ? "Update Availability"
+                    : "Add Availability"}
                 </Button>
               </div>
             </form>
@@ -385,11 +378,11 @@ const TutorAvailabilityPage = () => {
                         onClick={() =>
                           deleteAvailabilityMutation.mutate(availability.id)
                         }
-                        disabled={deleteAvailabilityMutation.isLoading}
+                        disabled={deleteAvailabilityMutation.isPending}
                         className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50 whitespace-nowrap"
                       >
-                        {deleteAvailabilityMutation.isLoading ? (
-                          <Spinner size="small" />
+                        {deleteAvailabilityMutation.isPending ? (
+                          <Spinner />
                         ) : (
                           "Delete"
                         )}

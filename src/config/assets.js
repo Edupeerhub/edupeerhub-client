@@ -32,7 +32,7 @@ export const ASSETS = {
 
   // Logo (you can replace this with your actual logo path)
   logo: {
-    image: "/images/logo.png",
+    image: "/images/logo.png?v=2",
     alt: "EduPeerHub Logo",
   },
 };
