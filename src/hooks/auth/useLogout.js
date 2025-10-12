@@ -19,12 +19,11 @@ const useLogout = () => {
     mutationFn: logout,
     onSuccess: async () => {
       await disconnectStreamClients();
+      navigate("/login", { replace: true });
       queryClient.removeQueries({ queryKey: ["streamToken"] });
       queryClient.removeQueries({ queryKey: ["userProfile"] });
-      queryClient.removeQueries({ queryKey: ["authUser"] });
-      // queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
       handleToastSuccess("Logout successful! See you next time!");
-      navigate("/login", { replace: true });
     },
     onError: (error) => {
       handleToastError(error);
