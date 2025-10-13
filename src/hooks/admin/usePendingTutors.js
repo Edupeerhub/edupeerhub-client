@@ -44,5 +44,7 @@ export function usePendingTutors(options = {}) {
     queryFn: getPendingTutors,
     select: customSelect ?? defaultSelect,
     ...rest,
+    refetchInterval: 30000, // Poll every 30 seconds
+    refetchIntervalInBackground: true, // Stop polling when tab is not visible (default)
   });
 }
