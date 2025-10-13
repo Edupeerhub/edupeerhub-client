@@ -127,12 +127,14 @@ const BookingDetailsModal = ({
             )}
             {!isPast && (
               <div>
-                <p className="text-sm text-gray-500">Cancellation Reason</p>
+                <p className="text-sm text-gray-500">
+                  Cancellation Reason<span className="text-red-600">*</span>
+                </p>
                 <input
                   type="text"
                   value={cancellationReason}
                   onChange={(e) => setCancellationReason(e.target.value)}
-                  className="w-full px-2 py-1.5 text-sm border rounded"
+                  className="w-full px-2 py-1.5 text-sm border rounded border-gray-400 focus:outline-none  focus:ring-2 focus:ring-primary"
                 />
               </div>
             )}
@@ -143,7 +145,7 @@ const BookingDetailsModal = ({
           <div className="flex flex-col md:flex-row gap-3 mt-6">
             <button
               onClick={handleCancel}
-              className="btn btn-outline flex-1"
+              className="btn btn-warning btn-outlinehover:!text-white focus:!text-white flex-1"
               disabled={!cancellationReason || isCancelling}
             >
               {isCancelling ? "Cancelling..." : " Cancel Booking"}
