@@ -46,7 +46,7 @@ const useCallAccess = (booking) => {
   // Check session status
   if (booking.status !== "confirmed") {
     return {
-      canAccess: true,
+      canAccess: false,
       reason: `Session is not confirmed. Current status: ${booking.status}.`,
       dashboardLink: isStudent ? "/student/dashboard" : "/tutor/dashboard",
     };
@@ -59,7 +59,7 @@ const useCallAccess = (booking) => {
     const timeRemainingString = formatTimeRemaining(timeDifferenceMs);
 
     return {
-      canAccess: true,
+      canAccess: false,
       reason: `You can join the call in ${timeRemainingString}.`,
       dashboardLink: isStudent ? "/student/dashboard" : "/tutor/dashboard",
     };
@@ -67,7 +67,7 @@ const useCallAccess = (booking) => {
 
   if (now > fifteenMinutesAfter) {
     return {
-      canAccess: true,
+      canAccess: false,
       reason: "The session has already ended.",
       dashboardLink: isStudent ? "/student/dashboard" : "/tutor/dashboard",
     };
